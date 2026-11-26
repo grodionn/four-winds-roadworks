@@ -1,0 +1,26 @@
+plugins { id 'java' }
+
+apply from: 'gradle/roadworks.gradle'
+
+def serverDir = providers.gradleProperty('neoForgeServer').orElse(providers.environmentVariable('NEOFORGE_SERVER'))
+if (!serverDir.isPresent()) {
+    throw new GradleException('Set -PneoForgeServer=<installed NeoForge 21.1.267 server directory> or NEOFORGE_SERVER.')
+}
+def libraries = file("${serverDir.get()}/libraries")
+def loader = new File(libraries, 'net/neoforged/neoforge/21.1.267')
+def patched = new File(loader, 'neoforge-21.1.267-server.jar')
+if (!patched.isFile()) { throw new GradleException("Missing NeoForge server library: ${patched}") }
+def clientDir = providers.gradleProperty('neoForgeClient').orElse(providers.environmentVariable('NEOFORGE_CLIENT'))
+if (!clientDir.isPresent()) {
+    throw new GradleException('Set -PneoForgeClient=<installed NeoForge 21.1.267 launcher directory> or NEOFORGE_CLIENT.')
+}
+def clientLibraries = file("${clientDir.get()}/libraries")
+def client = new File(clientLibraries, 'net/neoforged/neoforge/21.1.267/neoforge-21.1.267-client.jar')
+if (!client.isFile()) { throw new GradleException("Missing NeoForge client library: ${client}") }
+dependencies {
+    compileOnly files(client)
+    compileOnly fileTree(clientLibraries) { include 'net/minecraft/client/**/*-srg.jar' }
+    compileOnly files(patched, new File(loader, 'neoforge-21.1.267-universal.jar'))
+    compileOnly fileTree(libraries) { include 'net/minecraft/server/**/*-srg.jar' }
+    compileOnly fileTree(libraries) { include '**/*.jar'; exclude 'net/minecraft/**', 'net/neoforged/neoforge/**' }
+}

@@ -1,0 +1,12 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'four-winds-roadworks'
+
+// Existing offline workspaces can compile against their installed NeoForge libraries.
+if (providers.gradleProperty('neoForgeServer').isPresent() || providers.environmentVariable('NEOFORGE_SERVER').isPresent()) {
+    rootProject.buildFileName = 'build-installed.gradle'
+}

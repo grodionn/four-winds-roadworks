@@ -1,0 +1,12 @@
+{
+  "sign.fourwindsroadworks.crossing":"Crossroads",
+  "sign.fourwindsroadworks.west_east":"W ←     → E",
+  "sign.fourwindsroadworks.east_west":"E ←     → W",
+  "sign.fourwindsroadworks.north":"North",
+  "sign.fourwindsroadworks.south":"South",
+  "sign.fourwindsroadworks.east":"East",
+  "sign.fourwindsroadworks.west":"West",
+  "sign.fourwindsroadworks.village":"Village",
+  "sign.fourwindsroadworks.pixies":"Pixie village",
+  "sign.fourwindsroadworks.distance":"≈ %s blocks"
+}

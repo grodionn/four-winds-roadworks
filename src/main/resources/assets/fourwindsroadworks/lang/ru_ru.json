@@ -1,0 +1,12 @@
+{
+  "sign.fourwindsroadworks.crossing":"Перекрёсток",
+  "sign.fourwindsroadworks.west_east":"З ←     → В",
+  "sign.fourwindsroadworks.east_west":"В ←     → З",
+  "sign.fourwindsroadworks.north":"Север",
+  "sign.fourwindsroadworks.south":"Юг",
+  "sign.fourwindsroadworks.east":"Восток",
+  "sign.fourwindsroadworks.west":"Запад",
+  "sign.fourwindsroadworks.village":"Деревня",
+  "sign.fourwindsroadworks.pixies":"Деревня пикси",
+  "sign.fourwindsroadworks.distance":"≈ %s блок."
+}

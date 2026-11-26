@@ -1,0 +1,2402 @@
+{
+  "meta": {
+    "format_version": "5.0",
+    "model_format": "java_block",
+    "box_uv": false
+  },
+  "name": "Four Winds | Crossroads fingerpost",
+  "model_identifier": "",
+  "visible_box": [
+    1,
+    1,
+    0
+  ],
+  "resolution": {
+    "width": 16,
+    "height": 16
+  },
+  "elements": [
+    {
+      "uuid": "d06afc04-c0a1-4331-8d63-372eb951d240",
+      "name": "Hewn oak, foot",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 0,
+      "type": "cube",
+      "from": [
+        6,
+        0,
+        6
+      ],
+      "to": [
+        10,
+        16,
+        10
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            0,
+            6,
+            16
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            10,
+            0,
+            6,
+            16
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": 3
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "eba031c8-8609-4f07-bc87-b2a58d4ea778",
+      "name": "Hewn oak, head",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 1,
+      "type": "cube",
+      "from": [
+        6,
+        16,
+        6
+      ],
+      "to": [
+        10,
+        24,
+        10
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            8,
+            6,
+            16
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            10,
+            8,
+            6,
+            16
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            6,
+            8,
+            10,
+            16
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            6,
+            8,
+            10,
+            16
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": 3
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "34028ace-8c08-4120-80f3-97209a2d7f88",
+      "name": "Sawn crown",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 2,
+      "type": "cube",
+      "from": [
+        6,
+        24,
+        7
+      ],
+      "to": [
+        10,
+        25,
+        10
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            7,
+            6,
+            8
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            10,
+            7,
+            7,
+            8
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            6,
+            7,
+            10,
+            8
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            7,
+            7,
+            10,
+            8
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            6,
+            7,
+            10,
+            10
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            6,
+            7,
+            10,
+            10
+          ],
+          "texture": 3
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "030c2079-5e95-4785-b878-95725bef47cf",
+      "name": "Crown, high edge",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 3,
+      "type": "cube",
+      "from": [
+        6,
+        25,
+        8
+      ],
+      "to": [
+        10,
+        26,
+        10
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            6,
+            6,
+            7
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            10,
+            6,
+            8,
+            7
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            6,
+            6,
+            10,
+            7
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            8,
+            6,
+            10,
+            7
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            6,
+            8,
+            10,
+            10
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            6,
+            8,
+            10,
+            10
+          ],
+          "texture": 3
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "f930f4bf-68b7-4f1e-9b57-73202d9d1ebb",
+      "name": "East plank 6",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 4,
+      "type": "cube",
+      "from": [
+        6,
+        18,
+        10
+      ],
+      "to": [
+        16,
+        23,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            16,
+            5,
+            6
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12,
+            0,
+            10,
+            5
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            6,
+            5,
+            16
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            10,
+            0,
+            12,
+            5
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            6,
+            10,
+            16,
+            12
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            6,
+            10,
+            16,
+            12
+          ],
+          "texture": 1
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "e512bcf0-301e-473c-9649-a61e2a49d7b2",
+      "name": "East plank 16",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 5,
+      "type": "cube",
+      "from": [
+        16,
+        18,
+        10
+      ],
+      "to": [
+        27,
+        23,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            11,
+            5,
+            0
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12,
+            0,
+            10,
+            5
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            5,
+            11
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            10,
+            0,
+            12,
+            5
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            10,
+            11,
+            12
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            10,
+            11,
+            12
+          ],
+          "texture": 1
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "9b4ff6f6-a4c4-4c37-b747-6050f304f1ff",
+      "name": "East axe cut 1",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 6,
+      "type": "cube",
+      "from": [
+        27,
+        19,
+        10
+      ],
+      "to": [
+        28,
+        22,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            12,
+            4,
+            11
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12,
+            1,
+            10,
+            4
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            1,
+            11,
+            4,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            10,
+            1,
+            12,
+            4
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            11,
+            10,
+            12,
+            12
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            11,
+            10,
+            12,
+            12
+          ],
+          "texture": 1
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "84ab7fc5-49cc-4de4-a14d-aaa7ccad2514",
+      "name": "East axe cut 2",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 7,
+      "type": "cube",
+      "from": [
+        28,
+        20,
+        10
+      ],
+      "to": [
+        29,
+        21,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            13,
+            3,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12,
+            2,
+            10,
+            3
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            2,
+            12,
+            3,
+            13
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            10,
+            2,
+            12,
+            3
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            12,
+            10,
+            13,
+            12
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            12,
+            10,
+            13,
+            12
+          ],
+          "texture": 1
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "cb78cb41-169b-43f0-9cef-f05748fef773",
+      "name": "East oak pin",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 0,
+      "type": "cube",
+      "from": [
+        7,
+        19,
+        12
+      ],
+      "to": [
+        9,
+        21,
+        13
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            11,
+            7,
+            13
+          ],
+          "texture": 4
+        },
+        "east": {
+          "uv": [
+            13,
+            11,
+            12,
+            13
+          ],
+          "texture": 4
+        },
+        "south": {
+          "uv": [
+            7,
+            11,
+            9,
+            13
+          ],
+          "texture": 4
+        },
+        "west": {
+          "uv": [
+            12,
+            11,
+            13,
+            13
+          ],
+          "texture": 4
+        },
+        "up": {
+          "uv": [
+            7,
+            12,
+            9,
+            13
+          ],
+          "texture": 4
+        },
+        "down": {
+          "uv": [
+            7,
+            12,
+            9,
+            13
+          ],
+          "texture": 4
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "3fb158ca-01f7-4a63-a551-05e3be3d1b84",
+      "name": "West plank 6",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 1,
+      "type": "cube",
+      "from": [
+        0,
+        17,
+        4
+      ],
+      "to": [
+        10,
+        22,
+        6
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            6,
+            10,
+            16
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            10,
+            5,
+            12,
+            10
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            5,
+            16,
+            10,
+            6
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            12,
+            5,
+            10,
+            10
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            6,
+            10,
+            16,
+            12
+          ],
+          "texture": 1,
+          "rotation": 180
+        },
+        "down": {
+          "uv": [
+            6,
+            10,
+            16,
+            12
+          ],
+          "texture": 1,
+          "rotation": 180
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "c35390f5-0811-44c4-9b9e-4f5fa314fbaf",
+      "name": "West plank 16",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 2,
+      "type": "cube",
+      "from": [
+        -10,
+        17,
+        4
+      ],
+      "to": [
+        0,
+        22,
+        6
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            0,
+            10,
+            10
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            10,
+            5,
+            12,
+            10
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            5,
+            10,
+            10,
+            0
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            12,
+            5,
+            10,
+            10
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            10,
+            10,
+            12
+          ],
+          "texture": 1,
+          "rotation": 180
+        },
+        "down": {
+          "uv": [
+            0,
+            10,
+            10,
+            12
+          ],
+          "texture": 1,
+          "rotation": 180
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "f47c61c9-267d-4125-a3dd-35941b59e089",
+      "name": "West axe cut 1",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 3,
+      "type": "cube",
+      "from": [
+        -11,
+        18,
+        4
+      ],
+      "to": [
+        -10,
+        21,
+        6
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            10,
+            9,
+            11
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            10,
+            6,
+            12,
+            9
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            6,
+            11,
+            9,
+            10
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            12,
+            6,
+            10,
+            9
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            10,
+            10,
+            11,
+            12
+          ],
+          "texture": 1,
+          "rotation": 180
+        },
+        "down": {
+          "uv": [
+            10,
+            10,
+            11,
+            12
+          ],
+          "texture": 1,
+          "rotation": 180
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "66e1a147-1819-4f6a-8886-3a68411bcfb0",
+      "name": "West axe cut 2",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 4,
+      "type": "cube",
+      "from": [
+        -12,
+        19,
+        4
+      ],
+      "to": [
+        -11,
+        20,
+        6
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            11,
+            8,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            10,
+            7,
+            12,
+            8
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            7,
+            12,
+            8,
+            11
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            12,
+            7,
+            10,
+            8
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            11,
+            10,
+            12,
+            12
+          ],
+          "texture": 1,
+          "rotation": 180
+        },
+        "down": {
+          "uv": [
+            11,
+            10,
+            12,
+            12
+          ],
+          "texture": 1,
+          "rotation": 180
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "e1c6e2c2-76ec-4593-8191-8500f08917f4",
+      "name": "West oak pin",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 5,
+      "type": "cube",
+      "from": [
+        7,
+        18,
+        3
+      ],
+      "to": [
+        9,
+        20,
+        4
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            12,
+            9,
+            14
+          ],
+          "texture": 4
+        },
+        "east": {
+          "uv": [
+            12,
+            12,
+            13,
+            14
+          ],
+          "texture": 4
+        },
+        "south": {
+          "uv": [
+            9,
+            12,
+            7,
+            14
+          ],
+          "texture": 4
+        },
+        "west": {
+          "uv": [
+            13,
+            12,
+            12,
+            14
+          ],
+          "texture": 4
+        },
+        "up": {
+          "uv": [
+            7,
+            12,
+            9,
+            13
+          ],
+          "texture": 4,
+          "rotation": 180
+        },
+        "down": {
+          "uv": [
+            7,
+            12,
+            9,
+            13
+          ],
+          "texture": 4,
+          "rotation": 180
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "f39725e2-d395-4c35-8ae6-71488dc046ce",
+      "name": "North plank 6",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 6,
+      "type": "cube",
+      "from": [
+        10,
+        10,
+        0
+      ],
+      "to": [
+        12,
+        15,
+        10
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            8,
+            10,
+            13
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            8,
+            6,
+            13,
+            16
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            10,
+            8,
+            12,
+            13
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            8,
+            16,
+            13,
+            6
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            6,
+            10,
+            16,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            6,
+            10,
+            16,
+            12
+          ],
+          "texture": 1,
+          "rotation": 270
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "8abcfd44-6cb2-413f-8631-c9ce151e6dd3",
+      "name": "North plank 16",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 7,
+      "type": "cube",
+      "from": [
+        10,
+        10,
+        -9
+      ],
+      "to": [
+        12,
+        15,
+        0
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            8,
+            10,
+            13
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            13,
+            9
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            10,
+            8,
+            12,
+            13
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            8,
+            9,
+            13,
+            0
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            10,
+            9,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            0,
+            10,
+            9,
+            12
+          ],
+          "texture": 1,
+          "rotation": 270
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "656d589c-aab6-44c4-82b5-8be6efe236f0",
+      "name": "North axe cut 1",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 0,
+      "type": "cube",
+      "from": [
+        10,
+        11,
+        -10
+      ],
+      "to": [
+        12,
+        14,
+        -9
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            9,
+            10,
+            12
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            9,
+            9,
+            12,
+            10
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            10,
+            9,
+            12,
+            12
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            9,
+            10,
+            12,
+            9
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            9,
+            10,
+            10,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            9,
+            10,
+            10,
+            12
+          ],
+          "texture": 1,
+          "rotation": 270
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "3cfeab0a-91be-4009-8a6f-d76d0fc78de0",
+      "name": "North axe cut 2",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 1,
+      "type": "cube",
+      "from": [
+        10,
+        12,
+        -11
+      ],
+      "to": [
+        12,
+        13,
+        -10
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            10,
+            10,
+            11
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            10,
+            10,
+            11,
+            11
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            10,
+            10,
+            12,
+            11
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            10,
+            11,
+            11,
+            10
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            10,
+            10,
+            11,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            10,
+            10,
+            11,
+            12
+          ],
+          "texture": 1,
+          "rotation": 270
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "621a3755-25a7-4364-8f99-5fd4fb3a9534",
+      "name": "North oak pin",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 2,
+      "type": "cube",
+      "from": [
+        12,
+        11,
+        7
+      ],
+      "to": [
+        13,
+        13,
+        9
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            13,
+            3,
+            12,
+            5
+          ],
+          "texture": 4
+        },
+        "east": {
+          "uv": [
+            7,
+            3,
+            9,
+            5
+          ],
+          "texture": 4
+        },
+        "south": {
+          "uv": [
+            12,
+            3,
+            13,
+            5
+          ],
+          "texture": 4
+        },
+        "west": {
+          "uv": [
+            9,
+            3,
+            7,
+            5
+          ],
+          "texture": 4
+        },
+        "up": {
+          "uv": [
+            7,
+            12,
+            9,
+            13
+          ],
+          "texture": 4,
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            7,
+            12,
+            9,
+            13
+          ],
+          "texture": 4,
+          "rotation": 270
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "a361e271-7b10-4918-986e-a38317942ce6",
+      "name": "South plank 6",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 3,
+      "type": "cube",
+      "from": [
+        4,
+        11,
+        6
+      ],
+      "to": [
+        6,
+        16,
+        16
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            2,
+            12,
+            7
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            2,
+            16,
+            7,
+            6
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            12,
+            2,
+            10,
+            7
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            2,
+            6,
+            7,
+            16
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            6,
+            10,
+            16,
+            12
+          ],
+          "texture": 1,
+          "rotation": 270
+        },
+        "down": {
+          "uv": [
+            6,
+            10,
+            16,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "20cb61ee-35fd-4943-8e41-1742fab0d405",
+      "name": "South plank 16",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 4,
+      "type": "cube",
+      "from": [
+        4,
+        11,
+        16
+      ],
+      "to": [
+        6,
+        16,
+        26
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            2,
+            12,
+            7
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            2,
+            10,
+            7,
+            0
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            12,
+            2,
+            10,
+            7
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            2,
+            0,
+            7,
+            10
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            10,
+            10,
+            12
+          ],
+          "texture": 1,
+          "rotation": 270
+        },
+        "down": {
+          "uv": [
+            0,
+            10,
+            10,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "914b4690-6d12-4972-90ba-1a9035a7d50e",
+      "name": "South axe cut 1",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 5,
+      "type": "cube",
+      "from": [
+        4,
+        12,
+        26
+      ],
+      "to": [
+        6,
+        15,
+        27
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            3,
+            12,
+            6
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            3,
+            11,
+            6,
+            10
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            12,
+            3,
+            10,
+            6
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            3,
+            10,
+            6,
+            11
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            10,
+            10,
+            11,
+            12
+          ],
+          "texture": 1,
+          "rotation": 270
+        },
+        "down": {
+          "uv": [
+            10,
+            10,
+            11,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "818383a8-1299-4206-9cc5-22da3b66d2d2",
+      "name": "South axe cut 2",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 6,
+      "type": "cube",
+      "from": [
+        4,
+        13,
+        27
+      ],
+      "to": [
+        6,
+        14,
+        28
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            4,
+            12,
+            5
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            4,
+            12,
+            5,
+            11
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            12,
+            4,
+            10,
+            5
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            4,
+            11,
+            5,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            11,
+            10,
+            12,
+            12
+          ],
+          "texture": 1,
+          "rotation": 270
+        },
+        "down": {
+          "uv": [
+            11,
+            10,
+            12,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "59ad128f-92ad-4439-80c6-dee076bff42b",
+      "name": "South oak pin",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 7,
+      "type": "cube",
+      "from": [
+        3,
+        12,
+        7
+      ],
+      "to": [
+        4,
+        14,
+        9
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            2,
+            13,
+            4
+          ],
+          "texture": 4
+        },
+        "east": {
+          "uv": [
+            9,
+            2,
+            7,
+            4
+          ],
+          "texture": 4
+        },
+        "south": {
+          "uv": [
+            13,
+            2,
+            12,
+            4
+          ],
+          "texture": 4
+        },
+        "west": {
+          "uv": [
+            7,
+            2,
+            9,
+            4
+          ],
+          "texture": 4
+        },
+        "up": {
+          "uv": [
+            7,
+            12,
+            9,
+            13
+          ],
+          "texture": 4,
+          "rotation": 270
+        },
+        "down": {
+          "uv": [
+            7,
+            12,
+            9,
+            13
+          ],
+          "texture": 4,
+          "rotation": 90
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    }
+  ],
+  "groups": [
+    {
+      "uuid": "7b0ae593-16df-44bb-b910-fa83dd319406",
+      "name": "Post",
+      "origin": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "export": true,
+      "visibility": true,
+      "mirror_uv": false,
+      "reset": false,
+      "color": 0,
+      "shade": true,
+      "locked": false,
+      "autouv": 0
+    },
+    {
+      "uuid": "484e1730-698e-4f5d-ac93-78e118ac3a86",
+      "name": "East",
+      "origin": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "export": true,
+      "visibility": true,
+      "mirror_uv": false,
+      "reset": false,
+      "color": 0,
+      "shade": true,
+      "locked": false,
+      "autouv": 0
+    },
+    {
+      "uuid": "7a01b9d0-8773-4eb5-ac17-ec63bf0bc025",
+      "name": "West",
+      "origin": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "export": true,
+      "visibility": true,
+      "mirror_uv": false,
+      "reset": false,
+      "color": 0,
+      "shade": true,
+      "locked": false,
+      "autouv": 0
+    },
+    {
+      "uuid": "a31072a4-bc6a-48b1-ab36-49490658bd59",
+      "name": "North",
+      "origin": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "export": true,
+      "visibility": true,
+      "mirror_uv": false,
+      "reset": false,
+      "color": 0,
+      "shade": true,
+      "locked": false,
+      "autouv": 0
+    },
+    {
+      "uuid": "05ab47c7-9f4b-4f34-b1dc-86363962a51c",
+      "name": "South",
+      "origin": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "export": true,
+      "visibility": true,
+      "mirror_uv": false,
+      "reset": false,
+      "color": 0,
+      "shade": true,
+      "locked": false,
+      "autouv": 0
+    }
+  ],
+  "outliner": [
+    {
+      "uuid": "7b0ae593-16df-44bb-b910-fa83dd319406",
+      "isOpen": false,
+      "children": [
+        "d06afc04-c0a1-4331-8d63-372eb951d240",
+        "eba031c8-8609-4f07-bc87-b2a58d4ea778",
+        "34028ace-8c08-4120-80f3-97209a2d7f88",
+        "030c2079-5e95-4785-b878-95725bef47cf"
+      ]
+    },
+    {
+      "uuid": "484e1730-698e-4f5d-ac93-78e118ac3a86",
+      "isOpen": false,
+      "children": [
+        "f930f4bf-68b7-4f1e-9b57-73202d9d1ebb",
+        "e512bcf0-301e-473c-9649-a61e2a49d7b2",
+        "9b4ff6f6-a4c4-4c37-b747-6050f304f1ff",
+        "84ab7fc5-49cc-4de4-a14d-aaa7ccad2514",
+        "cb78cb41-169b-43f0-9cef-f05748fef773"
+      ]
+    },
+    {
+      "uuid": "7a01b9d0-8773-4eb5-ac17-ec63bf0bc025",
+      "isOpen": false,
+      "children": [
+        "3fb158ca-01f7-4a63-a551-05e3be3d1b84",
+        "c35390f5-0811-44c4-9b9e-4f5fa314fbaf",
+        "f47c61c9-267d-4125-a3dd-35941b59e089",
+        "66e1a147-1819-4f6a-8886-3a68411bcfb0",
+        "e1c6e2c2-76ec-4593-8191-8500f08917f4"
+      ]
+    },
+    {
+      "uuid": "a31072a4-bc6a-48b1-ab36-49490658bd59",
+      "isOpen": false,
+      "children": [
+        "f39725e2-d395-4c35-8ae6-71488dc046ce",
+        "8abcfd44-6cb2-413f-8631-c9ce151e6dd3",
+        "656d589c-aab6-44c4-82b5-8be6efe236f0",
+        "3cfeab0a-91be-4009-8a6f-d76d0fc78de0",
+        "621a3755-25a7-4364-8f99-5fd4fb3a9534"
+      ]
+    },
+    {
+      "uuid": "05ab47c7-9f4b-4f34-b1dc-86363962a51c",
+      "isOpen": false,
+      "children": [
+        "a361e271-7b10-4918-986e-a38317942ce6",
+        "20cb61ee-35fd-4943-8e41-1742fab0d405",
+        "914b4690-6d12-4972-90ba-1a9035a7d50e",
+        "818383a8-1299-4206-9cc5-22da3b66d2d2",
+        "59ad128f-92ad-4439-80c6-dee076bff42b"
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "uuid": "8083a9fe-e134-4078-9b78-d3b1cec7a7ca",
+      "name": "oak_log.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "bark",
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/oak_log.png"
+    },
+    {
+      "uuid": "21938ec8-631a-440d-8c1c-49f4a9aa89f8",
+      "name": "stripped_oak_log.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "hewn",
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/stripped_oak_log.png"
+    },
+    {
+      "uuid": "72da0061-4027-4b51-beba-7ca682f1183a",
+      "name": "oak_planks.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "board",
+      "particle": true,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/oak_planks.png"
+    },
+    {
+      "uuid": "eb0d049d-eadb-4c0a-b241-ac34ae4d416d",
+      "name": "stripped_oak_log_top.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "end",
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/stripped_oak_log_top.png"
+    },
+    {
+      "uuid": "1db6fc18-c387-4058-9da9-86ae01ba84c2",
+      "name": "oak_log_top.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "peg",
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/oak_log_top.png"
+    },
+    {
+      "uuid": "3daa31d8-6222-4bcc-8b53-1dc2c103a25d",
+      "name": "spruce_log.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "cord",
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/spruce_log.png"
+    }
+  ],
+  "java_block_version": "1.9.0",
+  "credit": "Four Winds Roadworks",
+  "variable_placeholders": "",
+  "variable_placeholder_buttons": [],
+  "timeline_setups": [],
+  "unhandled_root_fields": {},
+  "ai_used": true,
+  "ai_agents": "codex-mcp-client"
+}

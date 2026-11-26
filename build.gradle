@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+
+apply from: 'gradle/roadworks.gradle'
+
+neoForge {
+    version = '21.1.267'
+    runs {
+        client { client() }
+        server {
+            server()
+            programArgument '--nogui'
+        }
+    }
+    mods {
+        fourwindsroadworks {
+            sourceSet sourceSets.main
+        }
+    }
+}

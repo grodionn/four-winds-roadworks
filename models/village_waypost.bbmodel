@@ -1,0 +1,1456 @@
+{
+  "meta": {
+    "format_version": "5.0",
+    "model_format": "java_block",
+    "box_uv": false
+  },
+  "name": "Four Winds | Village fingerpost",
+  "model_identifier": "",
+  "visible_box": [
+    1,
+    1,
+    0
+  ],
+  "resolution": {
+    "width": 16,
+    "height": 16
+  },
+  "elements": [
+    {
+      "uuid": "6e4fa270-2967-4edd-944f-e0c4786c72fe",
+      "name": "Hewn oak, foot",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 0,
+      "type": "cube",
+      "from": [
+        6,
+        0,
+        6
+      ],
+      "to": [
+        10,
+        16,
+        10
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            0,
+            6,
+            16
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            10,
+            0,
+            6,
+            16
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": 3
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "ae7589db-6e82-4881-b3e4-9eef88ddecb6",
+      "name": "Hewn oak, head",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 1,
+      "type": "cube",
+      "from": [
+        6,
+        16,
+        6
+      ],
+      "to": [
+        10,
+        24,
+        10
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            8,
+            6,
+            16
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            10,
+            8,
+            6,
+            16
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            6,
+            8,
+            10,
+            16
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            6,
+            8,
+            10,
+            16
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": 3
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "23ba861b-c81f-4639-b53f-81b0b686b07b",
+      "name": "Sawn crown",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 2,
+      "type": "cube",
+      "from": [
+        6,
+        24,
+        7
+      ],
+      "to": [
+        10,
+        25,
+        10
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            7,
+            6,
+            8
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            10,
+            7,
+            7,
+            8
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            6,
+            7,
+            10,
+            8
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            7,
+            7,
+            10,
+            8
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            6,
+            7,
+            10,
+            10
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            6,
+            7,
+            10,
+            10
+          ],
+          "texture": 3
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "3053e26f-01b4-4dba-806e-1f8a4470d495",
+      "name": "Crown, high edge",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 3,
+      "type": "cube",
+      "from": [
+        6,
+        25,
+        8
+      ],
+      "to": [
+        10,
+        26,
+        10
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            6,
+            6,
+            7
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            10,
+            6,
+            8,
+            7
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            6,
+            6,
+            10,
+            7
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            8,
+            6,
+            10,
+            7
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            6,
+            8,
+            10,
+            10
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            6,
+            8,
+            10,
+            10
+          ],
+          "texture": 3
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "b8104698-e81f-4dd7-90d4-e12cc2f194d6",
+      "name": "Village plank 6",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 4,
+      "type": "cube",
+      "from": [
+        6,
+        16,
+        10
+      ],
+      "to": [
+        16,
+        23,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            16,
+            11,
+            6
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12,
+            4,
+            10,
+            11
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            4,
+            6,
+            11,
+            16
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            10,
+            4,
+            12,
+            11
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            6,
+            10,
+            16,
+            12
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            6,
+            10,
+            16,
+            12
+          ],
+          "texture": 1
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "70a203a3-2931-4ad8-87cb-3d32f32dc40c",
+      "name": "Village plank 16",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 5,
+      "type": "cube",
+      "from": [
+        16,
+        16,
+        10
+      ],
+      "to": [
+        27,
+        23,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            11,
+            11,
+            0
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12,
+            4,
+            10,
+            11
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            4,
+            0,
+            11,
+            11
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            10,
+            4,
+            12,
+            11
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            10,
+            11,
+            12
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            10,
+            11,
+            12
+          ],
+          "texture": 1
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "df23863b-1af3-4e08-ace0-d9d3e8183b8c",
+      "name": "Village axe cut 1",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 6,
+      "type": "cube",
+      "from": [
+        27,
+        17,
+        10
+      ],
+      "to": [
+        28,
+        22,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            12,
+            10,
+            11
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12,
+            5,
+            10,
+            10
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            5,
+            11,
+            10,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            10,
+            5,
+            12,
+            10
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            11,
+            10,
+            12,
+            12
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            11,
+            10,
+            12,
+            12
+          ],
+          "texture": 1
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "db72f1dc-3441-4b3d-9eda-20c3e09e17f0",
+      "name": "Village axe cut 2",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 7,
+      "type": "cube",
+      "from": [
+        28,
+        18,
+        10
+      ],
+      "to": [
+        29,
+        21,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            13,
+            9,
+            12
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12,
+            6,
+            10,
+            9
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            6,
+            12,
+            9,
+            13
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            10,
+            6,
+            12,
+            9
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            12,
+            10,
+            13,
+            12
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            12,
+            10,
+            13,
+            12
+          ],
+          "texture": 1
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "c3a14cd1-bdfd-4d91-aeeb-7392fef0a6f6",
+      "name": "Village axe cut 3",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 0,
+      "type": "cube",
+      "from": [
+        29,
+        19,
+        10
+      ],
+      "to": [
+        30,
+        20,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            14,
+            8,
+            13
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12,
+            7,
+            10,
+            8
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            7,
+            13,
+            8,
+            14
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            10,
+            7,
+            12,
+            8
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            13,
+            10,
+            14,
+            12
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            13,
+            10,
+            14,
+            12
+          ],
+          "texture": 1
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "0ab128c8-a473-4a89-a820-229d7a6d67b6",
+      "name": "Village oak pin",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 1,
+      "type": "cube",
+      "from": [
+        7,
+        18,
+        12
+      ],
+      "to": [
+        9,
+        20,
+        13
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            12,
+            7,
+            14
+          ],
+          "texture": 4
+        },
+        "east": {
+          "uv": [
+            13,
+            12,
+            12,
+            14
+          ],
+          "texture": 4
+        },
+        "south": {
+          "uv": [
+            7,
+            12,
+            9,
+            14
+          ],
+          "texture": 4
+        },
+        "west": {
+          "uv": [
+            12,
+            12,
+            13,
+            14
+          ],
+          "texture": 4
+        },
+        "up": {
+          "uv": [
+            7,
+            12,
+            9,
+            13
+          ],
+          "texture": 4
+        },
+        "down": {
+          "uv": [
+            7,
+            12,
+            9,
+            13
+          ],
+          "texture": 4
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "a071a755-7108-42cc-a12b-cc0b85438df8",
+      "name": "Twisted tie, inboard",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 2,
+      "type": "cube",
+      "from": [
+        13,
+        12,
+        11
+      ],
+      "to": [
+        14,
+        16,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            14,
+            0,
+            13,
+            4
+          ],
+          "texture": 5
+        },
+        "east": {
+          "uv": [
+            12,
+            0,
+            11,
+            4
+          ],
+          "texture": 5
+        },
+        "south": {
+          "uv": [
+            13,
+            0,
+            14,
+            4
+          ],
+          "texture": 5
+        },
+        "west": {
+          "uv": [
+            11,
+            0,
+            12,
+            4
+          ],
+          "texture": 5
+        },
+        "up": {
+          "uv": [
+            13,
+            11,
+            14,
+            12
+          ],
+          "texture": 5
+        },
+        "down": {
+          "uv": [
+            13,
+            11,
+            14,
+            12
+          ],
+          "texture": 5
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "2c314085-252d-4abd-83d3-5822c47d3713",
+      "name": "Twisted tie, outboard",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 3,
+      "type": "cube",
+      "from": [
+        25,
+        12,
+        11
+      ],
+      "to": [
+        26,
+        16,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            0,
+            9,
+            4
+          ],
+          "texture": 5
+        },
+        "east": {
+          "uv": [
+            12,
+            0,
+            11,
+            4
+          ],
+          "texture": 5
+        },
+        "south": {
+          "uv": [
+            9,
+            0,
+            10,
+            4
+          ],
+          "texture": 5
+        },
+        "west": {
+          "uv": [
+            11,
+            0,
+            12,
+            4
+          ],
+          "texture": 5
+        },
+        "up": {
+          "uv": [
+            9,
+            11,
+            10,
+            12
+          ],
+          "texture": 5
+        },
+        "down": {
+          "uv": [
+            9,
+            11,
+            10,
+            12
+          ],
+          "texture": 5
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "2ffdecbe-5151-463f-933c-33749915a9c6",
+      "name": "Mileage board",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 4,
+      "type": "cube",
+      "from": [
+        12,
+        8,
+        10
+      ],
+      "to": [
+        27,
+        12,
+        12
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            16,
+            8,
+            1
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12,
+            4,
+            10,
+            8
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            4,
+            1,
+            8,
+            16
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            10,
+            4,
+            12,
+            8
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            1,
+            10,
+            16,
+            12
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            1,
+            10,
+            16,
+            12
+          ],
+          "texture": 1
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    },
+    {
+      "uuid": "b067fbe9-f7cc-4e4f-baaa-3261d12f2ff0",
+      "name": "Pinning wedge",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "color": 5,
+      "type": "cube",
+      "from": [
+        8,
+        13,
+        9
+      ],
+      "to": [
+        10,
+        16,
+        11
+      ],
+      "box_uv": false,
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            0,
+            8,
+            3
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            11,
+            0,
+            9,
+            3
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            10,
+            3
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            9,
+            0,
+            11,
+            3
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "texture": 3
+        }
+      },
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "autouv": 0
+    }
+  ],
+  "groups": [
+    {
+      "uuid": "fdec8014-899c-4452-9e12-2bf10e73e2a1",
+      "name": "Post",
+      "origin": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "export": true,
+      "visibility": true,
+      "mirror_uv": false,
+      "reset": false,
+      "color": 0,
+      "shade": true,
+      "locked": false,
+      "autouv": 0
+    },
+    {
+      "uuid": "d5310b72-5711-4cd2-8829-a2d93080970b",
+      "name": "Village",
+      "origin": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "export": true,
+      "visibility": true,
+      "mirror_uv": false,
+      "reset": false,
+      "color": 0,
+      "shade": true,
+      "locked": false,
+      "autouv": 0
+    },
+    {
+      "uuid": "a2073a7f-bca4-4447-bbaf-0c5f1ccc1acd",
+      "name": "Distance board",
+      "origin": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "export": true,
+      "visibility": true,
+      "mirror_uv": false,
+      "reset": false,
+      "color": 0,
+      "shade": true,
+      "locked": false,
+      "autouv": 0
+    }
+  ],
+  "outliner": [
+    {
+      "uuid": "fdec8014-899c-4452-9e12-2bf10e73e2a1",
+      "isOpen": false,
+      "children": [
+        "6e4fa270-2967-4edd-944f-e0c4786c72fe",
+        "ae7589db-6e82-4881-b3e4-9eef88ddecb6",
+        "23ba861b-c81f-4639-b53f-81b0b686b07b",
+        "3053e26f-01b4-4dba-806e-1f8a4470d495"
+      ]
+    },
+    {
+      "uuid": "d5310b72-5711-4cd2-8829-a2d93080970b",
+      "isOpen": false,
+      "children": [
+        "b8104698-e81f-4dd7-90d4-e12cc2f194d6",
+        "70a203a3-2931-4ad8-87cb-3d32f32dc40c",
+        "df23863b-1af3-4e08-ace0-d9d3e8183b8c",
+        "db72f1dc-3441-4b3d-9eda-20c3e09e17f0",
+        "c3a14cd1-bdfd-4d91-aeeb-7392fef0a6f6",
+        "0ab128c8-a473-4a89-a820-229d7a6d67b6"
+      ]
+    },
+    {
+      "uuid": "a2073a7f-bca4-4447-bbaf-0c5f1ccc1acd",
+      "isOpen": false,
+      "children": [
+        "a071a755-7108-42cc-a12b-cc0b85438df8",
+        "2c314085-252d-4abd-83d3-5822c47d3713",
+        "2ffdecbe-5151-463f-933c-33749915a9c6",
+        "b067fbe9-f7cc-4e4f-baaa-3261d12f2ff0"
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "uuid": "eebad0b2-d2b4-4dce-88d7-5fbf8c868aba",
+      "name": "oak_log.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "bark",
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/oak_log.png"
+    },
+    {
+      "uuid": "5c9a8f7d-2d19-44e8-a6ed-3965d8cd3a4b",
+      "name": "stripped_oak_log.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "hewn",
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/stripped_oak_log.png"
+    },
+    {
+      "uuid": "3765b7f5-7cd1-438d-97c4-22259aedb731",
+      "name": "oak_planks.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "board",
+      "particle": true,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/oak_planks.png"
+    },
+    {
+      "uuid": "f1e79b65-b721-4a58-804e-9863dbd37fb7",
+      "name": "stripped_oak_log_top.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "end",
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/stripped_oak_log_top.png"
+    },
+    {
+      "uuid": "bf32c262-e879-4648-87c1-61965eaedcbd",
+      "name": "oak_log_top.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "peg",
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/oak_log_top.png"
+    },
+    {
+      "uuid": "c06aab2c-b180-4ca9-8fe7-ed2868c49f10",
+      "name": "spruce_log.png",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "folder": "block",
+      "namespace": "minecraft",
+      "id": "cord",
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": false,
+      "saved": true,
+      "relative_path": "textures/block/spruce_log.png"
+    }
+  ],
+  "java_block_version": "1.9.0",
+  "credit": "Four Winds Roadworks",
+  "variable_placeholders": "",
+  "variable_placeholder_buttons": [],
+  "timeline_setups": [],
+  "unhandled_root_fields": {},
+  "ai_used": true,
+  "ai_agents": "codex-mcp-client"
+}

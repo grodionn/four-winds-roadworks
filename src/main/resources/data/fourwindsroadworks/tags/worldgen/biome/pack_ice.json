@@ -1,0 +1,7 @@
+{
+  "values": [
+    "minecraft:frozen_ocean",
+    "minecraft:deep_frozen_ocean",
+    {"id": "#tfc:is_ice_sheet", "required": false}
+  ]
+}

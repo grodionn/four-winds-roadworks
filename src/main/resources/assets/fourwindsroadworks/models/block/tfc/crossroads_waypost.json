@@ -1,0 +1,12 @@
+{
+  "parent": "fourwindsroadworks:block/crossroads_waypost",
+  "textures": {
+    "particle": "#board",
+    "bark": "tfc:block/wood/log/oak",
+    "hewn": "tfc:block/wood/stripped_log/oak",
+    "board": "tfc:block/wood/planks/oak",
+    "end": "tfc:block/wood/stripped_log_top/oak",
+    "peg": "tfc:block/wood/log_top/oak",
+    "cord": "tfc:block/wood/log/spruce"
+  }
+}

@@ -1,0 +1,30 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+issueTrackerURL="https://github.com/grodionn/four-winds-roadworks/issues"
+
+[[mods]]
+modId="fourwindsroadworks"
+version="${modVersion}"
+displayName="Grodion's Four Winds Roadworks"
+authors="Grodion"
+displayURL="https://github.com/grodionn/four-winds-roadworks"
+logoFile="four-winds.png"
+description='''Follow four old roads through the Overworld, past village turnings, stone bridges and working piers. Supports vanilla terrain and TerraFirmaCraft.'''
+
+[[mixins]]
+config="fourwindsroadworks.mixins.json"
+
+[[dependencies.fourwindsroadworks]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.267,21.2)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.fourwindsroadworks]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+ordering="NONE"
+side="BOTH"
