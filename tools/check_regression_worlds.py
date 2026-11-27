@@ -16,7 +16,9 @@ import nbtlib
 class World:
     def __init__(self, path, seed):
         self.path = path
-        actual = int(nbtlib.load(path / 'level.dat')['Data']['WorldGenSettings']['seed'])
+        level = nbtlib.load(path / 'level.dat')['Data']
+        self.version = str(level['Version']['Name'])
+        actual = int(level['WorldGenSettings']['seed'])
         if actual != seed:
             raise ValueError(f'{path}: expected seed {seed}, found {actual}')
 
@@ -33,7 +35,7 @@ class World:
             if compression != 2:
                 raise ValueError(f'Unsupported region compression {compression} in {region}')
             data = nbtlib.File.parse(io.BytesIO(zlib.decompress(file.read(length - 1))))
-        if str(data.get('Status')) != 'minecraft:full':
+        if str(data.get('Status')) not in ('minecraft:full', 'full'):
             raise ValueError(f'Generate and save chunk {cx}, {cz} first')
         return data
 

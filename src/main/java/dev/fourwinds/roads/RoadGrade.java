@@ -105,8 +105,7 @@ final class RoadGrade {
         long key=((long)x<<32)|Integer.toUnsignedLong(z);
         Integer saved=nodes.heights.getIfPresent(key);
         if (saved!=null) return saved;
-        var source=level.getChunkSource();
-        int h=source.getGenerator().getBaseHeight(x,z,Heightmap.Types.WORLD_SURFACE_WG,level,source.randomState())-1;
+        int h=RoadGame.baseHeight(level,x,z,Heightmap.Types.WORLD_SURFACE_WG)-1;
         h=RoadLayout.clamp(h,floor,level.getMaxBuildHeight()-9);
         nodes.heights.put(key,h);return h;
     }

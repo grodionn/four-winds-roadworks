@@ -3,7 +3,7 @@
     "#minecraft:dirt","#minecraft:sand","#minecraft:base_stone_overworld","#minecraft:terracotta",
     "minecraft:gravel","minecraft:clay","minecraft:sandstone","minecraft:red_sandstone","minecraft:snow_block",
     "minecraft:packed_ice","minecraft:blue_ice",
-    "minecraft:calcite","minecraft:moss_block","minecraft:mud","minecraft:mycelium","minecraft:muddy_mangrove_roots",
+    "minecraft:calcite","minecraft:moss_block",{"id":"minecraft:mud","required":false},"minecraft:mycelium",{"id":"minecraft:muddy_mangrove_roots","required":false},
     {"id":"#c:gravels","required":false},{"id":"#c:stones","required":false},
     {"id":"#tfc:grass","required":false},{"id":"#tfc:dirt","required":false},
     {"id":"#tfc:duff","required":false},

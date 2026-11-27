@@ -12,7 +12,7 @@ Install a **JDK 21** and clone the repository. The wrapper downloads Gradle and 
 | Start a vanilla-terrain development client | `./gradlew runClient` | `.\gradlew.bat runClient` |
 | Start a development server | `./gradlew runServer` | `.\gradlew.bat runServer` |
 
-The JAR is written to `build/libs/`. To try the TFC preset, use the JAR in a separate Minecraft 1.21.1 NeoForge instance with TerraFirmaCraft and its dependencies. For unattended client tests, set the **Master Volume** in the test instance to zero before launch.
+These commands target NeoForge 1.21.1. The [loader build table](ports/README.md) lists the Gradle project, toolchain and saved-world checks for each port. The JAR is written to `build/libs/` in the selected project. To try the TFC preset, use the JAR in a separate Minecraft 1.21.1 NeoForge instance with TerraFirmaCraft and its dependencies. For unattended client tests, set the **Master Volume** in the test instance to zero before launch.
 
 ## From a fork to a pull request
 

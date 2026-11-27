@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.fourwinds.roads.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "fourwindsroadworks.refmap.json",
+  "mixins": [
+    "FabricClassicPopulationMixin",
+    "FabricClassicWorldMixin"
+  ],
+  "client": [
+    "FabricClassicAssetsMixin",
+    "FabricClassicModelMixin",
+    "FabricClassicSignMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

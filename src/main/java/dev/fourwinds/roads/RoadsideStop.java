@@ -3,7 +3,6 @@ package dev.fourwinds.roads;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -96,8 +95,8 @@ record RoadsideStop(Point front,int y,boolean eastWest,int side,boolean shelter,
     }
     private static boolean softCover(BlockState state) {
         if (state.hasBlockEntity() || !state.getFluidState().isEmpty() || state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES)) return false;
-        var id=BuiltInRegistries.BLOCK.getKey(state.getBlock());
-        return state.isAir() || state.canBeReplaced() || state.getBlock() instanceof BushBlock
+        var id=RoadApi.blockId(state.getBlock());
+        return state.isAir() || RoadApi.replaceable(state) || state.getBlock() instanceof BushBlock
                 || id.getNamespace().equals("tfc") && (id.getPath().startsWith("groundcover/") || id.getPath().startsWith("plant/")
                 || id.getPath().startsWith("rock/loose/") || id.getPath().startsWith("rock/mossy_loose/") || id.getPath().startsWith("wood/twig/"));
     }

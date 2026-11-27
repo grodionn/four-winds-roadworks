@@ -1,0 +1,41 @@
+plugins {
+    id 'fabric-loom' version '1.10.5'
+    id 'legacy-looming' version '1.10.1'
+}
+
+apply from: '../forge-1.12.2/wayposts.gradle'
+group = 'dev.fourwinds'
+version = '1.8.3+mc1.12.2'
+base.archivesName = 'four-winds-roadworks-legacy-fabric'
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+loom { mixin.defaultRefmapName = 'fourwindsroadworks.refmap.json' }
+
+dependencies {
+    minecraft 'com.mojang:minecraft:1.12.2'
+    mappings legacy.yarn('1.12.2', '604')
+    modImplementation 'net.fabricmc:fabric-loader:0.17.3'
+}
+
+sourceSets.main.java.srcDir('../legacy-common/src/main/java')
+tasks.named('compileJava') {
+    source fileTree('../../src/main/java') {
+        include 'dev/fourwinds/roads/RoadLayout.java', 'dev/fourwinds/roads/RoadSection.java',
+                'dev/fourwinds/roads/BridgeBay.java', 'dev/fourwinds/roads/PierLayout.java'
+    }
+}
+processResources {
+    from('../../src/main/resources') { include 'four-winds.png' }
+    from('../../src/mc1.12.2/resources') { include 'assets/fourwindsroadworks/structures/coastal_lighthouse.nbt' }
+    exclude 'assets/fourwindsroadworks/blockstates/**', 'assets/fourwindsroadworks/models/block/tfc/**'
+    inputs.property('modVersion', project.version)
+    filesMatching('fabric.mod.json') { expand(modVersion: project.version) }
+}
+
+sourceSets.test.java.srcDir('../legacy-common/src/test/java')
+tasks.register('checkRoads', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'dev.fourwinds.roads.LegacyRoadsCheck'
+}
+check.dependsOn checkRoads

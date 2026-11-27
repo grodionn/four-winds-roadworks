@@ -32,7 +32,7 @@ dependencies {
 
 mixin { add sourceSets.main, 'fourwindsroadworks.refmap.json' }
 jar {
-    manifest.attributes('MixinConfigs': 'fourwindsroadworks.mixins.json,fourwindsroadworks.forge.mixins.json')
+    manifest.attributes('MixinConfigs': 'fourwindsroadworks.mixins.json,fourwindsroadworks.nbt.mixins.json')
     finalizedBy 'reobfJar'
 }
 processResources {
@@ -43,3 +43,10 @@ processResources {
 // Forge discovers its annotation classes and mods.toml in the same development mod root.
 sourceSets.main.output.resourcesDir = sourceSets.main.java.destinationDirectory.get().asFile
 tasks.named('jar') { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+
+minecraft.runs.configureEach {
+    args '--mixin.config', 'fourwindsroadworks.mixins.json', '--mixin.config', 'fourwindsroadworks.nbt.mixins.json'
+}
+
+sourceSets.main.java.srcDir('../chunk-nbt/src/main/java')
+sourceSets.main.resources.srcDir('../chunk-nbt/src/main/resources')

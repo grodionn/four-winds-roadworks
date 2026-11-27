@@ -19,12 +19,14 @@ final class LegacyRoads {
         boolean occupied(int x, int y, int z);
         void put(int x, int y, int z, Material material, int dx, int dz);
         void waypost(int x, int y, int z, Spur destination);
+        void lighthouse(PierLayout plan, int minX, int minZ);
         List<Point> villages(int x, int z);
     }
     private static final class Cache<V> extends LinkedHashMap<Long, V> {
         Cache() { super(128, 0.75f, true); }
         @Override protected boolean removeEldestEntry(Map.Entry<Long, V> eldest) { return size() > 2048; }
     }
+    private final LegacyHarbours harbours = new LegacyHarbours(this);
     private final Cache<RoadSection> east = new Cache<>(), north = new Cache<>();
     private final Cache<RoadSection.Junction> nodes = new Cache<>();
 
@@ -49,13 +51,13 @@ final class LegacyRoads {
     private int center(Land land, Path path, int t) {
         return path instanceof Road ? section(land,(Road)path,t).center((Road)path,t) : path.center(t);
     }
-    private int height(Land land, Path path, int t) {
+    int height(Land land, Path path, int t) {
         if (path instanceof Road) return section(land,(Road)path,t).elevation(t);
         int a=t-Math.floorMod(t,4);
         Point first=path.point(a,0), last=path.point(a+4,0);
         return RoadSection.interpolate(grade(land,first.x(),first.z()),grade(land,last.x(),last.z()),t-a,4);
     }
-    private Point on(Land land, Path path, int t) {
+    Point on(Land land, Path path, int t) {
         int across=center(land,path,t);
         return path.eastWest()?new Point(t,across):new Point(across,t);
     }
@@ -100,6 +102,11 @@ final class LegacyRoads {
             }
             if (best!=null) buildColumn(land,best,tile,x,z,off);
         }
+        for (Path path : paths) if (path instanceof Road) {
+            Road road = (Road)path;
+            harbours.build(land, road, minX, minZ);
+            LegacyRoadside.place(this, land, road, minX, minZ, paths);
+        }
         if (paths.contains(ew) && paths.contains(ns)) {
             RoadSection.Junction j=junction(land,ns.index(),ew.index());
             int x=j.point().x()+5,z=j.point().z()+5;
@@ -143,7 +150,7 @@ final class LegacyRoads {
         }
         if (land.wet(x,z)) return;
         boolean bore=bed>=deck+8;
-        if (deck<3 || deck>245 || deck-bed>4 || bed-deck>3 && !bore) return;
+        if (deck<3 || deck>245 || deck-bed>4) return;
         if (depth<0) {
             if (bore && depth>=-2) {
                 int h=vaultClearance(depth,true);
@@ -158,7 +165,7 @@ final class LegacyRoads {
         Material mat=path.width()==5 ? (depth==0?Material.COBBLE:wear<32?Material.WORN:Material.STONE)
                 : (depth==0 || path.width()==3?Material.PATH:Material.GRAVEL);
         put(land,x,deck,z,mat,path,1);
-        int ceiling=bore?vaultClearance(depth,true):Math.max(5,bed-deck+2);
+        int ceiling=bore?vaultClearance(depth,true):Math.max(5,bed-deck+1);
         clear(land,x,deck+1,z,ceiling);
         if (bore && Math.floorMod(t,7)==0) put(land,x,deck+ceiling,z,Material.BEAM,path,1);
         int ahead=height(land,path,t+1),back=height(land,path,t-1);

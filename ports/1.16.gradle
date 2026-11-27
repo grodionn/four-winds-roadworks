@@ -1,0 +1,29 @@
+def sourceRoot = file('../..')
+def metadata = new Properties()
+new File(sourceRoot, 'gradle.properties').withInputStream { metadata.load(it) }
+group = metadata.group
+version = metadata.version.split('\\+')[0] + '+mc1.16.5'
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+
+sourceSets.main.java.srcDirs('../legacy-common/src/main/java', '../../src/mc1.16.5/java')
+sourceSets.main.resources.srcDir('../../src/mc1.16.5/resources')
+tasks.named('compileJava') {
+    source fileTree('../../src/main/java') {
+        include 'dev/fourwinds/roads/RoadLayout.java', 'dev/fourwinds/roads/RoadSection.java',
+                'dev/fourwinds/roads/BridgeBay.java', 'dev/fourwinds/roads/PierLayout.java', 'dev/fourwinds/roads/client/WaypostRenderer.java',
+                'dev/fourwinds/roads/client/WaypostModelIds.java'
+    }
+}
+processResources {
+    from('../../src/main/resources') { include 'four-winds.png', 'assets/fourwindsroadworks/**' }
+    inputs.property('modVersion', project.version)
+}
+
+sourceSets.test.java.srcDir('../legacy-common/src/test/java')
+tasks.register('checkRoads', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'dev.fourwinds.roads.LegacyRoadsCheck'
+}
+check.dependsOn checkRoads

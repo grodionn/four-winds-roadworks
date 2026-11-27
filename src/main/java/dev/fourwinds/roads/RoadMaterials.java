@@ -4,9 +4,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,7 +20,7 @@ final class RoadMaterials {
     }
 
     static String quarry(BlockState state) {
-        var id=BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        var id=RoadApi.blockId(state.getBlock());
         String path=id.getPath();
         return id.getNamespace().equals("tfc") && (path.startsWith("rock/raw/") || path.startsWith("rock/hardened/")
                 || path.startsWith("rock/gravel/")) ? path.substring(path.lastIndexOf('/')+1) : null;
@@ -43,7 +41,7 @@ final class RoadMaterials {
         String rock = "granite", soil = RoadVersion.DEFAULT_SOIL, sand = "yellow";
         var p = new BlockPos.MutableBlockPos(x,top,z);
         for (int y=top; y>=Math.max(region.getMinBuildHeight(),top-95); y--) {
-            var id = BuiltInRegistries.BLOCK.getKey(region.getBlockState(p.setY(y)).getBlock());
+            var id = RoadApi.blockId(region.getBlockState(p.setY(y)).getBlock());
             if (!id.getNamespace().equals("tfc")) continue;
             String path = id.getPath(), last = path.substring(path.lastIndexOf('/')+1);
             if (path.startsWith("grass/") || path.startsWith("dirt/")) soil=last;
@@ -79,8 +77,8 @@ final class RoadMaterials {
         bind(Blocks.GRAVEL,"rock/gravel/"+rock);
         bind(Blocks.DIRT_PATH,"grass_path/"+soil);
         bind(Blocks.COARSE_DIRT,"coarse_dirt/"+soil);
-        bind(Blocks.MUD_BRICK_SLAB,"mud_bricks/"+soil+"_slab");
-        bind(Blocks.MUD_BRICK_STAIRS,"mud_bricks/"+soil+"_stairs");
+        bind(RoadGame.EARTH_SLAB,"mud_bricks/"+soil+"_slab");
+        bind(RoadGame.EARTH_STAIRS,"mud_bricks/"+soil+"_stairs");
         bind(Blocks.SAND,"sand/"+sand);
         bind(Blocks.RED_SAND,"sand/"+sand);
         for (Block b : new Block[]{Blocks.SANDSTONE,Blocks.RED_SANDSTONE}) bind(b,"raw_sandstone/"+sand);
@@ -107,7 +105,7 @@ final class RoadMaterials {
     String localSoil(BlockState ground) { return this==VANILLA?null:soil(ground); }
 
     static String soil(BlockState ground) {
-        var id=BuiltInRegistries.BLOCK.getKey(ground.getBlock());
+        var id=RoadApi.blockId(ground.getBlock());
         if (!id.getNamespace().equals("tfc")) return null;
         String path=id.getPath();
         int split=path.indexOf('/');
@@ -120,11 +118,11 @@ final class RoadMaterials {
 
     static BlockState withSoil(BlockState state,String soil) {
         if (soil==null) return state;
-        var id=BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        var id=RoadApi.blockId(state.getBlock());
         String path=id.getPath();
         if (!id.getNamespace().equals("tfc") || soil(state)==null && !path.startsWith("mud_bricks/")) return state;
         String suffix=path.endsWith("_slab")?"_slab":path.endsWith("_stairs")?"_stairs":"";
-        return BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryBuild("tfc",
+        return RoadApi.BLOCKS.getOptional(RoadGame.id("tfc",
                 path.substring(0,path.indexOf('/')+1)+soil+suffix)).map(b->b.withPropertiesOf(state)).orElse(state);
     }
 
@@ -133,7 +131,7 @@ final class RoadMaterials {
         if (this==VANILLA || !signal.is(blocks.get(Blocks.CAMPFIRE))) return;
         // TFC consumes this log through its normal fuel data on the first ticking load.
         var data=entityTag(pos,signal,world);
-        var oak=BuiltInRegistries.BLOCK.get(ResourceLocation.tryBuild("tfc","wood/log/oak"));
+        var oak=RoadApi.BLOCKS.get(RoadGame.id("tfc","wood/log/oak"));
         var inventory=data.getCompound("inventory");
         var items=inventory.getList("Items",net.minecraft.nbt.Tag.TAG_COMPOUND);
         items.removeIf(entry -> ((CompoundTag)entry).getInt("Slot")==0);
@@ -146,7 +144,7 @@ final class RoadMaterials {
     }
 
     private void bind(Block template,String path) {
-        blocks.put(template,BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryBuild("tfc",RoadVersion.tfcMaterial(path))).orElseThrow());
+        blocks.put(template,RoadApi.BLOCKS.getOptional(RoadGame.id("tfc",RoadVersion.tfcMaterial(path))).orElseThrow());
     }
     BlockState state(BlockState template) {
         if (this==VANILLA) return template;

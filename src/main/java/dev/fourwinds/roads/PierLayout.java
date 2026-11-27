@@ -6,7 +6,26 @@ import java.util.function.IntUnaryOperator;
 import static dev.fourwinds.roads.RoadLayout.*;
 
 /** Coordinates in the carpenter's plan. Positive steps run to sea, positive side faces the tower. */
-record PierLayout(Point shore, boolean eastWest, int outward, int side, int water, int entrance) {
+final class PierLayout {
+    private final Point shore;
+    private final boolean eastWest;
+    private final int outward, side, water, entrance;
+
+    PierLayout(Point shore, boolean eastWest, int outward, int side, int water, int entrance) {
+        this.shore = shore;
+        this.eastWest = eastWest;
+        this.outward = outward;
+        this.side = side;
+        this.water = water;
+        this.entrance = entrance;
+    }
+    Point shore() { return shore; }
+    boolean eastWest() { return eastWest; }
+    int outward() { return outward; }
+    int side() { return side; }
+    int water() { return water; }
+    int entrance() { return entrance; }
+
     static final int LENGTH=16, MIN_SIDE=-12, MAX_SIDE=12, TOWER=10, TOWER_SIDE=3;
     static final int HEIGHT=34, FIRE_HEIGHT=24;
     enum Outlet { COAST, OPEN_SEA, PACK_ICE }
@@ -75,15 +94,15 @@ record PierLayout(Point shore, boolean eastWest, int outward, int side, int wate
     }
     boolean pile(int s,int u) {
         if (stoneFoot(s,u)) return false;
-        return switch(s) {
-            case 0 -> Math.abs(u)==2;
-            case 3 -> u==-2 || u==1 || u==8;
-            case 5 -> u==-4 || u==10;
-            case 8 -> u==-4 || u==11;
-            case 10 -> u==10 || u==-10;
-            case 12,15 -> u==-10 || u==-6 || u==-4;
-            case 16 -> u==-3 || u==1;
-            default -> false;
-        };
+        switch(s) {
+            case 0: return Math.abs(u)==2;
+            case 3: return u==-2 || u==1 || u==8;
+            case 5: return u==-4 || u==10;
+            case 8: return u==-4 || u==11;
+            case 10: return u==10 || u==-10;
+            case 12: case 15: return u==-10 || u==-6 || u==-4;
+            case 16: return u==-3 || u==1;
+            default: return false;
+        }
     }
 }

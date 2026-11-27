@@ -6,6 +6,8 @@ def minecraftVersion = project.projectDir.name.split('-', 2)[1]
 version = metadata.version.split('\\+')[0] + '+mc' + minecraftVersion
 java.toolchain.languageVersion = JavaLanguageVersion.of(minecraftVersion == '1.21.1' ? 21 : 17)
 sourceSets.main.java.srcDir(new File(commonRoot, 'src/main/java'))
+if (minecraftVersion != '1.18.2') sourceSets.main.java.srcDir(new File(commonRoot, 'src/mc1.19-plus/java'))
+if (minecraftVersion in ['1.21.1', '1.20.1']) sourceSets.main.java.srcDir(new File(commonRoot, 'src/mc1.20-plus/java'))
 sourceSets.main.java.srcDir(new File(commonRoot, "src/mc${minecraftVersion}/java"))
 sourceSets.main.resources.srcDir(new File(commonRoot, 'src/main/resources'))
 sourceSets.main.resources.srcDir(new File(commonRoot, "src/mc${minecraftVersion}/resources"))
@@ -20,13 +22,26 @@ tasks.register('checkRoads', JavaExec) {
 }
 check.dependsOn checkRoads
 
-if (minecraftVersion == '1.20.1') {
+if (minecraftVersion in ['1.20.1', '1.19.2', '1.18.2']) {
     tasks.named('processResources') {
         exclude 'data/fourwindsroadworks/structure/**'
         eachFile { entry ->
             entry.path = entry.path.replace('/tags/block/', '/tags/blocks/').replace('/tags/fluid/', '/tags/fluids/')
+            if (minecraftVersion == '1.18.2') entry.path = entry.path.replace('/tags/worldgen/structure/', '/tags/worldgen/configured_structure_feature/')
         }
-        filesMatching('pack.mcmeta') { filter { it.replace('"pack_format":48', '"pack_format":15') } }
+        filesMatching('pack.mcmeta') {
+            filter { line ->
+                def formats = ['1.20.1': [15, 15], '1.19.2': [9, 10], '1.18.2': [8, 9]][minecraftVersion]
+                def json = new groovy.json.JsonSlurper().parseText(line)
+                json.pack.remove('supported_formats')
+                json.pack.pack_format = formats[1]
+                if (project.name.endsWith('forge') && formats[0] != formats[1]) {
+                    json.pack['forge:resource_pack_format'] = formats[0]
+                    json.pack['forge:data_pack_format'] = formats[1]
+                }
+                groovy.json.JsonOutput.toJson(json)
+            }
+        }
         filesMatching('*.mixins.json') {
             filter { line ->
                 def updated = line.replace('JAVA_21', 'JAVA_17')

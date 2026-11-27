@@ -32,7 +32,9 @@ final class RoadVersion {
     static CompoundTag saveEntity(BlockEntity entity, WorldGenRegion level) { return entity.saveWithFullMetadata(); }
     static CompoundTag saveStack(ItemStack stack, WorldGenRegion level) { return stack.save(new CompoundTag()); }
 
-    static Tag signText(WorldGenRegion level, SignText text) {
+    static Tag signText(WorldGenRegion level, java.util.List<net.minecraft.network.chat.Component> lines) {
+        var text = new SignText();
+        for (int i = 0; i < lines.size(); i++) text = text.setMessage(i, lines.get(i));
         return SignText.DIRECT_CODEC.encodeStart(NbtOps.INSTANCE, text).result().orElseThrow();
     }
 }

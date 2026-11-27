@@ -21,10 +21,20 @@ dependencies { minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2859' }
 sourceSets.main.java {
     srcDirs 'src/main/java', '../legacy-common/src/main/java', '../../src/main/java'
     include 'dev/fourwinds/roads/Classic*.java', 'dev/fourwinds/roads/Legacy*.java',
-            'dev/fourwinds/roads/RoadLayout.java', 'dev/fourwinds/roads/RoadSection.java', 'dev/fourwinds/roads/BridgeBay.java'
+            'dev/fourwinds/roads/RoadLayout.java', 'dev/fourwinds/roads/RoadSection.java', 'dev/fourwinds/roads/BridgeBay.java',
+            'dev/fourwinds/roads/PierLayout.java'
 }
+sourceSets.main.resources.srcDir('../../src/mc1.12.2/resources')
 processResources {
     from('../../src/main/resources') { include 'four-winds.png' }
     filesMatching('mcmod.info') { expand(modVersion: project.version) }
 }
 jar.finalizedBy 'reobfJar'
+
+sourceSets.test.java.srcDir('../legacy-common/src/test/java')
+task checkRoads(type: JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    main = 'dev.fourwinds.roads.LegacyRoadsCheck'
+}
+check.dependsOn checkRoads

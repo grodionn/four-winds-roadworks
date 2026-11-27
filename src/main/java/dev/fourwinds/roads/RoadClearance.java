@@ -3,7 +3,6 @@ package dev.fourwinds.roads;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
@@ -84,9 +83,8 @@ public final class RoadClearance {
         }
         if (!RoadData.PENDING.has(chunk)) return;
         var data=RoadData.PENDING.get(chunk);
-        var lookup=level.holderLookup(Registries.BLOCK);
         var palette=data.getList("palette",Tag.TAG_COMPOUND).stream()
-                .map(tag->NbtUtils.readBlockState(lookup,(CompoundTag)tag)).toList();
+                .map(tag->RoadApi.readBlock(level,(CompoundTag)tag)).toList();
         int[] rows=data.getIntArray("lanes");
         byte[] headrooms=data.getByteArray("headrooms");
         var cp=chunk.getPos();

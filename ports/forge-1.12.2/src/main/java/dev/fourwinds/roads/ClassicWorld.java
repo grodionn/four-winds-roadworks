@@ -55,7 +55,7 @@ final class ClassicWorld implements LegacyRoads.Land {
                 for(int i=0;i<pieces.tagCount();i++) {
                     NBTTagCompound piece=pieces.getCompoundTagAt(i);
                     int[] b=piece.getIntArray("BB");
-                    if(b.length==6 && !piece.getString("id").equals("ViSR") && b[0]<minX+16 && b[3]>=minX && b[2]<minZ+16 && b[5]>=minZ)
+                    if(b.length==6 && !piece.getString("id").equals("ViSR") && b[0]<minX+52 && b[3]>=minX-36 && b[2]<minZ+52 && b[5]>=minZ-36)
                         envelopes.add(b);
                 }
             }
@@ -67,7 +67,7 @@ final class ClassicWorld implements LegacyRoads.Land {
     @Override public int bed(int x,int z) { return survey.at(x,z)>>1; }
     @Override public boolean wet(int x,int z) { return (survey.at(x,z)&1)!=0; }
     @Override public boolean ocean(int x,int z) {
-        return net.minecraftforge.common.BiomeDictionary.hasType(world.getBiome(pos.setPos(x,sea(),z)),net.minecraftforge.common.BiomeDictionary.Type.OCEAN);
+        return net.minecraftforge.common.BiomeDictionary.hasType(world.getBiomeProvider().getBiome(pos.setPos(x,sea(),z)),net.minecraftforge.common.BiomeDictionary.Type.OCEAN);
     }
     @Override public boolean occupied(int x,int y,int z) {
         for(int[] box:envelopes)
@@ -146,6 +146,25 @@ final class ClassicWorld implements LegacyRoads.Land {
         if(mat==LegacyRoads.Material.BEAM && state.getPropertyKeys().contains(net.minecraft.block.BlockLog.LOG_AXIS))
             state=state.withProperty(net.minecraft.block.BlockLog.LOG_AXIS,dx==0?net.minecraft.block.BlockLog.EnumAxis.X:net.minecraft.block.BlockLog.EnumAxis.Z);
         world.setBlockState(pos.setPos(x,y,z),state,18);
+    }
+    @Override public void lighthouse(PierLayout p, int tileX, int tileZ) {
+        net.minecraft.util.Rotation rotation = p.eastWest()
+                ? (p.outward() > 0 ? net.minecraft.util.Rotation.NONE : net.minecraft.util.Rotation.CLOCKWISE_180)
+                : (p.outward() > 0 ? net.minecraft.util.Rotation.CLOCKWISE_90 : net.minecraft.util.Rotation.COUNTERCLOCKWISE_90);
+        EnumFacing side = p.eastWest() ? (p.side() > 0 ? EnumFacing.SOUTH : EnumFacing.NORTH)
+                : (p.side() > 0 ? EnumFacing.EAST : EnumFacing.WEST);
+        net.minecraft.util.Mirror mirror = rotation.rotate(EnumFacing.SOUTH) == side
+                ? net.minecraft.util.Mirror.NONE : net.minecraft.util.Mirror.LEFT_RIGHT;
+        net.minecraft.world.gen.structure.template.PlacementSettings settings =
+                new net.minecraft.world.gen.structure.template.PlacementSettings().setMirror(mirror).setRotation(rotation)
+                        .setIgnoreEntities(true).setBoundingBox(new net.minecraft.world.gen.structure.StructureBoundingBox(
+                                tileX,1,tileZ,tileX+15,254,tileZ+15));
+        Point start=p.point(0,PierLayout.MIN_SIDE);
+        String template=survey.tfc ? "tfc/coastal_lighthouse" : "coastal_lighthouse";
+        net.minecraft.world.WorldServer server=(net.minecraft.world.WorldServer)world;
+        server.getStructureTemplateManager().getTemplate(server.getMinecraftServer(),
+                new ResourceLocation(ClassicRoadMod.ID,template)).addBlocksToWorld(world,
+                        new BlockPos(start.x(),p.deck()+1,start.z()),settings,18);
     }
     @Override public void waypost(int x,int y,int z,Spur destination) {
         ClassicWaypost.place(world,new BlockPos(x,y,z),survey.tfc,destination);
