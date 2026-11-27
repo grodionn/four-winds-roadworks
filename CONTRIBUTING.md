@@ -2,6 +2,12 @@
 
 You can open an issue or pull request in English or Russian. For a small fix, a PR with a clear description is enough. For a new structure or a change that reroutes the main roads, an issue with a sketch or a pair of coordinates gives us somewhere to discuss the design first.
 
+## Ways to help
+
+- **Walk a road.** A picture from the approach to a broken bridge or a blocked tunnel can show what a map misses. Include the world preset and whatever coordinates you have in a [generation report](https://github.com/grodionn/four-winds-roadworks/issues/new?template=worldgen.yml). For startup failures or mod conflicts, use the [compatibility form](https://github.com/grodionn/four-winds-roadworks/issues/new?template=compatibility.yml).
+- **Translate a waypost.** Copy [the English labels](src/main/resources/assets/fourwindsroadworks/lang/en_us.json) to a file named for your Minecraft locale in the same folder. Keep the keys and the `%s` in the distance label. Check the longest destination on a sign in-game. Both 1.12.2 builds convert these files to the older language format.
+- **Photograph a route.** The [gallery](docs/gallery/README.md) lists its seeds and camera positions. For a new shot, hide the HUD, switch the game language to English if a sign is visible, and include the seed, coordinates, mod version and any shaders you used.
+
 ## Run it locally
 
 Install a **JDK 21** and clone the repository. The wrapper downloads Gradle and NeoForge on the first run.

@@ -1,6 +1,10 @@
-Four old roads meet near the centre of the Overworld. The main routes run five blocks wide. Follow a gravel lane inland and you may find a turn for a village, with a wooden sign giving the direction and distance. Follow the road to a sheltered coast and it can take you out onto a pier. Some have a lighthouse with a staircase up to the beacon.
+[![A jungle road, a vaulted stone tunnel and a lighthouse at sunset](https://github.com/grodionn/four-winds-roadworks/raw/main/art/road-to-coast.jpg)](https://github.com/grodionn/four-winds-roadworks/tree/main/docs/gallery)
 
-Short river crossings use timber decks or stone arches. In the mountains, a road can pass through a gallery or a tunnel with timber supports. On quieter stretches you might come across a roofed bench or a mounting stone.
+Four old roads meet near the centre of the Overworld. Follow the paving into the hills or take a gravel lane towards a village. At the turning, a wooden sign tells you which way to go and how many blocks you have left.
+
+The main routes run five blocks wide. Country lanes narrow to four, and the last stretch into a village can be a three-block dirt track. A river crossing may have a timber deck or a stone arch. In the mountains, look for the daylight between the supports of a tunnel. On quieter stretches you might pass a roofed bench or a mounting stone.
+
+At a sheltered coast the road can end at a wooden pier. Some have a lighthouse with a staircase from the keeper's room to the beacon. [See the nine in-game photographs, with seeds and camera positions.](https://github.com/grodionn/four-winds-roadworks/blob/main/docs/gallery/README.md)
 
 ### Installation
 
@@ -12,4 +16,8 @@ Choose the file for your Minecraft version and loader. Install it on the client 
 
 Fabric builds for 1.16.5 and later need Fabric API. TerraFirmaCraft is optional. Its roads and piers use TFC materials on Forge 1.12.2, 1.18.2 and 1.20.1 and on NeoForge 1.21.1. [Tested loader and dependency versions](https://github.com/grodionn/four-winds-roadworks/blob/main/ports/README.md)
 
-[In-game gallery](https://github.com/grodionn/four-winds-roadworks/tree/main/docs/gallery) · [Report a broken stretch of road](https://github.com/grodionn/four-winds-roadworks/issues/new/choose)
+### Help with Four Winds
+
+A seed, coordinates and a view from the road help us reproduce a bad crossing. To help with a translation, a field test or code, see the contributor guide. Modpacks and forks are welcome under the MIT licence.
+
+[Report a problem](https://github.com/grodionn/four-winds-roadworks/issues/new/choose) · [Contribute](https://github.com/grodionn/four-winds-roadworks/blob/main/CONTRIBUTING.md) · [MIT licence](https://github.com/grodionn/four-winds-roadworks/blob/main/LICENSE)

@@ -35,9 +35,11 @@ task classicWaypostAssets {
             }
             write("blockstates/${tfc ? 'tfc_waypost' : 'waypost'}.json", JsonOutput.toJson([variants:variants]))
         }
-        ['en_us','ru_ru'].each { locale ->
-            def entries=json.parse(new File(assets,"lang/${locale}.json"))
-            write("lang/${locale}.lang", entries.collect { key,value -> "${key}=${value}" }.join('\n')+'\n')
+        project.delete(new File(dest, 'lang'))
+        fileTree(new File(assets, 'lang')).matching { include '*.json' }.each { translation ->
+            def entries = json.parse(translation)
+            def name = translation.name.replaceFirst(/\.json$/, '.lang')
+            write("lang/${name}", entries.collect { key,value -> "${key}=${value}" }.join('\n')+'\n')
         }
     }
 }

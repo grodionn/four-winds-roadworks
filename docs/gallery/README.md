@@ -1,6 +1,6 @@
 # Screenshot gallery
 
-[Back to the mod](../../README.md) · [По-русски](README.ru.md)
+[Back to the mod](../../README.md) · [Russian edition](README.ru.md)
 
 Nine in-game photographs from Minecraft Java 1.21.1, taken during development before the first public release, 0.1.0. Each caption records the internal build number, seed and camera coordinates from that save. Road alignments can change between builds.
 
@@ -32,11 +32,11 @@ Nine in-game photographs from Minecraft Java 1.21.1, taken during development be
 
 *TerraFirmaCraft · Four Winds 1.6.2 · seed `20261121` · XYZ `4117, 67, -1395` · Complementary Reimagined*
 
-[![The turn for the pixie village](village-turn.jpg)](village-turn.jpg)
+[![The village turn by the river](village-turn.jpg)](village-turn.jpg)
 
-**The turn for the pixie village.** At this turning, the oak sign gives the distance to an Ice and Fire settlement among the TFC trees.
+**The village turn by the river.** The upper board points south to the village. The smaller board below it gives the distance, about 79 blocks.
 
-*TerraFirmaCraft + Ice and Fire · Four Winds 1.6.2 · seed `20261121` · XYZ `4217, 70, -603` · Complementary Reimagined*
+*Vanilla · Four Winds 1.8.2 · seed `38473917` · XYZ `322.9, 66.6, 684.5` · Complementary Reimagined*
 
 ## Crossings and cuttings
 
