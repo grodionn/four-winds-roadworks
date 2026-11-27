@@ -12,7 +12,9 @@ Short river crossings can have a timber deck or a stone arch. In the mountains, 
 
 ### Playing
 
-Forge and Fabric builds are available for Minecraft **1.21.1, 1.20.1, 1.19.2, 1.18.2 and 1.16.5**. For **1.12.2**, choose Forge or Legacy Fabric. **1.21.1** also has a NeoForge build. Choose the JAR with your Minecraft version and loader in the filename on the [Releases page](https://github.com/grodionn/four-winds-roadworks/releases). The [build table](ports/README.md) lists the dependencies. Put the same build in `mods/` on the client and on the server. Explore new chunks in the Overworld to find the roads. In an existing save, start beyond the area you have already explored.
+Forge and Fabric builds cover Minecraft **1.21.1, 1.20.1, 1.19.2, 1.18.2 and 1.16.5**. For **1.12.2**, choose Forge or Legacy Fabric. **1.21.1** also has a NeoForge build. Fabric on 1.16.5 and later needs the matching Fabric API. The [build table](ports/README.md) lists the tested versions.
+
+Published JARs go on the [Releases page](https://github.com/grodionn/four-winds-roadworks/releases). To try a development build, sign in to GitHub, open a [successful build on `main`](https://github.com/grodionn/four-winds-roadworks/actions/workflows/build.yml?query=branch%3Amain+is%3Asuccess) and unzip the artifact for your Minecraft version and loader. Put the same JAR in `mods/` on the client and on the server. In an existing save, explore new Overworld chunks to find the roads.
 
 TerraFirmaCraft is optional. In its Overworld preset, the roads pick up the local soil and stone, the quays use TFC timber and the beacon burns fuel in a TFC firepit. TFC Classic on 1.12.2 uses andesite for the masonry. Village turnings depend on which settlements your world can generate.
 

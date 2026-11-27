@@ -25,6 +25,10 @@ The GitHub Actions workflow runs the build and layout checks on pull requests. I
 
 Grodion’s code and original artwork are available under the [MIT licence](LICENSE). Keep the copyright and licence notice when distributing a fork. The Gradle wrapper retains its [Apache 2.0 licence](gradle/wrapper/LICENSE).
 
+## Checking the READMEs
+
+After every patch, read [README.md](README.md) and [README.ru.md](README.ru.md) against the change. Check the affected gameplay details, supported versions, dependencies, commands and links. If both still match, leave them as they are. If something changed, correct just the affected passage in each language, using the same plain language as the surrounding text.
+
 ## Release versions
 
 All loaders share `modVersion` in `gradle.properties`. The first public release is `0.1.0`. Bump the number once for each published release. Several fixes can ship together. A change to the README or gallery alone keeps the current number.
