@@ -1,5 +1,9 @@
 # Grodion's mod covers
 
-Use [the transparent frame](cover-frame.png) at its original 64 × 64 size. The gold edge is one pixel wide, with a small stepped corner. Put a single object from the mod inside it. On [Four Winds](../src/main/resources/four-winds.png) that object is the oak waypost.
+![Four Winds Roadworks cover enlarged five times](four-winds-preview.png)
 
-The background is dark spruce `#102B2A`. The frame uses `#927143`, `#BB9557`, `#D8B570` and `#EFD08C`. Leave a few dark pixels between the subject and the frame. Keep the mod name in the adjacent title so its silhouette is readable at inventory scale. Export as PNG. Use nearest-neighbour sampling for larger previews.
+Four Winds uses a field atlas as its cover. The oak waypost sits over a compass set into the oxblood leather. The [64 × 64 original](four-winds.ora) opens in Krita or GIMP. The dial, boards, post, lettering, shadow, binding and fittings can each be edited separately.
+
+For another Grodion's mod, place the [transparent brass frame](cover-frame.png) on top of a 64 × 64 canvas. It includes the clipped corners and the enamel G plate. Use `#4C2938` for the leather surround and leave a few pixels between the subject and the brass. Choose a centrepiece from the new mod, as Four Winds uses its four-way sign.
+
+Export the [in-game PNG](../src/main/resources/four-winds.png) at native size. Use nearest-neighbour scaling for a larger preview.

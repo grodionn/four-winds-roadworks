@@ -1,0 +1,11 @@
+name: Suggest a change
+description: Propose a change to the mod or its tools.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you change?
+      description: Describe where it would matter in the game. A sketch, seed or reference build is welcome.
+    validations:
+      required: true
