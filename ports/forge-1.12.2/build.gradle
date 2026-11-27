@@ -1,0 +1,40 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net/' }
+        mavenCentral()
+    }
+    dependencies { classpath 'net.minecraftforge.gradle:ForgeGradle:3.0.197' }
+}
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'java'
+apply from: 'wayposts.gradle'
+
+apply from: '../../gradle/release.gradle'
+archivesBaseName = 'four-winds-roadworks-forge'
+sourceCompatibility = targetCompatibility = '1.8'
+compileJava.options.encoding = 'UTF-8'
+
+minecraft { mappings channel: 'stable', version: '39-1.12' }
+dependencies { minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2859' }
+
+sourceSets.main.java {
+    srcDirs 'src/main/java', '../legacy-common/src/main/java', '../../src/main/java'
+    include 'dev/fourwinds/roads/Classic*.java', 'dev/fourwinds/roads/Legacy*.java',
+            'dev/fourwinds/roads/RoadLayout.java', 'dev/fourwinds/roads/RoadSection.java', 'dev/fourwinds/roads/BridgeBay.java',
+            'dev/fourwinds/roads/PierLayout.java'
+}
+sourceSets.main.resources.srcDir('../../src/mc1.12.2/resources')
+processResources {
+    from('../../src/main/resources') { include 'four-winds.png' }
+    inputs.property('modVersion', project.version)
+    filesMatching(['mcmod.info', 'version.properties']) { expand(modVersion: project.version) }
+}
+jar.finalizedBy 'reobfJar'
+
+sourceSets.test.java.srcDir('../legacy-common/src/test/java')
+task checkRoads(type: JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    main = 'dev.fourwinds.roads.LegacyRoadsCheck'
+}
+check.dependsOn checkRoads

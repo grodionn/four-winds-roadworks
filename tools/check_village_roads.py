@@ -1,4 +1,4 @@
-"""Check two settlement regressions in saved Minecraft 1.21.1 worlds.
+"""Check village turnings, bridges and TFC road materials in saved Minecraft worlds.
 
 Generate the plains village and river east of it on vanilla seed 38473917, and
 the Ice and Fire settlement at (4240, -608) on TFC seed 20261121. To check
@@ -14,12 +14,23 @@ from pathlib import Path
 from check_regression_worlds import World
 
 
+def canonical_component(component):
+    if isinstance(component, dict):
+        if set(component) == {'text'}:
+            return component['text']
+        if 'extra' in component:
+            return {**component, 'extra': [canonical_component(child) for child in component['extra']]}
+    return component
+
+
 def check_floodplain(world):
     # These four blocks used to be masonry inside the built-up village.
     for x, y, z in [(351, 67, 714), (353, 67, 714), (354, 66, 714), (359, 66, 752)]:
         world.expect(x, y, z, 'minecraft:air')
-    for z in range(740, 743):
-        for x in range(412, 415):
+    # 1.18.2 places the same village and road on an earlier riverbank.
+    bridge_x, bridge_z = (401, 724) if world.version == '1.18.2' else (412, 740)
+    for z in range(bridge_z, bridge_z + 3):
+        for x in range(bridge_x, bridge_x + 3):
             world.expect(x, 67, z, 'minecraft:stone_bricks')
             for y in (68, 69):
                 world.expect(x, y, z, 'minecraft:air')
@@ -31,22 +42,32 @@ def check_floodplain(world):
         for dy in (1, 2):
             world.expect(x, y + dy, z, 'minecraft:air')
 
-    # Read both faces of the waypost on the low bank at the village turn.
+    world.expect(1372, 67, -2360, 'minecraft:coarse_dirt')
+    world.expect(1373, 67, -2360, 'minecraft:dirt_path')
+    world.expect(1566, 66, -2455, 'minecraft:dirt_path')
+
+    # Read the available faces of the waypost on the low bank at the village turn.
     for cx in (19, 20):
         for cz in (42, 43):
             for post in world.chunk(cx, cz)['block_entities']:
-                if 'front_text' not in post:
+                if 'front_text' not in post and 'Text1' not in post:
                     continue
                 x, y, z = (int(post[key]) for key in 'xyz')
-                if abs(x - 321) > 4 or not 684 <= z <= 697:
+                expected_post = (324, 65, 683) if world.version == '1.18.2' else (319, 65, 686)
+                if (x, y, z) != expected_post:
                     continue
                 south = {'translate': 'sign.fourwindsroadworks.south'}
-                for face, direction in [('front_text', {**south, 'extra': [' →']}),
-                                        ('back_text', {'text': '← ', 'extra': [south]})]:
-                    lines = [json.loads(str(line)) for line in post[face]['messages']]
+                front_direction = {**south, 'extra': [' →']}
+                if 'front_text' in post:
+                    faces = [(post['front_text']['messages'], front_direction),
+                             (post['back_text']['messages'], {'text': '← ', 'extra': [south]})]
+                else:
+                    faces = [([post[f'Text{i}'] for i in range(1, 5)], front_direction)]
+                for messages, direction in faces:
+                    lines = [json.loads(str(line)) for line in messages]
                     expected = round(math.hypot(332 - x, 764 - z))
                     if (lines[0].get('translate') != 'sign.fourwindsroadworks.village'
-                            or lines[1] != direction
+                            or canonical_component(lines[1]) != direction
                             or lines[2].get('translate') != 'sign.fourwindsroadworks.distance'):
                         raise ValueError(f'Incorrect village directions at {x}, {y}, {z}: {lines}')
                     distance = lines[2]['with'][0]
@@ -69,6 +90,22 @@ def check_pixie_street(world):
         world.expect(4236, 69, z, 'minecraft:dirt_path')
 
 
+def check_tfc_materials(world):
+    if world.version == '1.18.2':
+        height, rock = 73, 'shale'
+        distant = [(16, 74, z, 'shale') for z in (4, 5, 6)]
+    elif world.version == '1.20.1':
+        height, rock = 67, 'diorite'
+        distant = [(x, 67, z, 'claystone') for x, z in ((176, 176), (176, 177), (177, 176))]
+    else:
+        raise ValueError(f'No TFC material fixture for {world.version}')
+    near = [(x, height, z, rock) for x, z in ((0, 0), (1, 0), (1, 1))]
+    for x, y, z, stone in near + distant:
+        world.expect(x, y, z, 'tfc:rock/bricks/' + stone)
+        world.expect(x, y + 1, z, 'minecraft:air')
+        world.expect(x, y + 2, z, 'minecraft:air')
+
+
 def check_soil_boundaries(first, reverse):
     # Forest patches from the next chunk used to recolour the same wheel tracks differently.
     strips = [(range(400, 411), (64,), (-688,)), (range(677, 681), (71,), (160, 161)),
@@ -87,12 +124,17 @@ def check_soil_boundaries(first, reverse):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('vanilla_world', type=Path)
-    parser.add_argument('tfc_world', type=Path)
+    parser.add_argument('tfc_world', type=Path, nargs='?', help='Optional TerraFirmaCraft world on seed 20261121')
     parser.add_argument('--soil-worlds', nargs=2, type=Path, metavar=('FORWARD', 'REVERSE'),
                         help='TFC seed -583271 generated in opposite chunk orders')
     args = parser.parse_args()
     check_floodplain(World(args.vanilla_world, 38473917))
-    check_pixie_street(World(args.tfc_world, 20261121))
+    if args.tfc_world:
+        tfc = World(args.tfc_world, 20261121)
+        if tfc.version == '1.21.1':
+            check_pixie_street(tfc)
+        else:
+            check_tfc_materials(tfc)
     if args.soil_worlds:
         check_soil_boundaries(*(World(path, -583271) for path in args.soil_worlds))
-    print('All requested world checks passed.')
+    print('Saved-world checks passed.')

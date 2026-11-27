@@ -290,12 +290,61 @@ def working_quay():
     put(15,-8,1,"barrel",facing="up")
 
 
-def save(tfc):
+# The flattened block IDs did not exist in 1.12. Variants and slab halves were block properties.
+classic_materials = {
+    "rubble": ("cobblestone", "cobble/andesite"), "wet": ("mossy_cobblestone", "cobble/andesite"),
+    "ashlar": ("stonebrick", "bricks/andesite"), "cracked": ("stonebrick", "bricks/andesite"),
+    "base_step": ("stone_brick_stairs", "stairs/bricks/andesite"), "base_slab": ("stone_slab", "slab/bricks/andesite"),
+    "chalk": ("quartz_block", "smooth/chalk"), "lime_brick": ("stone", "bricks/chalk"),
+    "old_lime": ("stone", "raw/chalk"), "sill": ("stone_slab", "slab/bricks/chalk"),
+    "white_step": ("quartz_stairs", "stairs/bricks/chalk"), "red": ("brick_block", "bricks/chert"),
+    "old_red": ("hardened_clay", "bricks/chert"), "tile": ("nether_brick", "bricks/shale"),
+    "tile_step": ("nether_brick_stairs", "stairs/bricks/shale"), "finial": ("nether_brick_fence", "wall/bricks/shale"),
+    "mast": ("log2", "wood/log/chestnut"), "beam": ("log2", "wood/log/chestnut"), "oak": ("log", "wood/log/oak"),
+    "pine": ("planks", "wood/planks/pine"), "pine_step": ("spruce_stairs", "stairs/wood/pine"),
+    "pine_slab": ("wooden_slab", "slab/wood/pine"), "rail": ("dark_oak_fence", "wood/fence/chestnut"),
+    "shutter": ("trapdoor", "wood/trapdoor/chestnut"), "vane": ("trapdoor", "wood/trapdoor/spruce"),
+    "shingle": ("dark_oak_stairs", "stairs/wood/chestnut"), "ridge": ("wooden_slab", "slab/wood/chestnut"),
+    "fire": ("glowstone", "firepit"), "belay": ("wooden_slab", "slab/bricks/andesite"),
+    "line": ("spruce_fence", "wood/fence/pine"), "barrel": ("planks", "wood/barrel/chestnut"),
+}
+classic_variants = {"cracked": "cracked_stonebrick", "lime_brick": "smooth_diorite", "old_lime": "diorite",
+                    "base_slab": "stone_brick", "sill": "quartz", "mast": "dark_oak", "beam": "dark_oak",
+                    "pine": "spruce", "pine_slab": "spruce", "ridge": "dark_oak", "belay": "dark_oak", "barrel": "spruce"}
+
+
+def classic_state(mat, props, tfc):
+    props = dict(props)
+    if mat in ("line", "belay", "fire", "barrel"):
+        props = {}
+    if "type" in props:
+        props["half"] = props.pop("type")
+    if not tfc and mat in classic_variants:
+        props["variant"] = classic_variants[mat]
+    return ("tfc:" if tfc else "minecraft:") + classic_materials[mat][int(tfc)], props
+
+
+def save(tfc, version):
     palette, indexes, entries = [], {}, []
     for (s,u,h),(mat,props) in sorted(blocks.items(),key=lambda entry:(entry[0][2], entry[0][0], entry[0][1])):
         name = ("tfc:" if tfc else "minecraft:")+materials[mat][int(tfc)]
         if mat=="line":props={"facing":"south"} if tfc else {"axis":"y"}
         if mat=="belay":props={"facing":"north"} if tfc else {"type":"bottom"}
+        if tfc and version in ("1.18.2", "1.20.1"):
+            if name.startswith(("tfc:wood/fence/", "tfc:wood/trapdoor/")):
+                _, kind, timber = name.split("/")
+                name = f"tfc:wood/planks/{timber}_{kind}"
+            elif mat == "line":
+                name, props = "tfc:wood/planks/pine_fence", {}
+            elif mat == "belay":
+                name, props = "tfc:rock/bricks/andesite_slab", {"type": "bottom"}
+        if version == "1.12.2":
+            name, props = classic_state(mat, props, tfc)
+        elif version == "1.16.5":
+            substitutions = {"minecraft:calcite": "minecraft:quartz_block", "minecraft:deepslate_tiles": "minecraft:polished_blackstone_bricks",
+                             "minecraft:deepslate_tile_stairs": "minecraft:polished_blackstone_brick_stairs",
+                             "minecraft:deepslate_tile_wall": "minecraft:polished_blackstone_brick_wall"}
+            name = substitutions.get(name, name)
         key = (name,tuple(sorted(props.items())))
         if key not in indexes:
             indexes[key]=len(palette)
@@ -304,10 +353,13 @@ def save(tfc):
                 state["Properties"]=nbt.Compound({k:nbt.String(v) for k,v in props.items()})
             palette.append(state)
         entries.append(nbt.Compound({"pos":nbt.List[nbt.Int]([s,h-1,u-MIN_U]),"state":nbt.Int(indexes[key])}))
-    structure=nbt.File({"DataVersion":nbt.Int(3955),"size":nbt.List[nbt.Int]([17,HEIGHT,MAX_U-MIN_U+1]),
+    structure=nbt.File({"DataVersion":nbt.Int({"1.21.1": 3955, "1.20.1": 3465, "1.19.2": 3120, "1.18.2": 2975, "1.16.5": 2586, "1.12.2": 1343}[version]),"size":nbt.List[nbt.Int]([17,HEIGHT,MAX_U-MIN_U+1]),
                         "palette":nbt.List[nbt.Compound](palette),"blocks":nbt.List[nbt.Compound](entries),
                         "entities":nbt.List[nbt.Compound]()})
-    dest=OUTPUT/("tfc/coastal_lighthouse.nbt" if tfc else "coastal_lighthouse.nbt")
+    folder = OUTPUT if version == "1.21.1" else Path(__file__).resolve().parents[1] / f"src/mc{version}/resources/data/fourwindsroadworks/structures"
+    if version == "1.12.2":
+        folder = Path(__file__).resolve().parents[1] / "src/mc1.12.2/resources/assets/fourwindsroadworks/structures"
+    dest=folder/("tfc/coastal_lighthouse.nbt" if tfc else "coastal_lighthouse.nbt")
     dest.parent.mkdir(parents=True,exist_ok=True)
     raw=io.BytesIO()
     structure.write(raw)
@@ -332,6 +384,7 @@ if __name__=="__main__":
                 anchored.add(neighbor)
                 queue.append(neighbor)
     assert anchored==blocks.keys(),set(blocks)-anchored
-    for tfc in (False,True):
-        save(tfc)
+    for version in ("1.21.1", "1.20.1", "1.19.2", "1.18.2", "1.16.5", "1.12.2"):
+        for tfc in ((False,) if version in ("1.19.2", "1.16.5") else (False, True)):
+            save(tfc, version)
     print(len(blocks),"placed blocks in each structure")

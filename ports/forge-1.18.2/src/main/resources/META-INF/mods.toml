@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[40,41)"
+license="MIT"
+issueTrackerURL="https://github.com/grodionn/four-winds-roadworks/issues"
+
+[[mods]]
+modId="fourwindsroadworks"
+version="${modVersion}"
+displayName="Grodion's Four Winds Roadworks"
+authors="Grodion"
+displayURL="https://github.com/grodionn/four-winds-roadworks"
+logoFile="four-winds.png"
+description='''Four roads through the Overworld, with village turnings, stone bridges and working piers.'''
+
+[[dependencies.fourwindsroadworks]]
+modId="forge"
+mandatory=true
+versionRange="[40.3.0,41)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.fourwindsroadworks]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.18.2]"
+ordering="NONE"
+side="BOTH"

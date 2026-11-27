@@ -1,0 +1,51 @@
+buildscript {
+    repositories { maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }; mavenCentral() }
+    dependencies { classpath 'org.spongepowered:mixingradle:0.7.38' }
+}
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '6.0.54'
+}
+apply plugin: 'org.spongepowered.mixin'
+apply from: '../modern.gradle'
+sourceSets.main.java.srcDir('../chunk-nbt/src/main/java')
+sourceSets.main.resources.srcDir('../forge-common/src/main/resources')
+
+minecraft {
+    mappings channel: 'official', version: '1.19.2'
+    runs {
+        client {
+            workingDirectory file('run')
+            mods { fourwindsroadworks { source sourceSets.main } }
+        }
+        server {
+            workingDirectory file('run')
+            args '--nogui'
+            mods { fourwindsroadworks { source sourceSets.main } }
+        }
+    }
+}
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.19.2-43.5.0'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+mixin { add sourceSets.main, 'fourwindsroadworks.refmap.json' }
+jar {
+    manifest.attributes('MixinConfigs': 'fourwindsroadworks.mixins.json,fourwindsroadworks.nbt.mixins.json')
+    finalizedBy 'reobfJar'
+}
+processResources {
+    exclude 'META-INF/neoforge.mods.toml', 'data/fourwindsroadworks/neoforge/**'
+    filesMatching('META-INF/mods.toml') { expand(modVersion: project.version) }
+}
+
+// Forge discovers its annotation classes and mods.toml in the same development mod root.
+sourceSets.main.output.resourcesDir = sourceSets.main.java.destinationDirectory.get().asFile
+tasks.named('jar') { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+
+minecraft.runs.configureEach {
+    args '--mixin.config', 'fourwindsroadworks.mixins.json', '--mixin.config', 'fourwindsroadworks.nbt.mixins.json'
+}
+
+sourceSets.main.resources.srcDir('../chunk-nbt/src/main/resources')

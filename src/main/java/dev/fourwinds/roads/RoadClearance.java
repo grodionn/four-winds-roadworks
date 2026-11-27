@@ -3,7 +3,6 @@ package dev.fourwinds.roads;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
@@ -14,33 +13,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
 import net.minecraft.world.level.chunk.ProtoChunk;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.level.ChunkEvent;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /** Reconcile neighbouring decorators while the chunk is still exclusively owned by world generation. */
 public final class RoadClearance {
-    private static final AttachmentType<CompoundTag> PENDING=AttachmentType.builder(() -> new CompoundTag()).serialize(CompoundTag.CODEC).build();
     private final ArrayList<BlockState> states=new ArrayList<>();
     private final IntArrayList lanes=new IntArrayList();
     private final IntArrayList trails=new IntArrayList();
     private final IntArrayList soilFinishes=new IntArrayList();
     private final IntArrayList signArms=new IntArrayList();
     private final it.unimi.dsi.fastutil.bytes.ByteArrayList headrooms=new it.unimi.dsi.fastutil.bytes.ByteArrayList();
-
-    static void register(IEventBus bus) {
-        var registry=DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES,FourWinds.ID);
-        registry.register("pending_clearance",() -> PENDING);
-        registry.register("pier_footprint",() -> CoastalPier.FOOTPRINT);
-        registry.register("shore_before_features",() -> ShoreTerrain.COLUMNS);
-        registry.register("surveyed_surface",() -> ShoreTerrain.SURFACE);
-        registry.register(bus);
-        NeoForge.EVENT_BUS.addListener(RoadClearance::discardLegacy);
-    }
 
     void record(WorldGenRegion level, BlockPos floor,int headroom,boolean rim) {
         var deck=level.getBlockState(floor);
@@ -83,29 +64,27 @@ public final class RoadClearance {
         tag.putByteArray("headrooms",headrooms.toByteArray());
         if (stop!=null) tag.put("stop",stop.save());
         var c=level.getCenter();
-        level.getChunk(c.x,c.z).setData(PENDING,tag);
+        RoadData.PENDING.set(level.getChunk(c.x,c.z),tag);
     }
-    private static void discardLegacy(ChunkEvent.Load event) {
-        var chunk=event.getChunk();
+    public static void discardLegacy(ChunkAccess chunk) {
         // A full chunk saved by 1.4.1 may already contain player edits.
-        if (event.getLevel() instanceof ServerLevel && chunk.hasData(PENDING)) {
-            chunk.removeData(PENDING);
+        if (RoadData.PENDING.has(chunk)) {
+            RoadData.PENDING.remove(chunk);
             chunk.setUnsaved(true);
         }
     }
 
     public static void beforeLighting(ServerLevel level,ChunkAccess chunk) {
-        if (!(chunk instanceof ProtoChunk) || chunk instanceof ImposterProtoChunk || chunk.getPersistedStatus().isOrAfter(ChunkStatus.LIGHT)) return;
-        if (chunk.hasData(ShoreTerrain.COLUMNS)) {
-            CoastalPier.finishFeet(level,chunk,chunk.getData(ShoreTerrain.COLUMNS));
-            chunk.removeData(ShoreTerrain.COLUMNS);
+        if (!(chunk instanceof ProtoChunk) || chunk instanceof ImposterProtoChunk || RoadVersion.lit(chunk)) return;
+        if (RoadData.COLUMNS.has(chunk)) {
+            CoastalPier.finishFeet(level,chunk,RoadData.COLUMNS.get(chunk));
+            RoadData.COLUMNS.remove(chunk);
             chunk.setUnsaved(true);
         }
-        if (!chunk.hasData(PENDING)) return;
-        var data=chunk.getData(PENDING);
-        var lookup=level.holderLookup(Registries.BLOCK);
+        if (!RoadData.PENDING.has(chunk)) return;
+        var data=RoadData.PENDING.get(chunk);
         var palette=data.getList("palette",Tag.TAG_COMPOUND).stream()
-                .map(tag->NbtUtils.readBlockState(lookup,(CompoundTag)tag)).toList();
+                .map(tag->RoadApi.readBlock(level,(CompoundTag)tag)).toList();
         int[] rows=data.getIntArray("lanes");
         byte[] headrooms=data.getByteArray("headrooms");
         var cp=chunk.getPos();
@@ -134,7 +113,7 @@ public final class RoadClearance {
             int sampleY=finishes[i+1];
             String soil=sampleY<chunk.getMinBuildHeight()?null:RoadMaterials.soil(chunk.getBlockState(floor.atY(sampleY)));
             boolean dark="mollisol".equals(soil) || "andisol".equals(soil);
-            var finish=RoadMaterials.withSoil(dark?palette.get(finishes[i+3]):placed,soil==null?"entisol":soil);
+            var finish=RoadMaterials.withSoil(dark?palette.get(finishes[i+3]):placed,soil==null?RoadVersion.DEFAULT_SOIL:soil);
             if (now!=finish) chunk.setBlockState(floor,finish,false);
         }
         int[] trails=data.getIntArray("trails");
@@ -160,7 +139,7 @@ public final class RoadClearance {
                     chunk.setBlockState(pos,Blocks.AIR.defaultBlockState(),false);
             }
         }
-        chunk.removeData(PENDING);
+        RoadData.PENDING.remove(chunk);
         chunk.setUnsaved(true);
     }
     private static void restore(ChunkAccess chunk,BlockPos pos,BlockState goal) {

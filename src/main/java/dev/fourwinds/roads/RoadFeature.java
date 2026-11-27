@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
-import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.levelgen.feature.Feature;
@@ -42,7 +40,7 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
         if (!(context.level() instanceof WorldGenRegion level) || level.getLevel().dimension() != Level.OVERWORLD) return false;
         var chunk = level.getCenter();
         var owner=level.getChunk(chunk.x,chunk.z);
-        var survey=owner.getData(ShoreTerrain.SURFACE);
+        var survey=RoadData.SURFACE.get(owner);
         if (survey.getBoolean("roadsPlaced")) return false;
         long seed = level.getSeed();
         Point middle = new Point(chunk.getMiddleBlockX(), chunk.getMiddleBlockZ());
@@ -387,7 +385,7 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
                     shared=Math.floorDiv(x+z+1,2);
                 } else shared=one!=null && two!=null?Math.max(one.y(),two.y()):one!=null?one.y():two.y();
                 int allowance=Math.max(0,Math.min(distance,18)-(joinedDecks?6:3))/3+Math.max(0,distance-18);
-                int desired=Math.clamp(y,shared-allowance,shared+allowance);
+                int desired=RoadLayout.clamp(y,shared-allowance,shared+allowance);
                 if (desired!=y) y=joinedDecks?desired:a.constrainLanding(t,desired);
             }
         }
@@ -396,11 +394,11 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             Road trunk=terrain.grade.follow(nearest(terrain.level.getSeed(),!spur.eastWest(),turn));
             int landing=surface(terrain,trunk,turn);
             int allowance=Math.max(0,Math.abs(t-spur.turn())-trunk.width()/2);
-            y=Math.clamp(y,landing-allowance,landing+allowance);
+            y=RoadLayout.clamp(y,landing-allowance,landing+allowance);
             int distance=Math.abs(t-spur.end());
             if (distance<=12) {
                 var entry=terrain.column(spur.point(spur.end(),0));
-                if (entry.valid()) return Math.clamp(y,entry.deck()-distance,entry.deck()+distance);
+                if (entry.valid()) return RoadLayout.clamp(y,entry.deck()-distance,entry.deck()+distance);
             }
         }
         return y;
@@ -439,8 +437,8 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             int uphill=surface(terrain,c.path,new Point(c.p.x()+f,c.p.z()+g));
             // A lone change of level gets a half-height landing. Only sustained climbs need stair treads.
             boolean earthen=c.width<5 && !stoneBed && !sandy;
-            if (uphill==c.y) paving=sandy?Blocks.SANDSTONE_SLAB:earthen?Blocks.MUD_BRICK_SLAB:Blocks.COBBLESTONE_SLAB;
-            else paving=sandy?Blocks.SANDSTONE_STAIRS:earthen?Blocks.MUD_BRICK_STAIRS:Blocks.COBBLESTONE_STAIRS;
+            if (uphill==c.y) paving=sandy?Blocks.SANDSTONE_SLAB:earthen?RoadGame.EARTH_SLAB:Blocks.COBBLESTONE_SLAB;
+            else paving=sandy?Blocks.SANDSTONE_STAIRS:earthen?RoadGame.EARTH_STAIRS:Blocks.COBBLESTONE_STAIRS;
             darkPaving=earthen?(uphill==c.y?Blocks.COBBLESTONE_SLAB:Blocks.COBBLESTONE_STAIRS):paving;
         } else {
             boolean median=c.width==4 && c.offset==leftRut+1 && patch>57 && age>44;
@@ -454,12 +452,12 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             paving=paving(c,sandy,stoneBed,wheel,patch,age,salt,false);
             darkPaving=soil==null?paving:paving(c,sandy,stoneBed,wheel,patch,age,salt,true);
         }
-        if ((paving instanceof FallingBlock || soil!=null && darkPaving instanceof FallingBlock) && terrain.level.getBlockState(floor.below()).canBeReplaced())
+        if ((paving instanceof FallingBlock || soil!=null && darkPaving instanceof FallingBlock) && RoadApi.replaceable(terrain.level.getBlockState(floor.below())))
             terrain.put(c.p,c.y-1,footing);
         var light=RoadMaterials.withSoil(terrain.materials.state(floorState(c,paving)),soil);
         terrain.level.setBlock(floor,light,2);
         if (soil!=null && (darkPaving!=paving || paving==Blocks.DIRT_PATH || paving==Blocks.COARSE_DIRT
-                || paving==Blocks.MUD_BRICK_STAIRS || paving==Blocks.MUD_BRICK_SLAB)) {
+                || paving==RoadGame.EARTH_STAIRS || paving==RoadGame.EARTH_SLAB)) {
             var dark=RoadMaterials.withSoil(terrain.materials.state(floorState(c,darkPaving)),soil);
             terrain.clearance.soilFinish(terrain.level,floor,c.ground.y(),light,dark);
         }
@@ -594,7 +592,7 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
                 m.destination.eastWest() ? Direction.NORTH : Direction.WEST;
         terrain.put(m.p, pos.getY(), Blocks.OAK_SIGN.defaultBlockState()
                 .setValue(StandingSignBlock.ROTATION,frontNormal.get2DDataValue()*4));
-        SignText front = new SignText(), back = new SignText();
+        List<Component> front, back;
         if (m.destination != null) {
             var s = m.destination;
             int dx = s.village().x() - m.p.x(), dz = s.village().z() - m.p.z();
@@ -609,28 +607,24 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             back = crossing("south", "north", "east_west");
         }
         // A protochunk's sign has no Level yet. Store its vanilla NBT for promotion to a live block entity.
-        var ops = terrain.level.registryAccess().createSerializationContext(NbtOps.INSTANCE);
         var tag = RoadMaterials.entityTag(pos,terrain.level.getBlockState(pos),terrain.level);
-        tag.put("front_text", SignText.DIRECT_CODEC.encodeStart(ops, front).getOrThrow());
-        tag.put("back_text", SignText.DIRECT_CODEC.encodeStart(ops, back).getOrThrow());
+        RoadApi.writeSign(terrain.level, tag, front, back);
         terrain.level.getChunk(pos).setBlockEntityNbt(tag);
     }
 
-    private static SignText turnSign(Spur spur, Direction to, Direction viewer, long distance) {
+    private static List<Component> turnSign(Spur spur, Direction to, Direction viewer, long distance) {
         String arrow = to == viewer ? "↑" : to == viewer.getOpposite() ? "↓" : to == viewer.getClockWise() ? "→" : "←";
         Component line = arrow.equals("→") ? words(to.getName()).copy().append(" →")
-                : Component.literal(arrow+" ").append(words(to.getName()));
-        return new SignText().setMessage(0,words(spur.pixies() ? "pixies" : "village"))
-                .setMessage(1,line).setMessage(2,words("distance",distance));
+                : RoadGame.literal(arrow+" ").append(words(to.getName()));
+        return List.of(words(spur.pixies() ? "pixies" : "village"), line, words("distance",distance));
     }
 
-    private static SignText crossing(String ahead, String behind, String sides) {
-        return new SignText().setMessage(0, words("crossing"))
-                .setMessage(1, Component.literal("↑ ").append(words(ahead)))
-                .setMessage(2, words(sides)).setMessage(3, Component.literal("↓ ").append(words(behind)));
+    private static List<Component> crossing(String ahead, String behind, String sides) {
+        return List.of(words("crossing"), RoadGame.literal("↑ ").append(words(ahead)),
+                words(sides), RoadGame.literal("↓ ").append(words(behind)));
     }
 
     private static Component words(String key, Object... args) {
-        return Component.translatable("sign.fourwindsroadworks." + key, args);
+        return RoadGame.translated("sign.fourwindsroadworks." + key, args);
     }
 }

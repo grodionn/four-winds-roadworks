@@ -5,8 +5,6 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
@@ -26,14 +24,14 @@ import net.minecraft.world.level.material.Fluid;
 import static dev.fourwinds.roads.RoadLayout.*;
 
 final class RoadTerrain {
-    static final TagKey<Block> GROUND = TagKey.create(Registries.BLOCK, FourWinds.id("terrain"));
-    static final TagKey<Block> GROWTH = TagKey.create(Registries.BLOCK, FourWinds.id("roadside_growth"));
-    static final TagKey<Fluid> WATER = TagKey.create(Registries.FLUID, FourWinds.id("bridge_water"));
-    static final TagKey<Block> ICE = TagKey.create(Registries.BLOCK, FourWinds.id("frozen_crossings"));
-    static final TagKey<Biome> SEA = TagKey.create(Registries.BIOME, FourWinds.id("open_sea"));
-    private static final TagKey<Biome> SHORE = TagKey.create(Registries.BIOME, FourWinds.id("tidal_shore"));
-    private static final TagKey<Fluid> SALT = TagKey.create(Registries.FLUID,
-            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("tfc","salt_water"));
+    static final TagKey<Block> GROUND = TagKey.create(RoadApi.BLOCK, FourWinds.id("terrain"));
+    static final TagKey<Block> GROWTH = TagKey.create(RoadApi.BLOCK, FourWinds.id("roadside_growth"));
+    static final TagKey<Fluid> WATER = TagKey.create(RoadApi.FLUID, FourWinds.id("bridge_water"));
+    static final TagKey<Block> ICE = TagKey.create(RoadApi.BLOCK, FourWinds.id("frozen_crossings"));
+    static final TagKey<Biome> SEA = TagKey.create(RoadApi.BIOME, FourWinds.id("open_sea"));
+    private static final TagKey<Biome> SHORE = TagKey.create(RoadApi.BIOME, FourWinds.id("tidal_shore"));
+    private static final TagKey<Fluid> SALT = TagKey.create(RoadApi.FLUID,
+            RoadGame.id("tfc","salt_water"));
     private static final RoadColumn VOID = new RoadColumn(-1000, Blocks.AIR.defaultBlockState(), false, false);
     static final int TUNNEL_HEIGHT=6;
     record RoadColumn(int y, BlockState state, boolean water, boolean sea) {
@@ -54,7 +52,7 @@ final class RoadTerrain {
     private final java.util.Map<Long,Boolean> coast = new java.util.HashMap<>();
     private final java.util.Map<Long,Boolean> tidePools = new java.util.HashMap<>();
     private static final net.minecraft.resources.ResourceKey<Biome> TIDAL_FLATS = net.minecraft.resources.ResourceKey.create(
-            Registries.BIOME,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("tfc","tidal_flats"));
+            RoadApi.BIOME,RoadGame.id("tfc","tidal_flats"));
     private record ProtectedPiece(BoundingBox box, boolean street, boolean pixies) {}
     private final java.util.Map<Long,List<ProtectedPiece>> structuresByChunk=new java.util.HashMap<>();
 
@@ -68,20 +66,19 @@ final class RoadTerrain {
         // Biome zoom can sample one quart beyond the FEATURES region on an outer shoreline column.
         shoreBiomes=level.getBiomeManager().withDifferentSource((x,y,z)-> {
             if (Math.abs((x>>2)-chunk.x)<=1 && Math.abs((z>>2)-chunk.z)<=1) return level.getNoiseBiome(x,y,z);
-            return source.getGenerator().getBiomeSource().getNoiseBiome(x,y,z,source.randomState().sampler());
+            return RoadGame.biome(source,x,y,z);
         });
     }
 
     private List<ProtectedPiece> protection(Point p) {
         var chunk=new ChunkPos(p.x()>>4,p.z()>>4);
         return structuresByChunk.computeIfAbsent(chunk.toLong(),key->{
-            var structures=level.registryAccess().registryOrThrow(Registries.STRUCTURE);
-            return level.getLevel().structureManager().forWorldGenRegion(level)
-                .startsForStructure(chunk, s -> true).stream()
+            var structures=level.registryAccess().registryOrThrow(RoadApi.STRUCTURE);
+            return VillageAccess.inChunk(level,chunk).stream()
                 .flatMap(start -> {
-                    var holder = structures.wrapAsHolder(start.getStructure());
-                    boolean village = holder.is(VillageLinks.DESTINATIONS);
-                    boolean pixies = VillageLinks.PIXIES.equals(structures.getKey(start.getStructure()));
+                    var holder = structures.getHolderOrThrow(structures.getResourceKey(VillageAccess.type(start)).orElseThrow());
+                    boolean village = holder.is(VillageAccess.DESTINATIONS);
+                    boolean pixies = VillageLinks.PIXIES.equals(structures.getKey(VillageAccess.type(start)));
                     return start.getPieces().stream().map(piece -> new ProtectedPiece(piece.getBoundingBox(),
                             village && piece instanceof PoolElementStructurePiece pool
                                 && pool.getElement().getProjection() == StructureTemplatePool.Projection.TERRAIN_MATCHING,pixies));
@@ -128,8 +125,7 @@ final class RoadTerrain {
 
     int seabed(Point p) {
         var world=level.getLevel();
-        var source=world.getChunkSource();
-        return source.getGenerator().getBaseHeight(p.x(),p.z(),Heightmap.Types.OCEAN_FLOOR_WG,world,source.randomState())-1;
+        return RoadGame.baseHeight(world,p.x(),p.z(),Heightmap.Types.OCEAN_FLOOR_WG)-1;
     }
 
     boolean unstableTidalShelf(Point p,int water) {
@@ -138,9 +134,8 @@ final class RoadTerrain {
         // A TFC tide pool extends seven blocks from its origin, even across a biome or chunk edge.
         boolean tidal=tidePools.computeIfAbsent(net.minecraft.world.level.ChunkPos.asLong(cx,cz),ignored->{
             var chunks=level.getLevel().getChunkSource();
-            var biomes=chunks.getGenerator().getBiomeSource();
             for (int x=cx*4-2;x<=cx*4+5;x++) for (int z=cz*4-2;z<=cz*4+5;z++) {
-                if (biomes.getNoiseBiome(x,water>>2,z,chunks.randomState().sampler()).is(TIDAL_FLATS)) return true;
+                if (RoadGame.biome(chunks,x,water>>2,z).is(TIDAL_FLATS)) return true;
             }
             return false;
         });
@@ -167,21 +162,20 @@ final class RoadTerrain {
 
     Holder<Biome> seaLevelBiome(int x,int z) {
         var chunks = level.getLevel().getChunkSource();
-        return chunks.getGenerator().getBiomeSource().getNoiseBiome(x>>2,level.getSeaLevel()>>2,z>>2,
-                chunks.randomState().sampler());
+        return RoadGame.biome(chunks,x>>2,level.getSeaLevel()>>2,z>>2);
     }
 
     static boolean naturalGround(BlockState state) {
         if (state.is(GROUND)) return true;
-        var id=BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        var id=RoadApi.blockId(state.getBlock());
         // TFC's pannable river gravel lives outside the common ore tags.
         return id.getNamespace().equals("tfc") && id.getPath().startsWith("deposit/") && !state.hasBlockEntity();
     }
 
     static boolean canClear(BlockState state) {
         if (state.isAir() || state.is(GROWTH) || (!state.hasBlockEntity() && state.getFluidState().isEmpty()
-                && (state.canBeReplaced() || state.getBlock() instanceof net.minecraft.world.level.block.BushBlock))) return true;
-        var id=BuiltInRegistries.BLOCK.getKey(state.getBlock());
+                && (RoadApi.replaceable(state) || state.getBlock() instanceof net.minecraft.world.level.block.BushBlock))) return true;
+        var id=RoadApi.blockId(state.getBlock());
         String path=id.getPath();
         if (id.getNamespace().equals("firmalife")) return path.startsWith("plant/");
         if (!id.getNamespace().equals("tfc") && !id.getNamespace().equals("afc")) return false;
@@ -192,13 +186,13 @@ final class RoadTerrain {
     }
 
     static boolean rockSurface(BlockState state) {
-        var id=BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        var id=RoadApi.blockId(state.getBlock());
         return state.is(BlockTags.BASE_STONE_OVERWORLD) || id.getNamespace().equals("tfc")
                 && (id.getPath().startsWith("rock/raw/") || id.getPath().startsWith("rock/hardened/"));
     }
 
     static boolean softVerge(BlockState state) {
-        var id=BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        var id=RoadApi.blockId(state.getBlock());
         return state.is(BlockTags.DIRT) || id.getNamespace().equals("tfc")
                 && (id.getPath().startsWith("grass/") || id.getPath().startsWith("duff/")
                 || id.getPath().startsWith("dirt/") || id.getPath().startsWith("coarse_dirt/"));
@@ -298,7 +292,7 @@ final class RoadTerrain {
         if (!state.hasBlockEntity() && !protectedAt(p,y,y,false)
                 && (state.getBlock() instanceof net.minecraft.world.level.block.FallingBlock
                 || !state.getFluidState().isEmpty() || state.is(BlockTags.SAND)
-                || BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath().startsWith("rock/gravel/")))
+                || RoadApi.blockId(state.getBlock()).getPath().startsWith("rock/gravel/")))
             put(p,y,Blocks.COBBLESTONE);
         else lineOpening(p,y,y);
     }
@@ -314,7 +308,7 @@ final class RoadTerrain {
         var pos=new BlockPos.MutableBlockPos(p.x(),low,p.z());
         for (int y=low; y<=high; y++) {
             var state=level.getBlockState(pos.setY(y));
-            if (!state.hasBlockEntity() && (state.isAir() || state.canBeReplaced() || state.is(ICE)
+            if (!state.hasBlockEntity() && (state.isAir() || RoadApi.replaceable(state) || state.is(ICE)
                     || !state.getFluidState().isEmpty() && !state.isCollisionShapeFullBlock(level,pos))) {
                 put(p,y,Blocks.STONE_BRICKS);
             }
@@ -326,11 +320,11 @@ final class RoadTerrain {
         var pos=new BlockPos.MutableBlockPos(p.x(),low,p.z());
         for (int y=low;y<=high;y++) {
             var state=level.getBlockState(pos.setY(y));
-            var id=BuiltInRegistries.BLOCK.getKey(state.getBlock());
+            var id=RoadApi.blockId(state.getBlock());
             boolean soil=state.is(BlockTags.DIRT) || state.is(BlockTags.SAND) || state.is(Blocks.GRAVEL)
                     || id.getNamespace().equals("tfc") && (id.getPath().startsWith("dirt/")
                     || id.getPath().startsWith("rock/gravel/") || id.getPath().startsWith("mud/"));
-            if (soil && !state.hasBlockEntity() && level.getBlockState(pos.above()).isSolid())
+            if (soil && !state.hasBlockEntity() && RoadApi.solid(level.getBlockState(pos.above())))
                 put(p,y,Blocks.COBBLESTONE);
         }
     }
@@ -342,7 +336,7 @@ final class RoadTerrain {
             while (bottom>level.getMinBuildHeight() && bottom>ground.y()-18) {
                 var state=level.getBlockState(pos.setY(bottom-1));
                 if (state.hasBlockEntity() || !state.getFluidState().is(WATER)
-                        || !(state.liquid() || state.canBeReplaced()) || protectedAt(p,bottom-1,bottom-1,false)) break;
+                        || !(RoadApi.liquid(state) || RoadApi.replaceable(state)) || protectedAt(p,bottom-1,bottom-1,false)) break;
                 bottom--;
             }
         }
@@ -392,16 +386,16 @@ final class RoadTerrain {
             }
             return;
         }
-        var coverId = BuiltInRegistries.BLOCK.getKey(cover.getBlock());
+        var coverId = RoadApi.blockId(cover.getBlock());
         if ((coverId.getNamespace().equals("tfc") && coverId.getPath().startsWith("groundcover/")
-                || cover.is(Blocks.SHORT_GRASS) || cover.is(Blocks.FERN) || cover.is(BlockTags.SMALL_FLOWERS))
+                || cover.is(RoadVersion.SHORT_GRASS) || cover.is(Blocks.FERN) || cover.is(BlockTags.SMALL_FLOWERS))
                 && level.isEmptyBlock(pos.setY(target+1)) && cover.canSurvive(level,pos)) {
             level.setBlock(pos,cover,2);
         }
     }
 
     private static boolean caveSpike(BlockState state) {
-        var id=BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        var id=RoadApi.blockId(state.getBlock());
         return id.getNamespace().equals("tfc") && id.getPath().startsWith("rock/spike/");
     }
 
@@ -411,7 +405,7 @@ final class RoadTerrain {
         var pos = soil.above();
         BlockState ground = level.getBlockState(soil), cover = level.getBlockState(pos);
         if (!ground.is(GROUND) || !ground.isFaceSturdy(level,soil,Direction.UP) || cover.hasBlockEntity()
-                || !cover.getFluidState().isEmpty() || !(cover.isAir() || cover.canBeReplaced())) return;
+                || !cover.getFluidState().isEmpty() || !(cover.isAir() || RoadApi.replaceable(cover))) return;
         BlockState shape = stone.defaultBlockState();
         if (stone == Blocks.STONE_BUTTON) shape = shape.setValue(FaceAttachedHorizontalDirectionalBlock.FACE,AttachFace.FLOOR);
         put(p,pos.getY(),shape);

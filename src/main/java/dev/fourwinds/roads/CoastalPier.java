@@ -4,12 +4,9 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.BitSet;
 import java.util.function.IntFunction;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -21,22 +18,16 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
-import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import static dev.fourwinds.roads.RoadLayout.*;
 import static dev.fourwinds.roads.PierLayout.*;
 
 final class CoastalPier {
     private static final int MAX_DEPTH=18;
-    private static final TagKey<Biome> PACK_ICE=TagKey.create(Registries.BIOME,FourWinds.id("pack_ice"));
-    static final AttachmentType<BitSet> FOOTPRINT=AttachmentType.builder(() -> new BitSet(256))
-            .serialize(ExtraCodecs.BIT_SET).build();
+    private static final TagKey<Biome> PACK_ICE=TagKey.create(RoadApi.BIOME,FourWinds.id("pack_ice"));
 
     static boolean placeAtEnds(RoadTerrain terrain,Road... roads) {
         var chunk=terrain.level.getCenter();
@@ -80,10 +71,10 @@ final class CoastalPier {
         return state.getFluidState().is(RoadTerrain.WATER) || state.is(RoadTerrain.ICE);
     }
     static boolean reserved(ChunkAccess chunk,int x,int z) {
-        return chunk.hasData(FOOTPRINT) && chunk.getData(FOOTPRINT).get((x&15)|((z&15)<<4));
+        return RoadData.FOOTPRINT.has(chunk) && RoadData.FOOTPRINT.get(chunk).get((x&15)|((z&15)<<4));
     }
     private static void reserve(RoadTerrain t,Point q) {
-        t.level.getChunk(q.x()>>4,q.z()>>4).getData(FOOTPRINT).set((q.x()&15)|((q.z()&15)<<4));
+        RoadData.FOOTPRINT.get(t.level.getChunk(q.x()>>4,q.z()>>4)).set((q.x()&15)|((q.z()&15)<<4));
     }
     private static BlockPos pos(Point p,int y) { return new BlockPos(p.x(),y,p.z()); }
     private static int waterTop(RoadTerrain t,Point p) {
@@ -160,10 +151,9 @@ final class CoastalPier {
     }
 
     private static boolean freeOfStructures(RoadTerrain terrain,BoundingBox box) {
-        var manager=terrain.level.getLevel().structureManager().forWorldGenRegion(terrain.level);
         for (int x=box.minX()>>4;x<=box.maxX()>>4;x++) for (int z=box.minZ()>>4;z<=box.maxZ()>>4;z++) {
-            if (terrain.level.getChunk(x,z,ChunkStatus.CARVERS).getPersistedStatus()==ChunkStatus.FULL) return false;
-            for (var start:manager.startsForStructure(new ChunkPos(x,z),any->true)) {
+            if (RoadVersion.full(terrain.level.getChunk(x,z,RoadVersion.CARVERS))) return false;
+            for (var start:VillageAccess.inChunk(terrain.level,new ChunkPos(x,z))) {
                 for (var piece:start.getPieces()) if (piece.getBoundingBox().intersects(box)) return false;
             }
         }
@@ -189,7 +179,7 @@ final class CoastalPier {
             for (int y=first;y<=top;y++) {
                 var state=terrain.level.getBlockState(pos(q,y));
                 if (s<=2 && y==first && !state.hasBlockEntity() && state.is(RoadTerrain.GROUND)) continue;
-                if (state.hasBlockEntity() || !(state.isAir() || state.canBeReplaced())) return false;
+                if (state.hasBlockEntity() || !(state.isAir() || RoadApi.replaceable(state))) return false;
             }
             if (p.pile(s,u) || p.stoneFoot(s,u)) {
                 int ground=bottom(terrain,q,p);
@@ -204,7 +194,7 @@ final class CoastalPier {
         for (int y=Math.max(p.deck(),p.entrance())+2;y>=Math.max(terrain.level.getMinBuildHeight(),p.water()-MAX_DEPTH);y--) {
             var pos=pos(q,y); var state=terrain.level.getBlockState(pos);
             if (state.hasBlockEntity()) break;
-            if (state.isAir() || state.canBeReplaced() || state.is(RoadTerrain.ICE)
+            if (state.isAir() || RoadApi.replaceable(state) || state.is(RoadTerrain.ICE)
                     || state.getFluidState().is(RoadTerrain.WATER) && !state.isCollisionShapeFullBlock(terrain.level,pos)) continue;
             if (state.is(RoadTerrain.GROUND) && state.isFaceSturdy(terrain.level,pos,Direction.UP)) return y;
             break;
@@ -239,12 +229,12 @@ final class CoastalPier {
             BlockState surface=floor>prev?stair(out.getOpposite()):floor>next?stair(out):Blocks.SPRUCE_PLANKS.defaultBlockState();
             for (int u=-1;u<=1;u++) {
                 Point q=road.point(t-i*pier.outward(),u);
-                var chunk=terrain.level.getChunk(q.x()>>4,q.z()>>4,ChunkStatus.CARVERS);
+                var chunk=terrain.level.getChunk(q.x()>>4,q.z()>>4,RoadVersion.CARVERS);
                 if (reserved(chunk,q.x(),q.z())) return null;
                 footprint.encapsulate(pos(q,floor));
                 for (int y=floor;y<=floor+2;y++) {
                     var state=terrain.level.getBlockState(pos(q,y));
-                    if (state.hasBlockEntity() || !(state.isAir() || state.canBeReplaced()
+                    if (state.hasBlockEntity() || !(state.isAir() || RoadApi.replaceable(state)
                             || y==floor && state.is(RoadTerrain.GROUND))) return null;
                 }
                 int bed=Integer.MIN_VALUE;
@@ -265,13 +255,13 @@ final class CoastalPier {
         if (!freeOfStructures(terrain,box)) return null;
         for (int s=0;s<=10;s++) for (int u=-1;u<=(s>=7?3:1);u++) {
             Point q=pier.point(s,u);
-            var chunk=terrain.level.getChunk(q.x()>>4,q.z()>>4,ChunkStatus.CARVERS);
+            var chunk=terrain.level.getChunk(q.x()>>4,q.z()>>4,RoadVersion.CARVERS);
             if (reserved(chunk,q.x(),q.z()) || s>=3 && waterTop(terrain,q)!=pier.water()) return null;
             boolean step=s>=7 && u==3;
             int y=step?pier.deck()-1:pier.floor(s);
             for (int h=0;h<=2;h++) {
                 var state=terrain.level.getBlockState(pos(q,y+h));
-                if (state.hasBlockEntity() || !(state.isAir() || state.canBeReplaced() || h==0 && s<=2 && state.is(RoadTerrain.GROUND))) return null;
+                if (state.hasBlockEntity() || !(state.isAir() || RoadApi.replaceable(state) || h==0 && s<=2 && state.is(RoadTerrain.GROUND))) return null;
             }
             boolean pile=(s==1 || s==5 || s==9) && (u==-1 || u==(s==9?2:1));
             int bed=pile?bottom(terrain,q,pier):Integer.MIN_VALUE;
@@ -308,7 +298,7 @@ final class CoastalPier {
 
     private static void rememberFoot(RoadTerrain terrain,Point q,int top,int limit,BlockState material) {
         var chunk=terrain.level.getChunk(q.x()>>4,q.z()>>4);
-        var data=chunk.getData(ShoreTerrain.COLUMNS);
+        var data=RoadData.COLUMNS.get(chunk);
         if (!data.contains("feet",Tag.TAG_LIST)) data.put("feet",new ListTag());
         var foot=new CompoundTag();
         foot.putLong("top",pos(q,top).asLong());
@@ -323,7 +313,7 @@ final class CoastalPier {
         for (int i=0;i<feet.size();i++) {
             var foot=feet.getCompound(i);
             var top=BlockPos.of(foot.getLong("top"));
-            var material=NbtUtils.readBlockState(level.holderLookup(Registries.BLOCK),foot.getCompound("material"));
+            var material=RoadApi.readBlock(level,foot.getCompound("material"));
             int limit=foot.getInt("limit");
             var p=top.mutable();
             BlockState below=chunk.getBlockState(p);
@@ -340,13 +330,13 @@ final class CoastalPier {
     }
 
     private static boolean footingGap(BlockState state) {
-        return !state.hasBlockEntity() && (state.isAir() || state.canBeReplaced()
+        return !state.hasBlockEntity() && (state.isAir() || RoadApi.replaceable(state)
                 || state.getBlock() instanceof LiquidBlock && state.getFluidState().is(RoadTerrain.WATER));
     }
 
     private static Direction direction(PierLayout p,int s,int u) {
         Point a=p.shore(), b=p.point(s,u);
-        return Direction.fromDelta(b.x()-a.x(),0,b.z()-a.z());
+        return RoadApi.direction(b.x()-a.x(),b.z()-a.z());
     }
     private static BlockState stair(Direction up) {
         return Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,up);
@@ -393,10 +383,10 @@ final class CoastalPier {
             default -> Rotation.COUNTERCLOCKWISE_90;
         };
         Mirror mirror=rotation.rotate(Direction.SOUTH)==direction(p,0,1) ? Mirror.NONE : Mirror.LEFT_RIGHT;
-        var settings=new StructurePlaceSettings().setMirror(mirror).setRotation(rotation)
-                .setKnownShape(true).setIgnoreEntities(true).setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING);
+        var settings=RoadVersion.dry(new StructurePlaceSettings().setMirror(mirror).setRotation(rotation)
+                .setKnownShape(true).setIgnoreEntities(true));
         var origin=pos(p.point(0,MIN_SIDE),p.deck()+1);
-        if (drawing.placeInWorld(terrain.level,origin,origin,settings,RandomSource.create(origin.asLong()),2)) {
+        if (drawing.placeInWorld(terrain.level,origin,origin,settings,RoadGame.random(origin.asLong()),2)) {
             terrain.materials.fuelSignal(terrain.level,pos(p.point(TOWER,TOWER_SIDE),p.deck()+FIRE_HEIGHT));
         }
     }

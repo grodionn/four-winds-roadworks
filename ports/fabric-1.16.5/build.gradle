@@ -1,0 +1,15 @@
+plugins { id 'fabric-loom' version '1.10.5' }
+
+repositories { mavenCentral() }
+dependencies {
+    minecraft 'com.mojang:minecraft:1.16.5'
+    mappings loom.officialMojangMappings()
+    modImplementation 'net.fabricmc:fabric-loader:0.17.3'
+    modImplementation 'net.fabricmc.fabric-api:fabric-api:0.42.0+1.16'
+}
+
+apply from: '../1.16.gradle'
+loom.mixin.defaultRefmapName = 'fourwindsroadworks.refmap.json'
+processResources {
+    filesMatching('fabric.mod.json') { expand(modVersion: project.version) }
+}

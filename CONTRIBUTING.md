@@ -12,7 +12,7 @@ Install a **JDK 21** and clone the repository. The wrapper downloads Gradle and 
 | Start a vanilla-terrain development client | `./gradlew runClient` | `.\gradlew.bat runClient` |
 | Start a development server | `./gradlew runServer` | `.\gradlew.bat runServer` |
 
-The JAR is written to `build/libs/`. To try the TFC preset, use the JAR in a separate Minecraft 1.21.1 NeoForge instance with TerraFirmaCraft and its dependencies. For unattended client tests, set the **Master Volume** in the test instance to zero before launch.
+These commands target NeoForge 1.21.1. The [loader build table](ports/README.md) lists the Gradle project, toolchain and saved-world checks for each port. The JAR is written to `build/libs/` in the selected project. To try the TFC preset, use the JAR in a separate Minecraft 1.21.1 NeoForge instance with TerraFirmaCraft and its dependencies. For unattended client tests, set the **Master Volume** in the test instance to zero before launch.
 
 ## From a fork to a pull request
 
@@ -23,7 +23,15 @@ The JAR is written to `build/libs/`. To try the TFC preset, use the JAR in a sep
 
 The GitHub Actions workflow runs the build and layout checks on pull requests. If a runner is unavailable, run the same build on the proposed commit and record the result in the PR. Maintainers review the change under **Files changed** and use **Squash and merge** to bring it into `main`.
 
-The [mod metadata](src/main/resources/META-INF/neoforge.mods.toml) currently says **All Rights Reserved**. Forks for contributing on GitHub are welcome. A licence for distributing your own build is still pending.
+Grodion’s code and original artwork are available under the [MIT licence](LICENSE). Keep the copyright and licence notice when distributing a fork. The Gradle wrapper retains its [Apache 2.0 licence](gradle/wrapper/LICENSE).
+
+## Release versions
+
+All loaders share the release number in `gradle.properties`. Use a patch for fixes, a minor version for new features or supported platforms, and a major version for an incompatible change to an existing save or supported integration. A release candidate can use a suffix such as `-rc.1`. The loader reads `1.9.0+mc1.20.1` in a 1.20.1 JAR. GitHub uses a single tag, `v1.9.0`, for the whole release.
+
+1. Update `modVersion` and [the changelog](CHANGELOG.md). Build every project in the [loader table](ports/README.md) from the same commit.
+2. Run `python tools/package_release.py` with Python 3.11 or later. It checks the packaged versions, licences, loader descriptors, mixins and assets. The JARs and `SHA256SUMS.txt` appear in `build/distributions/v<version>/`.
+3. Create a draft GitHub release for the tested commit, attach those files and review the list against the loader table. When publishing on CurseForge, upload each JAR separately for its own Minecraft version and loader. Fabric API is required on Fabric 1.16.5 and later. TerraFirmaCraft is optional on the builds listed in the table. The [project description](docs/curseforge.md), [512-pixel cover](art/four-winds-preview.png) and [gallery](docs/gallery) are ready to use on the project page.
 
 ## Working on generation
 

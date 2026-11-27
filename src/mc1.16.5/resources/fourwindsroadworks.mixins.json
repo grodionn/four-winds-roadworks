@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.fourwinds.roads.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "fourwindsroadworks.refmap.json",
+  "mixins": ["ClassicFeatureSurveyMixin", "ClassicLightingMixin", "ClassicSurveyStorageMixin", "ClassicSurveyNbtMixin"],
+  "client": ["client.SignRendererMixin"],
+  "injectors": {"defaultRequire": 1}
+}

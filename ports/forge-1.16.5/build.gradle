@@ -1,0 +1,12 @@
+plugins { id 'dev.architectury.loom' version '1.10.455' }
+dependencies {
+    minecraft 'com.mojang:minecraft:1.16.5'
+    mappings loom.officialMojangMappings()
+    forge 'net.minecraftforge:forge:1.16.5-36.2.34'
+}
+loom {
+    forge { mixinConfig 'fourwindsroadworks.mixins.json' }
+    mixin { defaultRefmapName = 'fourwindsroadworks.refmap.json' }
+}
+apply from: '../1.16.gradle'
+processResources { filesMatching('META-INF/mods.toml') { expand(modVersion: project.version) } }
