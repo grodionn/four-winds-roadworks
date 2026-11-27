@@ -42,7 +42,7 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
         if (!(context.level() instanceof WorldGenRegion level) || level.getLevel().dimension() != Level.OVERWORLD) return false;
         var chunk = level.getCenter();
         var owner=level.getChunk(chunk.x,chunk.z);
-        var survey=owner.getData(ShoreTerrain.SURFACE);
+        var survey=RoadData.SURFACE.get(owner);
         if (survey.getBoolean("roadsPlaced")) return false;
         long seed = level.getSeed();
         Point middle = new Point(chunk.getMiddleBlockX(), chunk.getMiddleBlockZ());

@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = ChunkStatusTasks.class, remap = false)
+@Mixin(ChunkStatusTasks.class)
 abstract class ChunkStatusTasksMixin {
     @Inject(method = "generateCarvers", at = @At("RETURN"))
     private static void fourwinds$rememberShore(WorldGenContext context, ChunkStep step,

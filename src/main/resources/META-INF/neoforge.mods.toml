@@ -15,6 +15,9 @@ description='''Follow four old roads through the Overworld, past village turning
 [[mixins]]
 config="fourwindsroadworks.mixins.json"
 
+[[mixins]]
+config="fourwindsroadworks.neoforge.mixins.json"
+
 [[dependencies.fourwindsroadworks]]
 modId="neoforge"
 type="required"

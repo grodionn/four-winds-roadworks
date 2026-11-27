@@ -8,7 +8,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import static dev.fourwinds.roads.RoadLayout.*;
 
 /** The tide line and bed as carved, before bridges, tide pools or trees can change a neighbouring column. */
@@ -16,8 +15,6 @@ public final class ShoreTerrain {
     // An approach can see a nearby crossing, its far rock seat and the dry tie to the next river.
     // Read those same pre-decoration columns on either side of a chunk boundary.
     public static final int SURVEY_RADIUS=12;
-    static final AttachmentType<CompoundTag> COLUMNS=AttachmentType.builder(() -> new CompoundTag()).serialize(CompoundTag.CODEC).build();
-    static final AttachmentType<CompoundTag> SURFACE=AttachmentType.builder(() -> new CompoundTag()).serialize(CompoundTag.CODEC).build();
     private static final int BED_OFFSET=21, WET_AT_SEA=32, WET_BELOW_SEA=64;
 
     public static void capture(ServerLevel level,ChunkAccess chunk) {
@@ -46,7 +43,7 @@ public final class ShoreTerrain {
         }
         var tag=new CompoundTag();
         tag.putByteArray("columns",columns);
-        chunk.setData(COLUMNS,tag);
+        RoadData.COLUMNS.set(chunk,tag);
         // A later neighbour must see the same original grade, even after this chunk has been played in.
         var survey=new CompoundTag();
         survey.putIntArray("heights",surface);
@@ -58,7 +55,7 @@ public final class ShoreTerrain {
                 if (rock!=null) { survey.putString("quarry",rock); break; }
             }
         }
-        chunk.setData(SURFACE,survey);
+        RoadData.SURFACE.set(chunk,survey);
     }
 
     private static boolean nearRoad(long seed,Point middle,boolean eastWest) {
@@ -70,8 +67,8 @@ public final class ShoreTerrain {
         var center=region.getCenter();int x=p.x()>>4,z=p.z()>>4;
         if (Math.abs(x-center.x)>SURVEY_RADIUS || Math.abs(z-center.z)>SURVEY_RADIUS) return Integer.MIN_VALUE;
         var chunk=region.getChunk(x,z,ChunkStatus.CARVERS);
-        if (!chunk.hasData(SURFACE)) return Integer.MIN_VALUE;
-        int[] heights=chunk.getData(SURFACE).getIntArray("heights");
+        if (!RoadData.SURFACE.has(chunk)) return Integer.MIN_VALUE;
+        int[] heights=RoadData.SURFACE.get(chunk).getIntArray("heights");
         int i=(p.x()&15)|((p.z()&15)<<4);
         return heights.length==128?(short)(heights[i>>1]>>>((i&1)*16)):Integer.MIN_VALUE;
     }
@@ -81,8 +78,8 @@ public final class ShoreTerrain {
         int x=p.x()>>4,z=p.z()>>4;
         if (Math.abs(x-cp.x)<=SURVEY_RADIUS && Math.abs(z-cp.z)<=SURVEY_RADIUS) {
             var chunk=region.getChunk(x,z,ChunkStatus.CARVERS);
-            if (chunk.hasData(SURFACE)) {
-                String found=chunk.getData(SURFACE).getString("quarry");
+            if (RoadData.SURFACE.has(chunk)) {
+                String found=RoadData.SURFACE.get(chunk).getString("quarry");
                 if (!found.isEmpty()) return found;
             }
         }
@@ -96,8 +93,8 @@ public final class ShoreTerrain {
 
     static int column(RoadTerrain terrain,Point p) {
         var chunk=terrain.level.getChunk(p.x()>>4,p.z()>>4);
-        if (chunk.hasData(COLUMNS)) {
-            byte[] columns=chunk.getData(COLUMNS).getByteArray("columns");
+        if (RoadData.COLUMNS.has(chunk)) {
+            byte[] columns=RoadData.COLUMNS.get(chunk).getByteArray("columns");
             if (columns.length==256) return columns[(p.x()&15)|((p.z()&15)<<4)];
         }
         // Older partial chunks can already be past CARVERS when the mod is installed.

@@ -4,9 +4,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.BitSet;
 import java.util.function.IntFunction;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -28,15 +26,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import static dev.fourwinds.roads.RoadLayout.*;
 import static dev.fourwinds.roads.PierLayout.*;
 
 final class CoastalPier {
     private static final int MAX_DEPTH=18;
     private static final TagKey<Biome> PACK_ICE=TagKey.create(Registries.BIOME,FourWinds.id("pack_ice"));
-    static final AttachmentType<BitSet> FOOTPRINT=AttachmentType.builder(() -> new BitSet(256))
-            .serialize(ExtraCodecs.BIT_SET).build();
 
     static boolean placeAtEnds(RoadTerrain terrain,Road... roads) {
         var chunk=terrain.level.getCenter();
@@ -80,10 +75,10 @@ final class CoastalPier {
         return state.getFluidState().is(RoadTerrain.WATER) || state.is(RoadTerrain.ICE);
     }
     static boolean reserved(ChunkAccess chunk,int x,int z) {
-        return chunk.hasData(FOOTPRINT) && chunk.getData(FOOTPRINT).get((x&15)|((z&15)<<4));
+        return RoadData.FOOTPRINT.has(chunk) && RoadData.FOOTPRINT.get(chunk).get((x&15)|((z&15)<<4));
     }
     private static void reserve(RoadTerrain t,Point q) {
-        t.level.getChunk(q.x()>>4,q.z()>>4).getData(FOOTPRINT).set((q.x()&15)|((q.z()&15)<<4));
+        RoadData.FOOTPRINT.get(t.level.getChunk(q.x()>>4,q.z()>>4)).set((q.x()&15)|((q.z()&15)<<4));
     }
     private static BlockPos pos(Point p,int y) { return new BlockPos(p.x(),y,p.z()); }
     private static int waterTop(RoadTerrain t,Point p) {
@@ -308,7 +303,7 @@ final class CoastalPier {
 
     private static void rememberFoot(RoadTerrain terrain,Point q,int top,int limit,BlockState material) {
         var chunk=terrain.level.getChunk(q.x()>>4,q.z()>>4);
-        var data=chunk.getData(ShoreTerrain.COLUMNS);
+        var data=RoadData.COLUMNS.get(chunk);
         if (!data.contains("feet",Tag.TAG_LIST)) data.put("feet",new ListTag());
         var foot=new CompoundTag();
         foot.putLong("top",pos(q,top).asLong());

@@ -1,0 +1,18 @@
+def commonRoot = file('../..')
+def metadata = new Properties()
+new File(commonRoot, 'gradle.properties').withInputStream { metadata.load(it) }
+group = metadata.group
+version = metadata.version
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+sourceSets.main.java.srcDir(new File(commonRoot, 'src/main/java'))
+sourceSets.main.resources.srcDir(new File(commonRoot, 'src/main/resources'))
+sourceSets.test.java.srcDir(new File(commonRoot, 'src/test/java'))
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('processResources') { inputs.property('modVersion', project.version) }
+tasks.register('checkRoads', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'dev.fourwinds.roads.RoadLayoutCheck'
+    enableAssertions = true
+}
+check.dependsOn checkRoads

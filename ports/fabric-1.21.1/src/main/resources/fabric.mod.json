@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "fourwindsroadworks",
+  "version": "${modVersion}",
+  "name": "Grodion's Four Winds Roadworks",
+  "description": "Four roads through the Overworld, with village turnings, bridges and coastal piers.",
+  "authors": [
+    "Grodion"
+  ],
+  "contact": {
+    "sources": "https://github.com/grodionn/four-winds-roadworks",
+    "issues": "https://github.com/grodionn/four-winds-roadworks/issues"
+  },
+  "license": "All Rights Reserved",
+  "icon": "four-winds.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.fourwinds.roads.FourWinds"
+    ],
+    "client": [
+      "dev.fourwinds.roads.client.WaypostModels"
+    ]
+  },
+  "mixins": [
+    "fourwindsroadworks.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.17.3",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "fabric-api": ">=0.116.18"
+  }
+}

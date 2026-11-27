@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value=ChunkStep.Builder.class,remap=false)
+@Mixin(ChunkStep.Builder.class)
 abstract class BridgeSurveyRadiusMixin {
     @Shadow @Final private ChunkStatus status;
     @Shadow public abstract ChunkStep.Builder addRequirement(ChunkStatus dependency,int radius);

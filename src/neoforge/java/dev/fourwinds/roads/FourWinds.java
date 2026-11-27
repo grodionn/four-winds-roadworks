@@ -22,7 +22,7 @@ public final class FourWinds {
     public static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath(ID, path); }
 
     public FourWinds(IEventBus bus) {
-        RoadClearance.register(bus);
+        ChunkField.register(bus);
         DeferredRegister<Feature<?>> features = DeferredRegister.create(Registries.FEATURE, ID);
         features.register("roads", RoadFeature::new);
         features.register(bus);

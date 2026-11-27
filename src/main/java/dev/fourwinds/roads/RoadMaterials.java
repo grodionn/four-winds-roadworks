@@ -11,8 +11,6 @@ import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.ItemStackHandler;
 
 final class RoadMaterials {
     private static final RoadMaterials VANILLA = new RoadMaterials();
@@ -135,11 +133,15 @@ final class RoadMaterials {
         if (this==VANILLA || !signal.is(blocks.get(Blocks.CAMPFIRE))) return;
         // TFC consumes this log through its normal fuel data on the first ticking load.
         var data=entityTag(pos,signal,world);
-        var inventory=new ItemStackHandler();
-        inventory.deserializeNBT(world.registryAccess(),data.getCompound("inventory"));
         var oak=BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("tfc","wood/log/oak"));
-        inventory.setStackInSlot(0,new ItemStack(oak));
-        data.put("inventory",inventory.serializeNBT(world.registryAccess()));
+        var inventory=data.getCompound("inventory");
+        var items=inventory.getList("Items",net.minecraft.nbt.Tag.TAG_COMPOUND);
+        items.removeIf(entry -> ((CompoundTag)entry).getInt("Slot")==0);
+        var log=(CompoundTag)new net.minecraft.world.item.ItemStack(oak).save(world.registryAccess());
+        log.putInt("Slot",0);
+        items.add(log);
+        inventory.put("Items",items);
+        data.put("inventory",inventory);
         world.getChunk(pos).setBlockEntityNbt(data);
     }
 

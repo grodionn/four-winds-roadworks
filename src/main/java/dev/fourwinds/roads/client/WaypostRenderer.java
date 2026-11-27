@@ -2,7 +2,6 @@ package dev.fourwinds.roads.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import dev.fourwinds.roads.FourWinds;
 import java.util.List;
 import java.util.Arrays;
 import net.minecraft.client.Minecraft;
@@ -10,7 +9,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -19,22 +17,9 @@ import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.util.RandomSource;
-import net.neoforged.fml.ModList;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.model.data.ModelData;
 
-@EventBusSubscriber(modid = FourWinds.ID, value = Dist.CLIENT)
 public final class WaypostRenderer {
     private static final String PREFIX = "sign.fourwindsroadworks.";
-    private record TimberModels(ModelResourceLocation crossing, ModelResourceLocation village) {
-        TimberModels(String folder) { this(model(folder+"crossroads_waypost"),model(folder+"village_waypost")); }
-        void register(ModelEvent.RegisterAdditional event) { event.register(crossing); event.register(village); }
-    }
-    private static final TimberModels OAK = new TimberModels("");
-    private static final TimberModels TFC_OAK = new TimberModels("tfc/");
     // Baked models may put quads in a directional list or in the final, unculled list.
     private static final Direction[] QUAD_SIDES = Arrays.copyOf(Direction.values(), Direction.values().length + 1);
     private record Arm(Direction direction, float height, Component label) {
@@ -45,16 +30,6 @@ public final class WaypostRenderer {
     // Upper and lower mortises in the Blockbench model, in sixteenths of a block.
     private static final List<Arm> ARMS = List.of(new Arm(Direction.EAST, 20.5f), new Arm(Direction.WEST, 19.5f),
             new Arm(Direction.NORTH, 12.5f), new Arm(Direction.SOUTH, 13.5f));
-
-    private static ModelResourceLocation model(String name) {
-        return ModelResourceLocation.standalone(FourWinds.id("block/" + name));
-    }
-
-    @SubscribeEvent
-    private static void registerModels(ModelEvent.RegisterAdditional event) {
-        OAK.register(event);
-        if (ModList.get().isLoaded("tfc")) TFC_OAK.register(event);
-    }
 
     private static String key(Component text) {
         return text.getContents() instanceof TranslatableContents tr ? tr.getKey() : "";
@@ -86,11 +61,10 @@ public final class WaypostRenderer {
         boolean crossing = key(title).equals(PREFIX + "crossing");
         Direction toward = crossing ? Direction.EAST : bearing(text.getMessage(1, false));
         if (toward == null || !toward.getAxis().isHorizontal()) return false;
-        var mc = Minecraft.getInstance();
         pose.pushPose();
         turn(pose, toward);
-        var wood = BuiltInRegistries.BLOCK.getKey(sign.getBlockState().getBlock()).getNamespace().equals("tfc") ? TFC_OAK : OAK;
-        var baked = mc.getModelManager().getModel(crossing ? wood.crossing : wood.village);
+        boolean tfc = BuiltInRegistries.BLOCK.getKey(sign.getBlockState().getBlock()).getNamespace().equals("tfc");
+        var baked = WaypostModels.get(tfc, crossing);
         renderTimber(sign, baked, toward, pose, buffers, light, overlay);
         if (crossing) {
             for (Arm arm : ARMS) {
@@ -123,7 +97,7 @@ public final class WaypostRenderer {
         var random = RandomSource.create(seed);
         for (Direction side : QUAD_SIDES) {
             random.setSeed(seed);
-            for (var quad : model.getQuads(sign.getBlockState(), side, random, ModelData.EMPTY, null)) {
+            for (var quad : model.getQuads(sign.getBlockState(), side, random)) {
                 float shade = sign.getLevel().getShade(yaw.rotate(quad.getDirection()), quad.isShade());
                 vertices.putBulkData(pose.last(), quad, shade, shade, shade, 1, light, overlay);
             }

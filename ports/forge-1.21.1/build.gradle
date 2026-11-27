@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '6.0.54'
+}
+
+minecraft {
+    mappings channel: 'official', version: '1.21.1'
+    reobf = false
+    runs {
+        server {
+            workingDirectory file('run')
+            args '--nogui'
+            mods { fourwindsroadworks { source sourceSets.main } }
+        }
+    }
+}
+
+dependencies { minecraft 'net.minecraftforge:forge:1.21.1-52.1.0' }
+
+apply from: '../modern.gradle'
+
+processResources {
+    exclude 'META-INF/neoforge.mods.toml', 'data/fourwindsroadworks/neoforge/**'
+    filesMatching('META-INF/mods.toml') { expand(modVersion: project.version) }
+}
+jar.manifest.attributes('MixinConfigs': 'fourwindsroadworks.mixins.json,fourwindsroadworks.forge.mixins.json')
