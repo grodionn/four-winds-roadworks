@@ -69,6 +69,12 @@ python tools/check_regression_worlds.py path/to/tfc-gorge path/to/vanilla-spring
 python tools/check_village_roads.py path/to/vanilla-village path/to/tfc-pixies
 ```
 
+To investigate a floating dirt track, generate the same area twice with the same preset and modpack, leaving Roadworks out of the control world. This scans every full chunk touching the rectangle and reports the coordinates of unsupported treads.
+
+```sh
+python tools/check_track_support.py path/to/road-world --control path/to/control-world --area 322 672 451 768
+```
+
 ## Working on structures and art
 
 - [Waypost models](models/README.md) open in Blockbench. Their vanilla and TFC exports live under `src/main/resources/assets/fourwindsroadworks/models/block/`.

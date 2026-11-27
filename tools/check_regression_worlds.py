@@ -14,13 +14,15 @@ import nbtlib
 
 
 class World:
-    def __init__(self, path, seed):
+    def __init__(self, path, seed=None):
         self.path = path
         level = nbtlib.load(path / 'level.dat')['Data']
         self.version = str(level['Version']['Name'])
-        actual = int(level['WorldGenSettings']['seed'])
-        if actual != seed:
-            raise ValueError(f'{path}: expected seed {seed}, found {actual}')
+        generation = level['WorldGenSettings']
+        self.seed = int(generation['seed'])
+        self.generator = generation['dimensions']['minecraft:overworld']['generator'].unpack(json=True)
+        if seed is not None and self.seed != seed:
+            raise ValueError(f'{path}: expected seed {seed}, found {self.seed}')
 
     @lru_cache(maxsize=32)
     def chunk(self, cx, cz):

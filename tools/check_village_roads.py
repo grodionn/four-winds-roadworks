@@ -2,7 +2,7 @@
 
 Generate the plains village and river east of it on vanilla seed 38473917, and
 the Ice and Fire settlement at (4240, -608) on TFC seed 20261121. To check
-forest soils too, generate the crossings near (400, -688) and (688, 160) on
+forest soils too, generate the crossings near (405, -688), (690, 164) and (689, 92) on
 TFC seed -583271 twice, approaching from opposite directions. Save and close
 the worlds before running this script. Requires nbtlib.
 """
@@ -12,6 +12,7 @@ import math
 from pathlib import Path
 
 from check_regression_worlds import World
+from check_track_support import area_chunks, tracks
 
 
 def canonical_component(component):
@@ -27,13 +28,18 @@ def check_floodplain(world):
     # These four blocks used to be masonry inside the built-up village.
     for x, y, z in [(351, 67, 714), (353, 67, 714), (354, 66, 714), (359, 66, 752)]:
         world.expect(x, y, z, 'minecraft:air')
-    # 1.18.2 places the same village and road on an earlier riverbank.
-    bridge_x, bridge_z = (401, 724) if world.version == '1.18.2' else (412, 740)
+    # The 1.18.2 generator places the village on a different bend in the river.
+    bridge_x, bridge_z = (405, 724) if world.version == '1.18.2' else (412, 740)
     for z in range(bridge_z, bridge_z + 3):
         for x in range(bridge_x, bridge_x + 3):
             world.expect(x, 67, z, 'minecraft:stone_bricks')
             for y in (68, 69):
                 world.expect(x, y, z, 'minecraft:air')
+    if world.version == '1.18.2':
+        world.expect(405, 62, 722, 'minecraft:water')
+        world.expect(405, 64, 722, 'minecraft:air')
+        for x in (403, 408):
+            world.expect(x, 68, 722, 'minecraft:stone_brick_slab', type='bottom')
     # A cocoa pod on the trunk or moss on mangrove roots could veto an entire road column.
     for x, y, z in [(1372, 67, -2360), (1373, 67, -2361), (1373, 67, -2359), (1374, 66, -2360)]:
         if 'leaves' in world.block(x, y, z)[0] or 'roots' in world.block(x, y, z)[0]:
@@ -60,6 +66,13 @@ def check_floodplain(world):
         world.expect(410, 63, 685, 'minecraft:grass_block')
         for y in range(65, 75):
             world.expect(410, y, 685, 'minecraft:air')
+        for x in range(396, 415):
+            for z in range(679, 703):
+                for y in range(69, 78):
+                    block = world.block(x, y, z)[0]
+                    if block.startswith(('minecraft:stone_brick', 'minecraft:cobblestone', 'minecraft:mossy_cobblestone',
+                                         'minecraft:spruce_planks', 'minecraft:stripped_spruce_log')):
+                        raise ValueError(f'Bridge approach extends above the meadow at {x}, {y}, {z}: {block}')
 
     # Read the available faces of the waypost on the low bank at the village turn.
     for cx in (19, 20):
@@ -149,18 +162,18 @@ def check_tfc_materials(world):
 
 
 def check_soil_boundaries(first, reverse):
-    # Forest patches from the next chunk used to recolour the same wheel tracks differently.
-    strips = [(range(400, 411), (64,), (-688,)), (range(677, 681), (71,), (160, 161)),
-              ((688, 689), (73,), range(80, 99)), (range(695, 698), (72,), (160, 161)),
-              (range(708, 715), (73,), (174, 175))]
-    for xs, ys, zs in strips:
-        for x in xs:
-            for y in ys:
-                for z in zs:
-                    if first.block(x, y, z) != reverse.block(x, y, z):
-                        raise ValueError(f'Chunk order changed the forest road at {x}, {y}, {z}')
-    first.expect(678, 71, 160, 'tfc:grass_path/alfisol')
-    first.expect(688, 73, 85, 'tfc:grass_path/podzol')
+    # Compare every earth or path block in each patch, including the margins of the relocated lane.
+    areas = [(394, -698, 418, -678), (665, 142, 720, 185), (678, 78, 700, 106)]
+    for cx, cz in sorted(area_chunks(areas)):
+        difference = set(tracks(first.chunk(cx, cz))) ^ set(tracks(reverse.chunk(cx, cz)))
+        if difference:
+            dx, y, dz, material = min(difference)
+            raise ValueError(f'Chunk order changed {material} at {16 * cx + dx}, {y}, {16 * cz + dz}')
+    for x, y, z, surface, soil in [(409, 64, -691, 'coarse_dirt', 'mollisol'),
+                                    (688, 73, 89, 'coarse_dirt', 'entisol'),
+                                    (689, 73, 84, 'grass_path', 'podzol')]:
+        first.expect(x, y, z, f'tfc:{surface}/{soil}')
+        first.expect(x, y - 1, z, f'tfc:dirt/{soil}')
 
 
 if __name__ == '__main__':
