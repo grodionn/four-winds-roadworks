@@ -1,0 +1,45 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
+def assets = file('../../src/main/resources/assets/fourwindsroadworks')
+def dest = file("$buildDir/generated/wayposts/assets/fourwindsroadworks")
+
+task classicWaypostAssets {
+    inputs.dir new File(assets, 'models/block')
+    inputs.dir new File(assets, 'lang')
+    outputs.dir dest
+    doLast {
+        def json = new JsonSlurper()
+        def write = { String name, String content ->
+            def out = new File(dest, name)
+            out.parentFile.mkdirs()
+            out.setText(content, 'UTF-8')
+        }
+        [false, true].each { tfc ->
+            def folder = tfc ? 'tfc/' : ''
+            def textures = tfc ?
+                    [bark:'tfc:blocks/wood/log/oak', hewn:'tfc:blocks/wood/sheets/oak', board:'tfc:blocks/wood/planks/oak',
+                     end:'tfc:blocks/wood/top/oak', peg:'tfc:blocks/wood/top/oak', cord:'tfc:blocks/wood/log/spruce'] :
+                    [bark:'minecraft:blocks/log_oak', hewn:'minecraft:blocks/planks_oak', board:'minecraft:blocks/planks_oak',
+                     end:'minecraft:blocks/log_oak_top', peg:'minecraft:blocks/log_oak_top', cord:'minecraft:blocks/log_spruce']
+            def variants = [:]
+            [false,true].each { village ->
+                def model = folder + (village ? 'village_waypost' : 'crossroads_waypost')
+                def body = json.parse(new File(assets, "models/block/${model}.json"))
+                body.textures = textures + [particle:'#board']
+                body.remove('groups')
+                write("models/block/${model}.json", JsonOutput.toJson(body))
+                [east:0, south:90, west:180, north:270].each { direction, angle ->
+                    variants["facing=${direction},village=${village}"] = [model:"fourwindsroadworks:${model}", y:angle]
+                }
+            }
+            write("blockstates/${tfc ? 'tfc_waypost' : 'waypost'}.json", JsonOutput.toJson([variants:variants]))
+        }
+        ['en_us','ru_ru'].each { locale ->
+            def entries=json.parse(new File(assets,"lang/${locale}.json"))
+            write("lang/${locale}.lang", entries.collect { key,value -> "${key}=${value}" }.join('\n')+'\n')
+        }
+    }
+}
+processResources.dependsOn classicWaypostAssets
+sourceSets.main.resources.srcDir "$buildDir/generated/wayposts"
