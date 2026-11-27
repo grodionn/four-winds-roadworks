@@ -11,7 +11,7 @@ import json
 import math
 from pathlib import Path
 
-from check_regression_worlds import World
+from check_regression_worlds import World, check_riverbank_fill
 from check_track_support import area_chunks, tracks
 
 
@@ -95,18 +95,7 @@ def check_low_banks(world):
         for x in range(366, 372):
             world.expect(x, 65, z, 'minecraft:polished_andesite' if x == 366 else 'minecraft:stone_bricks')
 
-    # Compare the visible sides of the fill against the original survey so natural cliffs do not count.
-    soil = {'minecraft:' + b for b in ('dirt', 'coarse_dirt', 'grass_block', 'sand', 'gravel', 'dirt_path')}
-    open_side = {'minecraft:' + b for b in ('air', 'cave_air', 'water', 'short_grass', 'tall_grass', 'seagrass')}
-    for z in range(645, 680):
-        for x in range(348, 399):
-            original, _ = world.original_surface(x, z)
-            for y in range(max(63, original + 1), 66):
-                if not all(world.block(x, y + dy, z)[0] in soil for dy in range(3)):
-                    continue
-                for dx, dz in ((0, 1), (0, -1), (1, 0), (-1, 0)):
-                    if all(world.block(x + dx, y + dy, z + dz)[0] in open_side for dy in range(3)):
-                        raise ValueError(f'Three-block exposed earth bank at {x}, {y}, {z}')
+    check_riverbank_fill(world)
 
 
 def check_floodplain(world):

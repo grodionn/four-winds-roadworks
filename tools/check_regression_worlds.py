@@ -77,6 +77,32 @@ class World:
             raise ValueError(f'{x}, {y}, {z}: expected {name} {properties}, found {block} {state}')
 
 
+def check_riverbank_fill(world):
+    soil = {'minecraft:' + b for b in ('dirt', 'coarse_dirt', 'grass_block', 'sand', 'gravel', 'dirt_path')}
+    tfc_soils = ('tfc:dirt/', 'tfc:coarse_dirt/', 'tfc:grass/', 'tfc:grass_path/', 'tfc:duff/', 'tfc:sand/', 'tfc:rock/gravel/')
+    open_side = {'minecraft:' + b for b in ('air', 'cave_air', 'water', 'short_grass', 'tall_grass', 'seagrass')}
+    open_side.update(('tfc:salt_water', 'tfc:river_water'))
+
+    def soil_at(x, y, z):
+        block, _ = world.block(x, y, z)
+        return block in soil or block.startswith(tfc_soils)
+
+    def open_at(x, y, z):
+        block, _ = world.block(x, y, z)
+        return block in open_side or block.startswith('tfc:plant/')
+
+    # Only count fill above the original ground. The hillside alongside the track has natural cliffs.
+    for z in range(645, 680):
+        for x in range(348, 399):
+            original, _ = world.original_surface(x, z)
+            for y in range(original + 1, original + 7):
+                if not all(soil_at(x, y + dy, z) for dy in range(3)):
+                    continue
+                for dx, dz in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+                    if all(open_at(x + dx, y + dy, z + dz) for dy in range(3)):
+                        raise ValueError(f'Three-block exposed earth bank at {x}, {y}, {z}')
+
+
 def check_gorge(world):
     for x in range(-1090, -1067):
         for z in range(-896, -891):
@@ -161,7 +187,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('tfc_world', type=Path)
     parser.add_argument('vanilla_world', type=Path)
-    parser.add_argument('--tfc-floodplain', type=Path, help='Also check the cave roofs on TFC seed 38473917 and in the taiga')
+    parser.add_argument('--tfc-floodplain', type=Path, help='Also check the low banks and cave roofs on TFC seed 38473917, and the taiga cave roof')
     parser.add_argument('--harbour', action='store_true', help='Also generate the TFC coast near (-775, -160) and (-895, -120)')
     args = parser.parse_args()
     gorge = World(args.tfc_world, 7319041)
@@ -171,5 +197,7 @@ if __name__ == '__main__':
     taiga = World(args.vanilla_world, 96320157)
     check_taiga(taiga)
     if args.tfc_floodplain:
-        check_cave_roofs(World(args.tfc_floodplain, 38473917), taiga)
+        floodplain = World(args.tfc_floodplain, 38473917)
+        check_cave_roofs(floodplain, taiga)
+        check_riverbank_fill(floodplain)
     print('Gorge deck, stone seats, spring, road clearance and overhanging rock verified.')
