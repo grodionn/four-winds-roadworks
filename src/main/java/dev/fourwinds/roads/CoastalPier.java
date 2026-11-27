@@ -268,7 +268,8 @@ final class CoastalPier {
             if (pile && bed==Integer.MIN_VALUE) return null;
             var surface=step?Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP):
                     s>0 && y>pier.floor(s-1)?stair(direction(pier,1,0)):
-                    y>pier.floor(s+1)?stair(direction(pier,-1,0)):Blocks.SPRUCE_PLANKS.defaultBlockState();
+                    y>pier.floor(s+1)?stair(direction(pier,-1,0)):
+                    pile?Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState():Blocks.SPRUCE_PLANKS.defaultBlockState();
             boards.add(new Board(q,y,bed,surface));
         }
         for (int s=7;s<=10;s++) for (int u=4;u<=5;u++) {
@@ -371,6 +372,7 @@ final class CoastalPier {
             else if (masonry) surface=Blocks.STONE_BRICKS.defaultBlockState();
             else if (s>0 && floor>p.floor(s-1)) surface=stair(direction(p,1,0));
             else if (floor>p.floor(s+1)) surface=stair(direction(p,-1,0));
+            else if (p.pile(s,u)) surface=Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState();
             else surface=Blocks.SPRUCE_PLANKS.defaultBlockState();
             terrain.put(q,floor,surface,palette);
         }

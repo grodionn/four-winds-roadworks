@@ -13,9 +13,8 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
+import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
@@ -329,9 +328,18 @@ final class RoadTerrain {
         }
     }
 
-    void foundation(Point p,RoadColumn ground,int deck,Block stone) {
+    void foundation(Point p,RoadColumn ground,int deck,Block stone,boolean countryTrack) {
         var pos=new BlockPos.MutableBlockPos(p.x(),ground.y(),p.z());
         int bottom=ground.y();
+        if (countryTrack && bottom<deck && !ground.water() && deck-bottom<=4 && softVerge(ground.state())) {
+            var earth=level.getBlockState(pos.setY(bottom-1));
+            if (earth.is(GROUND) && !earth.hasBlockEntity() && earth.getFluidState().isEmpty()
+                    && !(earth.getBlock() instanceof FallingBlock) && earth.isFaceSturdy(level,pos,Direction.UP)) {
+                for (int y=bottom;y<deck;y++)
+                    if (!level.getBlockState(pos.setY(y)).hasBlockEntity()) level.setBlock(pos,earth,2);
+                return;
+            }
+        }
         if (ground.water()) {
             while (bottom>level.getMinBuildHeight() && bottom>ground.y()-18) {
                 var state=level.getBlockState(pos.setY(bottom-1));
@@ -344,6 +352,14 @@ final class RoadTerrain {
     }
 
     void blendShoulder(Point p, RoadColumn ground, int target) {
+        // Finish the toe at the waterline when there is no room for another course of soil.
+        if (target>ground.y()+1) {
+            for (Direction side:Direction.Plane.HORIZONTAL) {
+                int adjacent=ShoreTerrain.surface(level,new Point(p.x()+side.getStepX(),p.z()+side.getStepZ()));
+                if ((adjacent&1)!=0) target=Math.min(target,Math.max(ground.y(),(adjacent>>1)+1));
+            }
+            if (target==ground.y()) return;
+        }
         var pos = new BlockPos.MutableBlockPos(p.x(), ground.y(), p.z());
         boolean openLip=false;
         if (target<ground.y()) {
@@ -363,7 +379,7 @@ final class RoadTerrain {
         BlockState subsoil = level.getBlockState(pos.setY(ground.y() - 1));
         if (!subsoil.is(GROUND) || subsoil.hasBlockEntity()) subsoil = materials.state(Blocks.COARSE_DIRT.defaultBlockState());
         BlockState cover = level.getBlockState(pos.setY(ground.y() + 1));
-        if (openLip && cover.is(BlockTags.LOGS) || protectedAt(p,target-(openLip?4:1),ground.y()+1,false)) return;
+        if (openLip && cover.is(BlockTags.LOGS) || protectedAt(p,Math.min(target,ground.y())-(openLip?4:1),Math.max(target,ground.y())+1,false)) return;
         boolean extendTrunk = cover.is(BlockTags.LOGS) && target < ground.y() && target >= ground.y() - 4;
         int bottom = Math.min(ground.y(), target), top = Math.max(ground.y(), target);
         for (int y = bottom; y <= top + 1; y++) {
@@ -400,17 +416,6 @@ final class RoadTerrain {
     }
 
     void put(Point p, int y, Block block) { put(p, y, block.defaultBlockState()); }
-    void placeVergeStone(Point p, int surface, Block stone) {
-        var soil = new BlockPos(p.x(),surface,p.z());
-        var pos = soil.above();
-        BlockState ground = level.getBlockState(soil), cover = level.getBlockState(pos);
-        if (!ground.is(GROUND) || !ground.isFaceSturdy(level,soil,Direction.UP) || cover.hasBlockEntity()
-                || !cover.getFluidState().isEmpty() || !(cover.isAir() || RoadApi.replaceable(cover))) return;
-        BlockState shape = stone.defaultBlockState();
-        if (stone == Blocks.STONE_BUTTON) shape = shape.setValue(FaceAttachedHorizontalDirectionalBlock.FACE,AttachFace.FLOOR);
-        put(p,pos.getY(),shape);
-    }
-
     void put(Point p, int y, BlockState state) {
         put(p,y,state,materials);
     }

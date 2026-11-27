@@ -1,6 +1,6 @@
 [![A jungle road, a vaulted stone tunnel and a lighthouse at sunset](https://github.com/grodionn/four-winds-roadworks/raw/main/art/road-to-coast.jpg)](https://github.com/grodionn/four-winds-roadworks/tree/main/docs/gallery)
 
-Four old roads meet near the centre of the Overworld. Follow the paving into the hills or take a gravel lane towards a village. At the turning, a wooden sign tells you which way to go and how many blocks you have left.
+Four old roads meet near the centre of the Overworld. Follow the paving into the hills or take an earthen lane towards a village. At the turning, a wooden sign tells you which way to go and how many blocks you have left.
 
 The main routes run five blocks wide. Country lanes narrow to four, and the last stretch into a village can be a three-block dirt track. A river crossing may have a timber deck or a stone arch. In the mountains, look for the daylight between the supports of a tunnel. On quieter stretches you might pass a roofed bench or a mounting stone.
 

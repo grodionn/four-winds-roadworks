@@ -12,38 +12,46 @@ final class LegacyRoadside {
         int side = roll(land.seed()+2137,road.index(),group,2)==0 ? -1 : 1;
         Point center = network.on(land,road,t);
         boolean roof = roll(land.seed()+2191,road.index(),group,5)<2;
-        int offset = edge(road.width(),side) + 3*side;
+        int offset = edge(road.width(),side) + 2*side;
         Point front = new Point(center.x()+(road.eastWest()?0:offset),center.z()+(road.eastWest()?offset:0));
         int floor=land.bed(front.x(),front.z());
-        if (Math.abs(floor-network.height(land,road,t))>1) return;
-        for (int u=-2;u<=2;u++) for (int v=0;v<=3;v++) {
-            Point q=point(front,u,v,road.eastWest(),side);
-            if (q.x()<minX || q.x()>=minX+16 || q.z()<minZ || q.z()>=minZ+16 || land.wet(q.x(),q.z())
-                    || Math.abs(land.bed(q.x(),q.z())-floor)>1 || land.occupied(q.x(),floor,q.z())) return;
-            for (Path path:paths) {
-                int station=q.along(path.eastWest());
-                if (path.contains(station) && Math.abs(q.across(path.eastWest())-network.on(land,path,station).across(path.eastWest()))<=path.width()/2+1) return;
-            }
-            for (int y=floor+1;y<=floor+(roof?5:2);y++) if (!land.natural(q.x(),y,q.z())) return;
-        }
-        for (int u=-2;u<=2;u++) for (int v=0;v<=3;v++) {
+        int half=WaysidePlan.half(roof), back=WaysidePlan.back(roof);
+        if (floor<2 || floor+6>=255 || Math.abs(floor-network.height(land,road,t))>1) return;
+        for (int u=-half;u<=half;u++) for (int v=0;v<=back;v++) {
             Point q=point(front,u,v,road.eastWest(),side);
             int x=q.x(),z=q.z(),bed=land.bed(x,z);
-            for (int y=bed+1;y<floor;y++) land.put(x,y,z,FILL,0,0);
-            land.put(x,floor,z,GRAVEL,0,0);
-            for (int y=floor+1;y<=floor+(roof?5:2);y++) land.put(x,y,z,AIR,0,0);
-            if (v==2 && Math.abs(u)<=1) land.put(x,floor+1,z,roof?LOW_TIMBER:LOW_STONE,0,0);
-            if (!roof) continue;
-            if (Math.abs(u)==2 && (v==0 || v==3)) for (int y=1;y<=3;y++) land.put(x,floor+y,z,POST,0,0);
-            if (v == 0 || v == 3) {
-                int uphill = v == 0 ? side : -side;
-                land.put(x,floor+3,z,BEAM,road.eastWest()?0:1,road.eastWest()?1:0);
-                land.put(x,floor+4,z,TIMBER_STAIR,road.eastWest()?0:uphill,road.eastWest()?uphill:0);
-            } else {
-                land.put(x,floor+4,z,PLANK,0,0);
-                land.put(x,floor+5,z,LOW_TIMBER,0,0);
+            if (x<minX || x>=minX+16 || z<minZ || z>=minZ+16 || land.wet(x,z) || Math.abs(bed-floor)>1
+                    || land.occupied(x,floor,z) || !land.firm(x,bed,z) || !land.firm(x,bed-1,z)) return;
+            for (Path path:paths) {
+                int station=q.along(path.eastWest());
+                if (path.contains(station) && depth(path.width(),q.across(path.eastWest())-network.on(land,path,station).across(path.eastWest()))>=0) return;
             }
+            for (int y=bed+1;y<=floor+WaysidePlan.headroom(roof,v);y++) if (!land.openForStop(x,y,z)) return;
         }
+        for (int u=-half;u<=half;u++) for (int v=0;v<=back;v++) {
+            if (!WaysidePlan.floor(roof,u,v)) continue;
+            Point q=point(front,u,v,road.eastWest(),side);
+            for (int h=1;h<=WaysidePlan.headroom(roof,v);h++) land.put(q.x(),floor+h,q.z(),AIR,0,0);
+            boolean base=WaysidePlan.footing(roof,u,v) || !roof && v==1;
+            land.put(q.x(),floor,q.z(),base?COBBLE:PATH,0,0);
+        }
+        WaysidePlan.draw(roof,(u,v,h,piece)->{
+            Point q=point(front,u,v,road.eastWest(),side);
+            int dir=piece==WaysidePlan.Piece.ROOF_OUT?-side:side;
+            boolean alongRoad=piece==WaysidePlan.Piece.TIE;
+            int dx=road.eastWest()==alongRoad?dir:0,dz=road.eastWest()!=alongRoad?dir:0;
+            LegacyRoads.Material block;
+            switch (piece) {
+                case BASE: case STEP: block=COBBLE;break;
+                case LOW_STEP: block=LOW_STONE;break;
+                case POST: block=SLIM_POST;break;
+                case TIE: case CROSS_TIE: block=BEAM;break;
+                case SEAT: case ROOF_IN: case ROOF_OUT: block=TIMBER_STAIR;break;
+                case RIDGE: block=LOW_TIMBER;break;
+                default: throw new AssertionError(piece);
+            }
+            land.put(q.x(),floor+h,q.z(),block,dx,dz);
+        });
     }
     private static Point point(Point front,int u,int v,boolean ew,int side) {
         return new Point(front.x()+(ew?u:v*side),front.z()+(ew?v*side:u));

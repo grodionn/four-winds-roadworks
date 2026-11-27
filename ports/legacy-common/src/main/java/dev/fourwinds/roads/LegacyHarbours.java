@@ -53,7 +53,7 @@ final class LegacyHarbours {
                     boolean pile = tower ? p.pile(s,u) : (s == 0 || s == 4 || s == 8) && Math.abs(u) == (s == 8 ? 2 : 1);
                     if (pile || stone) for (int y = land.bed(q.x(),q.z())+1; y < deck; y++)
                         land.put(q.x(),y,q.z(),stone ? COBBLE : POST,0,0);
-                    land.put(q.x(),deck,q.z(),stone ? STONE : PLANK,0,0);
+                    land.put(q.x(),deck,q.z(),stone ? STONE : pile && !boarding ? POST : PLANK,0,0);
                     if (!tower && s == 8 && Math.abs(u) == 2) land.put(q.x(),deck+1,q.z(),POST,0,0);
                     if (s > 0 && p.floor(s-1) > deck && Math.abs(u) <= 1)
                         land.put(q.x(),deck+1,q.z(),TIMBER_STAIR,road.eastWest() ? -out : 0,road.eastWest() ? 0 : -out);

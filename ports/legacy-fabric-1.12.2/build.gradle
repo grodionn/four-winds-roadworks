@@ -20,7 +20,7 @@ sourceSets.main.java.srcDir('../legacy-common/src/main/java')
 tasks.named('compileJava') {
     source fileTree('../../src/main/java') {
         include 'dev/fourwinds/roads/RoadLayout.java', 'dev/fourwinds/roads/RoadSection.java',
-                'dev/fourwinds/roads/BridgeBay.java', 'dev/fourwinds/roads/PierLayout.java'
+                'dev/fourwinds/roads/BridgeBay.java', 'dev/fourwinds/roads/WaysidePlan.java', 'dev/fourwinds/roads/PierLayout.java'
     }
 }
 processResources {

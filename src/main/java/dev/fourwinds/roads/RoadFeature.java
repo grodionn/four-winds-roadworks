@@ -20,7 +20,9 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
     private record Cell(Point p, Path path, int t, int offset, int width, boolean edgeTile, int y, int rise,
                         RoadTerrain.RoadColumn ground, boolean bridge, boolean junction, boolean arcade, boolean streetVerge, BridgeSurvey.Span span,
                         TunnelWorks.Row bore) {
-        boolean parapet() { return (bridge || arcade) && edgeTile() && !junction && bore==null; }
+        boolean parapet() {
+            return (bridge || arcade) && edgeTile && !junction && bore==null && (width>=4 || offset<0);
+        }
         int headroom() {
             if (bore!=null) return bore.headroom(depth(width,offset));
             if (ground.rockCover(y)) return vaultClearance(depth(width,offset),true);
@@ -30,7 +32,6 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
     }
     private record Marker(Point p, int y, Spur destination) {}
     private record Shoulder(Point p, RoadTerrain.RoadColumn ground, int y) {}
-    private record VergeStone(Point p, int y, Block block) {}
     private record RoadsideWall(Point p,int bottom,int top,boolean retaining) {}
     private static final int VERGE_WIDTH = 6;
 
@@ -59,7 +60,6 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
         var cells = new ArrayList<Cell>();
         var markers = new ArrayList<Marker>();
         var shoulders = new ArrayList<Shoulder>();
-        var stones = new ArrayList<VergeStone>();
         var walls = new ArrayList<RoadsideWall>();
         var jambs=new ArrayList<TunnelWorks.Flank>();
         if (nearEW && nearNS) {
@@ -100,8 +100,6 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
                 if (cell==null && !flanked && markers.stream().noneMatch(m->m.p.distanceTo(p)<=1)) {
                     Shoulder shoulder = shoulder(terrain, paths, p);
                     if (shoulder != null) shoulders.add(shoulder);
-                    VergeStone stone = vergeStone(terrain,paths,p,seed,shoulder);
-                    if (stone != null) stones.add(stone);
                 }
             }
         }
@@ -133,12 +131,11 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             if (g.valid() && !g.water() && !g.sea() && Math.abs(g.y()-marker.y)<=1 && !CoastalPier.reserved(owner,marker.p.x(),marker.p.z())
                     && !terrain.protectedAt(marker.p,marker.y-1,marker.y+4,marker.destination!=null)) mark(terrain,marker);
         }
-        for (VergeStone stone : stones) terrain.placeVergeStone(stone.p,stone.y,stone.block);
         boolean pier = CoastalPier.placeAtEnds(terrain,eastWest,northSouth);
         var stop=RoadsideStop.find(terrain,paths);
         clearance.save(level,stop);
         survey.putBoolean("roadsPlaced",true);
-        return pier || stop!=null || !cells.isEmpty() || !markers.isEmpty() || !shoulders.isEmpty() || !stones.isEmpty();
+        return pier || stop!=null || !cells.isEmpty() || !markers.isEmpty() || !shoulders.isEmpty();
     }
 
     private static boolean near(Road road,Point p) {
@@ -180,52 +177,27 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
                 edgeOffset = edge(path.width(),Integer.signum(offset));
             }
         }
-        if (nearest == null) return null;
+        if (nearest == null || nearest.width()<5 && distance>3) return null;
         int t = p.along(nearest.eastWest());
         Point edge = terrain.bridges.along(nearest).point(t, edgeOffset);
         var ground = terrain.column(p);
         var roadEdge = terrain.column(edge);
-        var spine=terrain.column(nearest.point(t,0));
+        var spine=terrain.column(terrain.bridges.along(nearest).point(t,0));
         if (!ground.valid() || !roadEdge.valid() || ground.water() || roadEdge.water() || ground.sea() || roadEdge.sea()
                 || spine.water() || spine.sea() || !ground.state().is(RoadTerrain.GROUND)) return null;
         int deck = surface(terrain, nearest, edge);
         int surveyed=ShoreTerrain.surface(terrain.level,edge);
         if (surveyed==Integer.MIN_VALUE || (surveyed&1)!=0) return null;
         int edgeCut=(surveyed>>1)-deck;
-        if (edgeCut < -3 || edgeCut>9 || terrain.bridges.along(nearest).built(t)!=null
+        if (edgeCut < -4 || edgeCut>9 || terrain.bridges.along(nearest).built(t)!=null
+                || terrain.bridges.along(nearest).viaduct(t)!=null
                 || terrain.tunnels.at(nearest,t)!=null) return null;
         boolean soil=RoadTerrain.softVerge(ground.state()) || ground.state().is(BlockTags.SAND)
                 || ground.state().is(Blocks.GRAVEL) || RoadMaterials.quarry(ground.state())!=null && !RoadTerrain.rockSurface(ground.state());
         int y=RoadLayout.bankHeight(distance,ground.y(),deck,soil);
+        if (nearest.width()<5 && y<ground.y()) y=distance<=2?Math.max(y,ground.y()-1):ground.y();
         if (y == ground.y() || terrain.protectedAt(p, Math.min(y,ground.y()) - 1, Math.max(y,ground.y()) + 2, false)) return null;
         return new Shoulder(p, ground, y);
-    }
-
-    private static VergeStone vergeStone(RoadTerrain terrain, List<Path> paths, Point p, long seed, Shoulder shoulder) {
-        for (Path path : paths) {
-            int t = p.along(path.eastWest());
-            if (!path.contains(t) || Math.abs(Math.floorMod(t+SPACING/2,SPACING)-SPACING/2) < 9) continue;
-            if (path instanceof Spur s && (Math.abs(t-s.turn()) < 10 || Math.abs(t-s.end()) < 5)) continue;
-            int group = Math.floorDiv(t,32);
-            int band = path instanceof Road r ? r.index() : ((Spur)path).across();
-            long salt = seed ^ (path.eastWest() ? 7933L : 9199L);
-            int phase = Math.floorMod(t,32) - (4 + roll(salt, band, group, 23));
-            if (phase < 0 || phase > 1) continue;
-            int style = roll(salt+13,band,group,5);
-            if (style==0 || style==4) continue;
-            if (phase == 1 && style != 2 && style != 3) continue;
-            int side = roll(salt+23,band,group,2) == 0 ? -1 : 1;
-            int offset = edge(path.width(),side) + side * (1 + phase + style%2);
-            if (!p.equals(terrain.bridges.along(path).point(t,offset))) continue;
-            var ground = terrain.column(p);
-            int y = shoulder == null ? ground.y() : shoulder.y;
-            var spine = terrain.column(path.point(t,0));
-            if (!ground.valid() || !ground.state().is(RoadTerrain.GROUND) || ground.water() || ground.sea() || spine.water() || spine.sea()
-                    || Math.abs(y-surface(terrain,path,p))>2 || terrain.protectedAt(p,y-1,y+2,false)) continue;
-            Block stone = Blocks.STONE_BUTTON;
-            return new VergeStone(p,y,stone);
-        }
-        return null;
     }
 
     private static Cell plan(RoadTerrain terrain, List<Path> paths, Point p) {
@@ -233,6 +205,7 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
         BridgeSurvey.Span span=null;
         int bestDepth = Integer.MIN_VALUE, hits = 0, selectedOffset = 0;
         boolean arcade=false;
+        int bestStructure=-1;
         for (Path path : paths) {
             int t = p.along(path.eastWest());
             if (!path.contains(t)) continue;
@@ -255,7 +228,11 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             if (remaining<0 && path.width()<5 && survey.landingTrack(t,off)) remaining=0;
             if (remaining < 0) continue;
             hits++;
-            if (remaining > bestDepth) { bestDepth = remaining; selected = path; selectedOffset = off; span=crossing; arcade=elevated; }
+            // A side lane can open the parapet, but the main deck continues through the turning.
+            int structure=crossing!=null?(crossing.timber()?2:3):elevated?1:0;
+            if (structure>bestStructure || structure==bestStructure && remaining>bestDepth) {
+                bestStructure=structure; bestDepth=remaining; selected=path; selectedOffset=off; span=crossing; arcade=elevated;
+            }
         }
         if (selected == null) return null;
         int t = p.along(selected.eastWest());
@@ -293,7 +270,7 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             if (bore==null && !bridge && !arcade && prev==y && next==y && selected.width()>=4 && depth(selected.width(),selectedOffset)==0
                     && ground.y()==y-1 && !ground.water() && RoadTerrain.softVerge(ground.state())) y--;
         }
-        return new Cell(p, selected, t, selectedOffset, bridge || arcade ? 5 : selected.width(),bestDepth==0,
+        return new Cell(p, selected, t, selectedOffset, bridge && !span.timber() ? 5 : selected.width(),bestDepth==0,
                 y, rise, ground, bridge, hits > 1,arcade,streetVerge,span,bore);
     }
 
@@ -346,7 +323,7 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
                 if (ground.needsTunnel(y)) {
                     low=Math.min(low,y);
                     high=Math.max(high,y+RoadTerrain.TUNNEL_HEIGHT+1);
-                } else {
+                } else if (path.width()==5) {
                     var outer=terrain.column(p);
                     if (outer.valid() && !outer.water() && outer.y()>=y+2 && outer.y()<=y+6)
                         bank=new RoadsideWall(p,y+1,Math.min(y+3,outer.y()-1),true);
@@ -384,6 +361,15 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
                     if (x==landing.y() && z==landing.y()) return y;
                     shared=Math.floorDiv(x+z+1,2);
                 } else shared=one!=null && two!=null?Math.max(one.y(),two.y()):one!=null?one.y():two.y();
+                // A narrow strip of bank between two level decks should not dip and climb again.
+                if (two!=null && one==null && distance>0 && distance<16 && Math.abs(y-shared)<=1) {
+                    for (int d=distance+1;d<=16;d++) {
+                        var next=a.span(junction+Integer.signum(t-junction)*d);
+                        if (next==null) continue;
+                        if (next.y()==shared) return shared;
+                        break;
+                    }
+                }
                 int allowance=Math.max(0,Math.min(distance,18)-(joinedDecks?6:3))/3+Math.max(0,distance-18);
                 int desired=RoadLayout.clamp(y,shared-allowance,shared+allowance);
                 if (desired!=y) y=joinedDecks?desired:a.constrainLanding(t,desired);
@@ -406,6 +392,17 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
 
     private static boolean build(RoadTerrain terrain, Cell c, long seed) {
         int clearance=c.headroom();
+        boolean track=c.path.width()<5 && !c.bridge && !c.arcade && clearance==0 && !c.ground.water();
+        Tread tread=track?track(seed,c.path,c.t,c.offset):null;
+        // Keep the plants, roots and original cross-slope on an unworn verge. A shoulder on the
+        // downhill side of a rock shelf does not need a column of imported stone under it.
+        if (!c.junction && !c.bridge && !c.arcade && clearance==0 && !c.ground.water() && c.edgeTile()
+                && (c.y-c.ground.y()>3 || tread==Tread.TURF && c.ground.y()<=c.y+1)) {
+            int fill=c.y-c.ground.y();
+            if (fill>=2 && fill<=4 && RoadTerrain.softVerge(c.ground.state()))
+                terrain.blendShoulder(c.p,c.ground,c.y-1);
+            return false;
+        }
         if (!terrain.clear(c.p,c.y,c.ground.y(),clearance)) return false;
         if (clearance>0) {
             if (!c.bridge && !c.arcade) terrain.tunnels.bed(c.p,c.y,c.t);
@@ -413,11 +410,20 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             else terrain.sealRoof(c.p,c.y+clearance+1);
         }
         if (c.bridge || c.arcade) { crossing(terrain,c); return true; }
+        var floor=new BlockPos(c.p.x(),c.y,c.p.z());
+        if (clearance==0 && !c.ground.water() && c.y<=c.ground.y()) {
+            var nativeFloor=terrain.level.getBlockState(floor);
+            var underneath=terrain.level.getBlockState(floor.below());
+            // The last course of a natural cave roof carries the road. Leave the limestone or
+            // turf lip in place where cutting it would leave an earthen tread hanging in air.
+            if ((underneath.isAir() || !underneath.getFluidState().isEmpty()) && RoadTerrain.naturalGround(nativeFloor)
+                    && nativeFloor.isFaceSturdy(terrain.level,floor,Direction.UP)) return true;
+        }
         Block footing = c.ground.state().is(BlockTags.SAND) ? Blocks.SANDSTONE : Blocks.COBBLESTONE;
         if (c.y>=c.ground.y()+5 && terrain.crossesAboveStreet(c.p,c.ground.y(),c.y)) {
             // The village street passes under the embankment. Keep its right of way open.
             terrain.put(c.p,c.y-1,Blocks.STONE_BRICKS);
-        } else terrain.foundation(c.p,c.ground,c.y,footing);
+        } else terrain.foundation(c.p,c.ground,c.y,footing,track);
         int route=c.path instanceof Road road?road.index():((Spur)c.path).across();
         long salt=seed ^ (route*0x9e3779b97f4a7c15L) ^ (c.path.eastWest()?4637L:7607L);
         int patch=field(salt,c.t,c.offset,13,4);
@@ -429,37 +435,36 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
         boolean stoneBed=c.ground.y()>=c.y+2 || RoadTerrain.rockSurface(c.ground.state());
         boolean sandy=c.ground.state().is(BlockTags.SAND);
         boolean grassy=RoadTerrain.softVerge(c.ground.state());
-        Block paving,darkPaving;
-        var floor=new BlockPos(c.p.x(),c.y,c.p.z());
+        Block paving;
         String soil=terrain.materials.localSoil(c.ground.state());
         if (c.rise!=0) {
             int f=c.path.eastWest()?c.rise:0,g=c.path.eastWest()?0:c.rise;
             int uphill=surface(terrain,c.path,new Point(c.p.x()+f,c.p.z()+g));
             // A lone change of level gets a half-height landing. Only sustained climbs need stair treads.
-            boolean earthen=c.width<5 && !stoneBed && !sandy;
+            boolean earthen=track && !stoneBed && !sandy;
             if (uphill==c.y) paving=sandy?Blocks.SANDSTONE_SLAB:earthen?RoadGame.EARTH_SLAB:Blocks.COBBLESTONE_SLAB;
             else paving=sandy?Blocks.SANDSTONE_STAIRS:earthen?RoadGame.EARTH_STAIRS:Blocks.COBBLESTONE_STAIRS;
-            darkPaving=earthen?(uphill==c.y?Blocks.COBBLESTONE_SLAB:Blocks.COBBLESTONE_STAIRS):paving;
         } else {
-            boolean median=c.width==4 && c.offset==leftRut+1 && patch>57 && age>44;
-            boolean nativeVerge=!c.junction && !stoneBed && !sandy && !wheel && c.ground.y()==c.y
-                    && c.ground.state().getFluidState().isEmpty() && grassy && (median
-                    || c.edgeTile() && patch<(c.width==5?34:c.width==4?77:72));
-            if (nativeVerge) {
-                if (soil!=null) terrain.clearance.soilFinish(terrain.level,floor,c.ground.y(),c.ground.state(),c.ground.state());
-                return true;
+            if (track) {
+                if (c.junction && tread==Tread.TURF) tread=Tread.EARTH;
+                if (sandy) paving=c.ground.state().is(Blocks.RED_SAND)?Blocks.RED_SAND:Blocks.SAND;
+                else if (stoneBed) paving=tread==Tread.GRAVEL?Blocks.GRAVEL:Blocks.COBBLESTONE;
+                else paving=tread==Tread.GRAVEL?Blocks.GRAVEL:tread==Tread.PATH?Blocks.DIRT_PATH:Blocks.COARSE_DIRT;
+            } else {
+                if (!c.junction && !stoneBed && !sandy && !wheel && c.edgeTile() && patch<34 && grassy && c.ground.y()==c.y) {
+                    if (soil!=null) terrain.clearance.soilFinish(terrain.level,floor,c.ground.y(),c.ground.state(),c.ground.state());
+                    return true;
+                }
+                paving=paving(c,sandy,stoneBed,wheel,patch,age,salt);
             }
-            paving=paving(c,sandy,stoneBed,wheel,patch,age,salt,false);
-            darkPaving=soil==null?paving:paving(c,sandy,stoneBed,wheel,patch,age,salt,true);
         }
-        if ((paving instanceof FallingBlock || soil!=null && darkPaving instanceof FallingBlock) && RoadApi.replaceable(terrain.level.getBlockState(floor.below())))
+        if (paving instanceof FallingBlock && RoadApi.replaceable(terrain.level.getBlockState(floor.below())))
             terrain.put(c.p,c.y-1,footing);
         var light=RoadMaterials.withSoil(terrain.materials.state(floorState(c,paving)),soil);
         terrain.level.setBlock(floor,light,2);
-        if (soil!=null && (darkPaving!=paving || paving==Blocks.DIRT_PATH || paving==Blocks.COARSE_DIRT
+        if (soil!=null && (paving==Blocks.DIRT_PATH || paving==Blocks.COARSE_DIRT
                 || paving==RoadGame.EARTH_STAIRS || paving==RoadGame.EARTH_SLAB)) {
-            var dark=RoadMaterials.withSoil(terrain.materials.state(floorState(c,darkPaving)),soil);
-            terrain.clearance.soilFinish(terrain.level,floor,c.ground.y(),light,dark);
+            terrain.clearance.soilFinish(terrain.level,floor,c.ground.y(),light,light);
         }
         return true;
     }
@@ -469,15 +474,7 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
         return block instanceof StairBlock && c.rise!=0?state.setValue(StairBlock.FACING,direction(c.path.eastWest(),c.rise)):state;
     }
 
-    private static int field(long seed,int t,int offset,int length,int width) {
-        int row=Math.floorDiv(t,length),col=Math.floorDiv(offset,width);
-        int a=Math.floorMod(t,length),b=Math.floorMod(offset,width);
-        int left=RoadSection.interpolate(roll(seed,row,col,100),roll(seed,row+1,col,100),a,length);
-        int right=RoadSection.interpolate(roll(seed,row,col+1,100),roll(seed,row+1,col+1,100),a,length);
-        return RoadSection.interpolate(left,right,b,width);
-    }
-
-    private static Block paving(Cell c,boolean sandy,boolean rock,boolean wheel,int patch,int age,long salt,boolean darkSoil) {
+    private static Block paving(Cell c,boolean sandy,boolean rock,boolean wheel,int patch,int age,long salt) {
         // Short staggered repairs, broad mineral patches and long wheel tracks have different scales.
         int course=Math.floorDiv(c.t+Math.floorMod(c.offset,2),3);
         int sett=roll(salt+71,course,c.offset,100);
@@ -492,22 +489,6 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             if (c.edgeTile() && patch<38) return rock?Blocks.MOSSY_COBBLESTONE:Blocks.GRAVEL;
             if (c.junction || c.width==5 && patch>46) return sett<74?Blocks.STONE_BRICKS:Blocks.COBBLESTONE;
             return patch>58 && sett<62?Blocks.ANDESITE:Blocks.COBBLESTONE;
-        }
-        if (c.path instanceof Spur spur) {
-            boolean landing=Math.min(Math.abs(c.t-spur.end()),Math.abs(c.t-spur.turn()))<5;
-            if (landing && patch>34) return Blocks.GRAVEL;
-            if (darkSoil) return c.offset==0 || patch>61?Blocks.GRAVEL:Blocks.COARSE_DIRT;
-            if (c.offset==0) return patch>80?Blocks.GRAVEL:Blocks.DIRT_PATH;
-            return patch<49?Blocks.COARSE_DIRT:Blocks.DIRT_PATH;
-        }
-        if (c.width==4) {
-            if (darkSoil) {
-                if (wheel || !c.edgeTile()) return patch<27 && !wheel?Blocks.COARSE_DIRT:Blocks.GRAVEL;
-                return patch<31?Blocks.COARSE_DIRT:Blocks.GRAVEL;
-            }
-            if (wheel) return patch>54 && age<69?Blocks.GRAVEL:Blocks.DIRT_PATH;
-            if (c.edgeTile()) return patch>76?Blocks.GRAVEL:Blocks.COARSE_DIRT;
-            return patch<37?Blocks.GRAVEL:Blocks.COARSE_DIRT;
         }
         if (wheel) return age>70 && patch<44?Blocks.DIRT_PATH:Blocks.GRAVEL;
         if (c.edgeTile()) return patch<50?Blocks.COARSE_DIRT:patch>73?Blocks.MOSSY_COBBLESTONE:Blocks.GRAVEL;
@@ -544,13 +525,20 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
     private static void crossing(RoadTerrain terrain,Cell c) {
         BridgeBay bay=c.bridge?c.span.bay():terrain.bridges.along(c.path).viaduct(c.t);
         RoadMaterials palette=c.bridge?c.span.palette():terrain.materials.construction("andesite");
-        boolean timber=c.bridge && c.span.timber(),bent=timber?bay.support(c.t):bay.masonryPier(c.t);
+        boolean timber=c.bridge?c.span.timber():c.path.width()<5;
+        boolean bent=timber?bay.support(c.t):bay.masonryPier(c.t);
         Block tread=timber?(c.rise==0?Blocks.SPRUCE_PLANKS:Blocks.SPRUCE_STAIRS)
                 :(c.rise==0?Blocks.STONE_BRICKS:Blocks.STONE_BRICK_STAIRS);
-        terrain.put(c.p,c.y,floorState(c,tread),palette);
+        boolean bearing=bay.support(c.t) && bay.right()-bay.left()>=5;
+        BlockState surface=floorState(c,tread);
+        if (bearing && c.rise==0) {
+            // A transverse sill marks each pile bent. Masonry has a dressed course over each pier.
+            surface=timber?TunnelWorks.timber(c.path.eastWest()?Direction.Axis.Z:Direction.Axis.X)
+                    :Blocks.POLISHED_ANDESITE.defaultBlockState();
+        }
+        terrain.put(c.p,c.y,surface,palette);
         if (c.parapet()) {
-            Block cap=timber?Blocks.SPRUCE_SLAB:Blocks.STONE_BRICK_SLAB;
-            if (timber && bay.support(c.t)) cap=Blocks.STRIPPED_SPRUCE_LOG;
+            Block cap=timber?Blocks.SPRUCE_SLAB:bearing?Blocks.CHISELED_STONE_BRICKS:Blocks.STONE_BRICK_SLAB;
             terrain.put(c.p,c.y+1,cap.defaultBlockState(),palette);
         }
         int depth=timber?(bent && c.edgeTile()?c.y-terrain.level.getMinBuildHeight():bent || c.edgeTile()?1:0)

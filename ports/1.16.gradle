@@ -8,7 +8,7 @@ sourceSets.main.resources.srcDir('../../src/mc1.16.5/resources')
 tasks.named('compileJava') {
     source fileTree('../../src/main/java') {
         include 'dev/fourwinds/roads/RoadLayout.java', 'dev/fourwinds/roads/RoadSection.java',
-                'dev/fourwinds/roads/BridgeBay.java', 'dev/fourwinds/roads/PierLayout.java', 'dev/fourwinds/roads/client/WaypostRenderer.java',
+                'dev/fourwinds/roads/BridgeBay.java', 'dev/fourwinds/roads/WaysidePlan.java', 'dev/fourwinds/roads/PierLayout.java', 'dev/fourwinds/roads/client/WaypostRenderer.java',
                 'dev/fourwinds/roads/client/WaypostModelIds.java'
     }
 }

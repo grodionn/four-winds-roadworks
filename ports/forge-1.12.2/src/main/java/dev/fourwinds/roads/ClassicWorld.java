@@ -74,6 +74,14 @@ final class ClassicWorld implements LegacyRoads.Land {
             if(x>=box[0] && x<=box[3] && z>=box[2] && z<=box[5] && y+9>=box[1] && y-3<=box[4]) return true;
         return false;
     }
+    @Override public boolean firm(int x,int y,int z) {
+        IBlockState state=world.getBlockState(pos.setPos(x,y,z));
+        return natural(x,y,z) && state.getMaterial().blocksMovement() && state.getMaterial()!=Material.LEAVES && state.getMaterial()!=Material.WOOD;
+    }
+    @Override public boolean openForStop(int x,int y,int z) {
+        Material m=world.getBlockState(pos.setPos(x,y,z)).getMaterial();
+        return m==Material.AIR || m==Material.PLANTS || m==Material.VINE || m==Material.SNOW;
+    }
     @Override public boolean natural(int x,int y,int z) {
         if(y<1 || y>=255 || x<minX || x>=minX+16 || z<minZ || z>=minZ+16) return false;
         IBlockState state=world.getBlockState(pos.setPos(x,y,z));Block b=state.getBlock();
@@ -102,12 +110,16 @@ final class ClassicWorld implements LegacyRoads.Land {
         return "andesite";
     }
     private IBlockState block(LegacyRoads.Material mat,int x,int z) {
+        if(mat==LegacyRoads.Material.BANK_SURFACE) return world.getBlockState(new BlockPos(x,bed(x,z),z));
         if(mat==LegacyRoads.Material.AIR) return Blocks.AIR.getDefaultState();
         if(survey.tfc) {
             String name;
             switch(mat) {
                 case STONE:name="bricks/andesite";break;
+                case DRESSED:name="smooth/andesite";break;
                 case COBBLE:case WORN:name="cobble/andesite";break;
+                case SLIM_POST:name="wood/fence/spruce";break;
+                case EARTH:name="dirt/"+localRock(x,z);break;
                 case GRAVEL:name="gravel/"+localRock(x,z);break;
                 case PATH:name="path/"+localRock(x,z);break;
                 case FILL:name="raw/andesite";break;
@@ -125,8 +137,11 @@ final class ClassicWorld implements LegacyRoads.Land {
         }
         switch(mat) {
             case STONE:return Blocks.STONEBRICK.getDefaultState();
+            case DRESSED:return Blocks.STONE.getStateFromMeta(6);
             case WORN:return Blocks.STONEBRICK.getStateFromMeta(2);
             case COBBLE:return Blocks.COBBLESTONE.getDefaultState();
+            case SLIM_POST:return Blocks.SPRUCE_FENCE.getDefaultState();
+            case EARTH:return Blocks.DIRT.getStateFromMeta(1);
             case GRAVEL:return Blocks.GRAVEL.getDefaultState();
             case PATH:return Blocks.GRASS_PATH.getDefaultState();
             case FILL:return Blocks.STONE.getDefaultState();

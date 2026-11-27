@@ -20,7 +20,7 @@ dependencies { minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2859' }
 sourceSets.main.java {
     srcDirs 'src/main/java', '../legacy-common/src/main/java', '../../src/main/java'
     include 'dev/fourwinds/roads/Classic*.java', 'dev/fourwinds/roads/Legacy*.java',
-            'dev/fourwinds/roads/RoadLayout.java', 'dev/fourwinds/roads/RoadSection.java', 'dev/fourwinds/roads/BridgeBay.java',
+            'dev/fourwinds/roads/RoadLayout.java', 'dev/fourwinds/roads/RoadSection.java', 'dev/fourwinds/roads/BridgeBay.java', 'dev/fourwinds/roads/WaysidePlan.java',
             'dev/fourwinds/roads/PierLayout.java'
 }
 sourceSets.main.resources.srcDir('../../src/mc1.12.2/resources')

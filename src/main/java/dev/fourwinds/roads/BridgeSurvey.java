@@ -8,11 +8,13 @@ import static dev.fourwinds.roads.RoadLayout.*;
 /** Reads the pre-decoration riverbed. Every tile of a crossing sees the same two banks. */
 final class BridgeSurvey {
     private static final int DRY=Integer.MIN_VALUE, BANK_LIMIT=24, APPROACH=48, LANDING=10, MAX_RIVER_WIDTH=112;
-    private static final int FIT_LIMIT=48, TURN=24;
+    private static final int TURN=24;
     record Span(int y,int center,boolean timber,BridgeBay bay,RoadMaterials palette) {}
-    private record Crossing(BridgeAlignment deck,int y,boolean timber,boolean singleArch,RoadMaterials palette) {
+    private record Crossing(BridgeAlignment deck,BridgeBay seats,int y,boolean timber,boolean singleArch,RoadMaterials palette) {
         Span row(int t) {
-            var bay=singleArch?new BridgeBay(deck.left(),deck.right()):BridgeBay.at(t,deck.left(),deck.right(),true,timber,0);
+            BridgeBay bay=null;
+            if (seats!=null && t>=seats.left() && t<=seats.right())
+                bay=singleArch?seats:BridgeBay.at(t,seats.left(),seats.right(),true,timber,0);
             return new Span(y,deck.center(t),timber,bay,palette);
         }
     }
@@ -31,6 +33,7 @@ final class BridgeSurvey {
         private final Map<Integer,Boolean> gaps=new HashMap<>();
         private final Map<Point,Integer> soundings=new HashMap<>();
         private final Map<Integer,Integer> centers=new HashMap<>();
+        private final Map<Integer,Integer> contourKnots=new HashMap<>();
         private final Map<Integer,Boolean> landings=new HashMap<>();
         Channel(Path path) { this.path=path; }
 
@@ -70,11 +73,18 @@ final class BridgeSurvey {
         }
 
         Span span(int t) {
+            Span guide=guide(t);
+            return guide!=null && guide.bay()!=null?guide:null;
+        }
+
+        // A surveyed line can run out onto dry ground. Keep its alignment through the landing.
+        private Span guide(int t) {
             if (spans.containsKey(t)) return spans.get(t);
             Span result=null;
             if (channel(t)) {
                 var fit=crossing(t);
-                result=fit!=null?fit.row(t):measure(t);
+                if (fit==null) result=measure(t);
+                else if (fit.deck.distance(t)==0) result=fit.row(t);
             } else if (path.contains(t)) {
                 // Follow the same drawing past the waterline, up to the actual rock seat.
                 for (int side:new int[]{-1,1}) {
@@ -100,12 +110,29 @@ final class BridgeSurvey {
         private Crossing crossing(int wet) {
             if (crossings.containsKey(wet)) return crossings.get(wet);
             int left=wet-1,right=wet+1;
-            while (wet-left<=FIT_LIMIT && shelf(left)!=DRY) left--;
-            while (right-wet<=FIT_LIMIT && shelf(right)!=DRY) right++;
+            while (wet-left<=MAX_RIVER_WIDTH && shelf(left)!=DRY) left--;
+            while (right-wet<=MAX_RIVER_WIDTH && shelf(right)!=DRY) right++;
             Crossing result=null;
-            if (right-left<=FIT_LIMIT && bank(wet,-1)!=DRY && bank(wet,1)!=DRY) result=fit(left,right,shelf(wet));
+            if (right-left<=MAX_RIVER_WIDTH && bank(wet,-1)!=DRY && bank(wet,1)!=DRY) result=fit(left,right,shelf(wet));
             for (int t=left+1;t<right;t++) crossings.put(t,result);
             return result;
+        }
+
+        private int deckHeight(int left,int right,int grade,int waterY,boolean timber) {
+            int highBank=waterY;
+            for (int d:new int[]{0,4,8}) {
+                int a=original(left-d,path.center(left-d)),b=original(right+d,path.center(right+d));
+                if ((a&1)==0) highBank=Math.max(highBank,a>>1);
+                if ((b&1)==0) highBank=Math.max(highBank,b>>1);
+            }
+            // Floodplain banks need a low crown above the channel, even when a distant grade knot sits on a hill.
+            int lowShore=Math.min(original(left,path.center(left))>>1,original(right,path.center(right))>>1);
+            int clearance=waterY+(timber?2:3);
+            // A hill behind one bank need not lift the whole crossing over the opposite floodplain.
+            if (grade<=waterY+6 && lowShore>=waterY && lowShore<=waterY+2)
+                return Math.max(clearance,Math.min(grade,lowShore+1));
+            if (highBank<=waterY+3) return Math.max(clearance,Math.min(grade,highBank+1));
+            return Math.max(grade,waterY+(timber?2:4));
         }
 
         private Crossing fit(int left,int right,int waterY) {
@@ -117,13 +144,13 @@ final class BridgeSurvey {
             int bankGrade=(terrain.grade.along(path,left)+terrain.grade.along(path,right)+1)/2;
             boolean timber=path.width()<5 && right-left<=16 && bankGrade<=waterY+5
                     && (junction<left-LANDING || junction>right+LANDING);
-            int y=Math.max(bankGrade,waterY+(timber?2:4));
+            int y=deckHeight(left,right,bankGrade,waterY,timber);
             int leftTie=dryTie(left,-1),rightTie=dryTie(right,1);
             var deck=BridgeAlignment.fit(path,left,right,y,junction,leftTie,rightTie,this::original);
             if (deck==null) return null;
             if (timber && deck.right()-deck.left()>20) {
                 timber=false;
-                y=Math.max(bankGrade,waterY+4);
+                y=deckHeight(left,right,bankGrade,waterY,false);
                 deck=BridgeAlignment.fit(path,left,right,y,junction,leftTie,rightTie,this::original);
                 if (deck==null) return null;
             }
@@ -135,7 +162,8 @@ final class BridgeSurvey {
             Point seat=path.point(end,deck.center(end)-path.center(end));
             String stone=terrain.materials.usesLanterns()?"andesite":ShoreTerrain.quarry(terrain.level,seat);
             boolean singleArch=!timber && y-waterY>=8 && deck.right()-deck.left()<=30;
-            return new Crossing(deck,y,timber,singleArch,terrain.materials.construction(stone));
+            BridgeBay seats=timber?deck.timberBanks(path.width(),y,this::original):new BridgeBay(deck.left(),deck.right());
+            return new Crossing(deck,seats,y,timber,singleArch,terrain.materials.construction(stone));
         }
 
         // Two nearby rivers share a dry point on the original road so their approaches always meet.
@@ -193,13 +221,13 @@ final class BridgeSurvey {
 
         private Span measure(int t) {
             int l=t-1,r=t+1;
-            while (t-l<=BANK_LIMIT && shelf(l)!=DRY) l--;
-            while (r-t<=BANK_LIMIT && shelf(r)!=DRY) r++;
-            boolean whole=r-l<=BANK_LIMIT+1;
+            while (t-l<=MAX_RIVER_WIDTH && shelf(l)!=DRY) l--;
+            while (r-t<=MAX_RIVER_WIDTH && shelf(r)!=DRY) r++;
+            boolean whole=r-l<=MAX_RIVER_WIDTH && shelf(l)==DRY && shelf(r)==DRY;
             boolean junction=!whole || path instanceof Spur spur && spur.turn()>=l-LANDING && spur.turn()<=r+LANDING;
             if (whole && path instanceof Road road) {
                 int number=Math.floorDiv(t+SPACING/2,SPACING);
-                if (Math.abs(t-number*SPACING)<=RoadSection.JUNCTION_SHIFT+BANK_LIMIT+LANDING) {
+                if (Math.abs(t-number*SPACING)<=RoadSection.JUNCTION_SHIFT+MAX_RIVER_WIDTH+LANDING) {
                     int cross=terrain.grade.junction(road,number).point().along(road.eastWest());
                     junction|=cross>=l-LANDING && cross<=r+LANDING;
                 }
@@ -210,11 +238,11 @@ final class BridgeSurvey {
             int design=(left+right+1)/2;
             // A highway above a gorge crosses at the bank grade. Only low, short crossings use timber piles.
             boolean timber=whole && !junction && path.width()<5 && r-l<=16 && design<=waterY+5;
-            if (whole) y=Math.max(waterY+(timber?2:4),design);
+            if (whole) y=deckHeight(l,r,design,waterY,timber);
             String stone="andesite";
             if (whole && !junction) {
                 int lc=path.center(l),rc=path.center(r);
-                center=RoadSection.interpolate(lc,rc,t-l,r-l);
+                center=RoadLayout.clamp(RoadSection.interpolate(lc,rc,t-l,r-l),center-BridgeAlignment.MAX_SHIFT,center+BridgeAlignment.MAX_SHIFT);
                 int lowBank=Math.min(ShoreTerrain.surface(terrain.level,path.point(l,0))>>1,
                         ShoreTerrain.surface(terrain.level,path.point(r,0))>>1);
                 if (!timber && y-lowBank<5 && !terrain.materials.usesLanterns())
@@ -230,14 +258,16 @@ final class BridgeSurvey {
         int center(int t) { return centers.computeIfAbsent(t,this::alignment); }
 
         int deckDepth(int t,int offset) {
-            return BridgeAlignment.deckDepth(offset,center(t-1),center(t),center(t+1));
+            Span s=built(t);
+            int width=s==null || s.timber()?path.width():5;
+            return BridgeAlignment.deckDepth(width,offset,center(t-1),center(t),center(t+1));
         }
 
         boolean landingTrack(int t,int offset) {
-            if (Math.abs(offset)!=2 || deckDepth(t,offset)<1) return false;
+            if (Math.abs(offset)!=2) return false;
             for (int d=1;d<=2;d++) for (int side:new int[]{-1,1}) {
                 int row=t+side*d;
-                if (built(row)!=null || viaduct(row)!=null) return true;
+                if ((built(row)!=null || viaduct(row)!=null) && deckDepth(row,offset+center(t)-center(row))>=1) return true;
             }
             return false;
         }
@@ -263,13 +293,13 @@ final class BridgeSurvey {
         }
 
         private int alignment(int t) {
-            Span here=span(t);
+            Span here=guide(t);
             if (here!=null) return here.center;
             int wanted=path.center(t),lo=Integer.MIN_VALUE,hi=Integer.MAX_VALUE;
             int left=0,right=0,leftDistance=0,rightDistance=0;
             for (int side:new int[]{-1,1}) {
                 for (int d=1;d<TURN;d++) {
-                    Span s=span(t+side*d);
+                    Span s=guide(t+side*d);
                     if (s==null) continue;
                     if (side<0) {left=s.center;leftDistance=d;}
                     else {right=s.center;rightDistance=d;}
@@ -284,23 +314,37 @@ final class BridgeSurvey {
         }
 
         private int approach(int t) {
-            Span here=span(t);
+            Span here=guide(t);
             if (here!=null) return here.y;
+            int wanted=landGrade(t);
             int left=1,right=1;
-            while (left<APPROACH && span(t-left)==null) left++;
-            while (right<APPROACH && span(t+right)==null) right++;
-            if (left==APPROACH && right==APPROACH) return terrain.grade.along(path,t);
-            if (right==APPROACH) return ramp(t,-left);
-            if (left==APPROACH) return ramp(t,right);
-            int a=(APPROACH-left)*right, b=(APPROACH-right)*left;
-            return RoadSection.interpolate(ramp(t,-left),ramp(t,right),b,a+b);
+            while (left<APPROACH && guide(t-left)==null) left++;
+            while (right<APPROACH && guide(t+right)==null) right++;
+            if (left==APPROACH && right==APPROACH) return wanted;
+            return BridgeAlignment.approachGrade(wanted,left,left==APPROACH?null:guide(t-left).y,
+                    right,right==APPROACH?null:guide(t+right).y);
         }
 
-        private int ramp(int t,int delta) {
-            int bank=t+delta;
-            int side=-Integer.signum(delta),d=Math.abs(delta);
-            int far=terrain.grade.along(path,bank+side*APPROACH);
-            return RoadSection.interpolate(span(bank).y,far,d-1,APPROACH-1);
+        private int landGrade(int t) {
+            int a=Math.floorDiv(t,CONTOUR_STEP)*CONTOUR_STEP,b=a+CONTOUR_STEP;
+            int left=contourKnots.computeIfAbsent(a,this::grounded),right=contourKnots.computeIfAbsent(b,this::grounded);
+            if (left==terrain.grade.along(path,a) && right==terrain.grade.along(path,b)) return terrain.grade.along(path,t);
+            return RoadSection.interpolate(left,right,t-a,CONTOUR_STEP);
+        }
+
+        private int grounded(int t) {
+            int planned=terrain.grade.along(path,t);
+            if (!path.contains(t)) return planned;
+            if (path instanceof Road road) {
+                int span=Math.floorDiv(t+SPACING/2,SPACING);
+                if (Math.abs(t-terrain.grade.junction(road,span).point().along(road.eastWest()))<=CONTOUR_STEP+3) return planned;
+            } else {
+                Spur spur=(Spur)path;
+                if (Math.min(Math.abs(t-spur.turn()),Math.abs(t-spur.end()))<=CONTOUR_STEP) return planned;
+            }
+            int ground=original(t,path.center(t));
+            if (ground==DRY || (ground&1)!=0 || planned<=(ground>>1)+1) return planned;
+            return groundedKnot(planned,terrain.grade.along(path,t-CONTOUR_STEP),terrain.grade.along(path,t+CONTOUR_STEP),ground>>1);
         }
 
         private boolean gap(int t) {
@@ -316,11 +360,12 @@ final class BridgeSurvey {
         BridgeBay viaduct(int t) {
             if (viaducts.containsKey(t)) return viaducts.get(t);
             BridgeBay bay=null;
-            if (gap(t) && RoadLayout.sustainedCover(t,this::gap)) {
+            if (gap(t)) {
                 int l=t,r=t;
                 while (t-l<=BANK_LIMIT && gap(l-1)) l--;
                 while (r-t<=BANK_LIMIT && gap(r+1)) r++;
-                bay=BridgeBay.at(t,l,r,r-l<=BANK_LIMIT,false,0);
+                // A one- to three-block cleft is carried by the two neighbouring banks.
+                bay=r-l<3?new BridgeBay(l-1,r+1):BridgeBay.at(t,l,r,r-l<=BANK_LIMIT,path.width()<5,0);
             }
             viaducts.put(t,bay);
             return bay;

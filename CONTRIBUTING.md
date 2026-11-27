@@ -37,13 +37,13 @@ After every patch, read [README.md](README.md) and [README.ru.md](README.ru.md) 
 
 ## Release versions
 
-All loaders share `modVersion` in `gradle.properties`. The first public release is `0.1.0`. Bump the number once for each published release. Several fixes can ship together. A change to the README or gallery alone keeps the current number.
+All loaders share `modVersion` in `gradle.properties`. Keep it at `0.1.0` through the first CurseForge release. Use the Git commit to identify development builds in the meantime. After that release, bump the number once per published update. Several fixes can ship together. A change to the README or gallery alone keeps the current number.
 
 - **Patch** (`0.1.0 → 0.1.1`) for fixes that preserve existing saves and supported integrations. Examples include a blocked bridge landing, a missing model or a JAR that the loader rejects. A fix for one loader still uses the shared release number.
 - **Minor** (`0.1.2 → 0.2.0`) for a new structure, a new supported platform or a redesign of the road network. During `0.x`, an incompatible change also needs a minor release and an upgrade note in the changelog.
 - **Major** starts at `1.0.0` when we commit to a stable save format and integrations. After that, a change that breaks either requires the next major version.
 
-For a release candidate, append `-rc.1`, then `-rc.2` if needed. With release `0.1.0`, the loader displays `0.1.0+mc1.20.1` on Minecraft 1.20.1. GitHub uses one tag, `v0.1.0`, for all builds.
+With release `0.1.0`, the loader displays `0.1.0+mc1.20.1` on Minecraft 1.20.1. GitHub uses one tag, `v0.1.0`, for all builds.
 
 1. Update `modVersion` and [the changelog](CHANGELOG.md). Build every project in the [loader table](ports/README.md) from the same commit.
 2. Run `python tools/package_release.py` with Python 3.11 or later. It checks the packaged versions, licences, loader descriptors, mixins and assets. The JARs and `SHA256SUMS.txt` appear in `build/distributions/v<version>/`.
@@ -57,15 +57,22 @@ The scripts in `tools/` can also inspect saved chunks. Install `nbtlib` in a Pyt
 
 | Preset | Seed | Where to go |
 | --- | ---: | --- |
-| TFC | 7319041 | The gorge at X −1072, Z −894 and the portal at X −971, Z −533. |
-| Vanilla | 96320157 | The spring at X −885, Z 270. Keep it loaded for 500 game ticks. |
-| Vanilla | 38473917 | The village around X 350, Z 720 and the crossing to its east. |
-| TFC with Ice and Fire | 20261121 | The pixie settlement around X 4240, Z −608. |
+| TFC | 7319041 | The gorge at X −1072, Z −894 and the portal at X −971, Z −533. For `--harbour`, also visit the lighthouse at −775, −160 and the landing at −895, −120. |
+| Vanilla | 96320157 | The spring at X −885, Z 270. Keep it loaded for 500 game ticks. For the cave-roof check, also visit X −384, Z 156. |
+| TFC | 38473917 | For `--tfc-floodplain`, generate the riverbank from X 347, Z 644 to X 399, Z 680 and the limestone shelf from X 355, Z 736 to X 360, Z 755. |
+| Vanilla | 38473917 | The village around X 350, Z 720 and its river crossing. Generate X 310–426, Z 635–764, plus the jungle lanes at 1372, −2360 and 1565, −2456. |
+| TFC with Ice and Fire | 20261121 | The pixie settlement around X 4240, Z −608. For `--waysides` on 1.21.1, also visit the country lane at 4124, −1394, the shelter at 4230, −105 and the mounting steps at 2442, 1495. |
 
 ```sh
 python -m pip install nbtlib
 python tools/check_regression_worlds.py path/to/tfc-gorge path/to/vanilla-spring
 python tools/check_village_roads.py path/to/vanilla-village path/to/tfc-pixies
+```
+
+To investigate a floating dirt track, generate the same area twice with the same preset and modpack, leaving Roadworks out of the control world. This scans every full chunk touching the rectangle and reports the coordinates of unsupported treads.
+
+```sh
+python tools/check_track_support.py path/to/road-world --control path/to/control-world --area 322 672 451 768
 ```
 
 ## Working on structures and art

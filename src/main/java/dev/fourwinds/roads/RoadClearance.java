@@ -122,6 +122,8 @@ public final class RoadClearance {
             var floor=new BlockPos(cp.getBlockX(key&15),level.getMinBuildHeight()+(key>>>8),cp.getBlockZ((key>>>4)&15));
             // Ice and Fire can place a cottage or its own street from the next chunk. Only dress bare soil.
             if (CoastalPier.reserved(chunk,floor.getX(),floor.getZ()) || !RoadTerrain.softVerge(chunk.getBlockState(floor))) continue;
+            var bed=floor.below();
+            if (!chunk.getBlockState(bed).isFaceSturdy(level,bed,net.minecraft.core.Direction.UP)) continue;
             var cover=chunk.getBlockState(floor.above());
             var high=chunk.getBlockState(floor.above(2));
             if (cover.hasBlockEntity() || high.hasBlockEntity() || !cover.getFluidState().isEmpty() || !high.isAir()

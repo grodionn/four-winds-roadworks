@@ -1,4 +1,4 @@
-"""Check the two real Four Winds 1.8.1 regression sites in saved Minecraft 1.21.1 worlds.
+"""Check bridge, spring and cave-roof sites in saved Minecraft 1.21.1 worlds.
 
 Requires nbtlib. Generate the TFC gorge and bridge portal (seed 7319041) and vanilla taiga (seed 96320157),
 keep the taiga spring loaded for at least 500 normal game ticks, then save and close both worlds.
@@ -14,13 +14,15 @@ import nbtlib
 
 
 class World:
-    def __init__(self, path, seed):
+    def __init__(self, path, seed=None):
         self.path = path
         level = nbtlib.load(path / 'level.dat')['Data']
         self.version = str(level['Version']['Name'])
-        actual = int(level['WorldGenSettings']['seed'])
-        if actual != seed:
-            raise ValueError(f'{path}: expected seed {seed}, found {actual}')
+        generation = level['WorldGenSettings']
+        self.seed = int(generation['seed'])
+        self.generator = generation['dimensions']['minecraft:overworld']['generator'].unpack(json=True)
+        if seed is not None and self.seed != seed:
+            raise ValueError(f'{path}: expected seed {seed}, found {self.seed}')
 
     @lru_cache(maxsize=32)
     def chunk(self, cx, cz):
@@ -57,18 +59,60 @@ class World:
         entry = palette[index]
         return str(entry['Name']), entry.get('Properties', {})
 
+    def original_surface(self, x, z):
+        chunk = self.chunk(x // 16, z // 16)
+        for container in ('neoforge:attachments', 'fabric:attachments', 'fourwindsroadworks'):
+            data = chunk.get(container, {})
+            survey = data.get('fourwindsroadworks:surveyed_surface', data.get('surveyed_surface', {}))
+            heights = survey.get('heights', ())
+            if len(heights) == 128:
+                column = z % 16 * 16 + x % 16
+                packed = (int(heights[column // 2]) >> (16 * (column % 2))) & 0xffff
+                return (packed if packed < 32768 else packed - 65536) >> 1, bool(packed & 1)
+        raise ValueError(f'Missing original terrain survey at {x}, {z}')
+
     def expect(self, x, y, z, name, **properties):
         block, state = self.block(x, y, z)
         if block != name or any(str(state.get(k)) != v for k, v in properties.items()):
             raise ValueError(f'{x}, {y}, {z}: expected {name} {properties}, found {block} {state}')
 
 
+def check_riverbank_fill(world):
+    soil = {'minecraft:' + b for b in ('dirt', 'coarse_dirt', 'grass_block', 'sand', 'gravel', 'dirt_path')}
+    tfc_soils = ('tfc:dirt/', 'tfc:coarse_dirt/', 'tfc:grass/', 'tfc:grass_path/', 'tfc:duff/', 'tfc:sand/', 'tfc:rock/gravel/')
+    open_side = {'minecraft:' + b for b in ('air', 'cave_air', 'water', 'short_grass', 'tall_grass', 'seagrass')}
+    open_side.update(('tfc:salt_water', 'tfc:river_water'))
+
+    def soil_at(x, y, z):
+        block, _ = world.block(x, y, z)
+        return block in soil or block.startswith(tfc_soils)
+
+    def open_at(x, y, z):
+        block, _ = world.block(x, y, z)
+        return block in open_side or block.startswith('tfc:plant/')
+
+    # Only count fill above the original ground. The hillside alongside the track has natural cliffs.
+    for z in range(645, 680):
+        for x in range(348, 399):
+            original, _ = world.original_surface(x, z)
+            for y in range(original + 1, original + 7):
+                if not all(soil_at(x, y + dy, z) for dy in range(3)):
+                    continue
+                for dx, dz in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+                    if all(open_at(x + dx, y + dy, z + dz) for dy in range(3)):
+                        raise ValueError(f'Three-block exposed earth bank at {x}, {y}, {z}')
+
+
 def check_gorge(world):
     for x in range(-1090, -1067):
         for z in range(-896, -891):
-            world.expect(x, 83, z, 'tfc:rock/bricks/andesite')
+            bearing = x in (-1090, -1068)
+            world.expect(x, 83, z, 'tfc:rock/smooth/andesite' if bearing else 'tfc:rock/bricks/andesite')
             if abs(z + 894) == 2:
-                world.expect(x, 84, z, 'tfc:rock/bricks/andesite_slab', type='bottom')
+                if bearing:
+                    world.expect(x, 84, z, 'tfc:rock/chiseled/andesite')
+                else:
+                    world.expect(x, 84, z, 'tfc:rock/bricks/andesite_slab', type='bottom')
             else:
                 for y in (84, 85):
                     block, _ = world.block(x, y, z)
@@ -76,18 +120,39 @@ def check_gorge(world):
                         raise ValueError(f'Obstructed crossing at {x}, {y}, {z}: {block}')
     for x in (-1090, -1068):
         for z in range(-896, -891):
-            tags = world.chunk(x // 16, z // 16)['neoforge:attachments']
-            heights = tags['fourwindsroadworks:surveyed_surface']['heights']
-            column = (z % 16) * 16 + x % 16
-            value = (int(heights[column // 2]) >> (16 * (column % 2))) & 65535
-            ground = (value if value < 32768 else value - 65536) >> 1
-            if value & 1 or ground < 80:
+            ground, wet = world.original_surface(x, z)
+            if wet or ground < 80:
                 raise ValueError(f'Bridge seat above open water or a drop at {x}, {z}: {ground}')
+    for z, y, facing in [(-539, 73, 'south'), (-538, 75, 'south'), (-528, 75, 'north'), (-527, 73, 'north')]:
+        world.expect(-971, y, z, 'tfc:rock/bricks/basalt_stairs', half='bottom', facing=facing)
+        world.expect(-971, y - 1, z, 'tfc:rock/smooth/basalt')
     for z in (-537, -529):
         world.expect(-971, 73, z, 'tfc:rock/bricks/basalt_wall', up='true')
     for z in range(-536, -529):
         world.expect(-971, 70, z, 'tfc:rock/bricks/basalt')
         world.expect(-971, 71, z, 'minecraft:air')
+
+
+def check_harbour(world):
+    # Walk each stair and its quarter-turn landing, from the keeper's room up to the gallery.
+    flights = [((-774, -160), (-774, -161)), ((-775, -161), (-776, -161)),
+               ((-776, -160), (-776, -159)), ((-775, -159), (-774, -159))]
+    for y in range(65, 85):
+        stair, landing = flights[(y - 65) % 4]
+        for (x, z), block in [(stair, 'pine_stairs'), (landing, 'pine')]:
+            world.expect(x, y, z, 'tfc:wood/planks/' + block)
+            for dy in (1, 2):
+                world.expect(x, y + dy, z, 'minecraft:air')
+    world.expect(-775, 88, -160, 'tfc:firepit', lit='true')
+    # The quay and the smaller landing each have exposed pile heads flush with the planks.
+    for x, z in [(-781, -158), (-770, -153), (-895, -120), (-897, -124)]:
+        world.expect(x, 65, z, 'minecraft:air')
+        y = 64
+        while y > 45 and world.block(x, y, z)[0] == 'tfc:wood/stripped_log/spruce':
+            world.expect(x, y, z, 'tfc:wood/stripped_log/spruce', axis='y')
+            y -= 1
+        if y >= 63 or not world.block(x, y, z)[0].startswith('tfc:rock/'):
+            raise ValueError(f'Incomplete pile at {x}, {y}, {z}')
 
 
 def check_taiga(world):
@@ -108,11 +173,31 @@ def check_taiga(world):
             raise ValueError(f'Suspended tunnel timber at {x}, {y}, {z}')
 
 
+def check_cave_roofs(tfc, taiga):
+    # These blocks bear the road directly over a cavity in the original terrain.
+    for x, y, z in [(355, 67, 736), (360, 65, 755)]:
+        tfc.expect(x, y, z, 'tfc:rock/hardened/limestone')
+        tfc.expect(x, y - 1, z, 'minecraft:cave_air')
+        tfc.expect(x, y + 1, z, 'minecraft:air')
+    taiga.expect(-384, 65, 156, 'minecraft:grass_block')
+    taiga.expect(-384, 64, 156, 'minecraft:air')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('tfc_world', type=Path)
     parser.add_argument('vanilla_world', type=Path)
+    parser.add_argument('--tfc-floodplain', type=Path, help='Also check the low banks and cave roofs on TFC seed 38473917, and the taiga cave roof')
+    parser.add_argument('--harbour', action='store_true', help='Also generate the TFC coast near (-775, -160) and (-895, -120)')
     args = parser.parse_args()
-    check_gorge(World(args.tfc_world, 7319041))
-    check_taiga(World(args.vanilla_world, 96320157))
+    gorge = World(args.tfc_world, 7319041)
+    check_gorge(gorge)
+    if args.harbour:
+        check_harbour(gorge)
+    taiga = World(args.vanilla_world, 96320157)
+    check_taiga(taiga)
+    if args.tfc_floodplain:
+        floodplain = World(args.tfc_floodplain, 38473917)
+        check_cave_roofs(floodplain, taiga)
+        check_riverbank_fill(floodplain)
     print('Gorge deck, stone seats, spring, road clearance and overhanging rock verified.')
