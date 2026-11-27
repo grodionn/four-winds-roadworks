@@ -60,7 +60,7 @@ def check_coast(folder):
     by_chunk = {}
     for entry in template["blocks"]:
         along, height, side = map(int, entry["pos"])
-        x, y, z = 940 - along, 65 + height, -176 + side
+        x, y, z = 941 - along, 65 + height, -172 + side
         name = str(template["palette"][int(entry["state"])]["Name"])
         by_chunk.setdefault((x >> 4, z >> 4), []).append((x, y, z, ids[name]))
     checked = 0
@@ -73,8 +73,8 @@ def check_coast(folder):
             index = ((y & 15) << 8) | ((z & 15) << 4) | (x & 15)
             assert sections[y >> 4][index] == block, ("incorrect lighthouse block", x, y, z)
             checked += 1
-    assert checked == len(template["blocks"]), "Generate and save the coast around X 930, Z -161"
-    print(f"{checked} lighthouse blocks match the drawing; beacon at X 930, Y 88, Z -161")
+    assert checked == len(template["blocks"]), "Generate and save the coast around X 931, Z -157"
+    print(f"{checked} lighthouse blocks match the drawing; beacon at X 931, Y 88, Z -157")
 
 
 def check(folder):
@@ -137,6 +137,6 @@ def check(folder):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("world", type=Path)
-    parser.add_argument("--coast", action="store_true", help="Check the complete vanilla lighthouse near X 930, Z -161")
+    parser.add_argument("--coast", action="store_true", help="Check the complete vanilla lighthouse near X 931, Z -157")
     args = parser.parse_args()
     (check_coast if args.coast else check)(args.world)
