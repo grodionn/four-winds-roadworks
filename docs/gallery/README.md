@@ -2,7 +2,7 @@
 
 [Back to the mod](../../README.md) · [По-русски](README.ru.md)
 
-Nine in-game photographs from Minecraft Java 1.21.1. Open a frame for the full image. Under each photograph are the mod version, world seed and camera coordinates from that save. Road alignments can change between versions.
+Nine in-game photographs from Minecraft Java 1.21.1, taken during development before the first public release, 0.1.0. Each caption records the internal build number, seed and camera coordinates from that save. Road alignments can change between builds.
 
 ## At the coast
 

@@ -27,7 +27,13 @@ Grodion’s code and original artwork are available under the [MIT licence](LICE
 
 ## Release versions
 
-All loaders share the release number in `gradle.properties`. Use a patch for fixes, a minor version for new features or supported platforms, and a major version for an incompatible change to an existing save or supported integration. A release candidate can use a suffix such as `-rc.1`. The loader reads `1.9.0+mc1.20.1` in a 1.20.1 JAR. GitHub uses a single tag, `v1.9.0`, for the whole release.
+All loaders share `modVersion` in `gradle.properties`. The first public release is `0.1.0`. Bump the number once for each published release. Several fixes can ship together. A change to the README or gallery alone keeps the current number.
+
+- **Patch** (`0.1.0 → 0.1.1`) for fixes that preserve existing saves and supported integrations. Examples include a blocked bridge landing, a missing model or a JAR that the loader rejects. A fix for one loader still uses the shared release number.
+- **Minor** (`0.1.2 → 0.2.0`) for a new structure, a new supported platform or a redesign of the road network. During `0.x`, an incompatible change also needs a minor release and an upgrade note in the changelog.
+- **Major** starts at `1.0.0` when we commit to a stable save format and integrations. After that, a change that breaks either requires the next major version.
+
+For a release candidate, append `-rc.1`, then `-rc.2` if needed. With release `0.1.0`, the loader displays `0.1.0+mc1.20.1` on Minecraft 1.20.1. GitHub uses one tag, `v0.1.0`, for all builds.
 
 1. Update `modVersion` and [the changelog](CHANGELOG.md). Build every project in the [loader table](ports/README.md) from the same commit.
 2. Run `python tools/package_release.py` with Python 3.11 or later. It checks the packaged versions, licences, loader descriptors, mixins and assets. The JARs and `SHA256SUMS.txt` appear in `build/distributions/v<version>/`.
