@@ -1,0 +1,30 @@
+name: Report a generation bug
+description: A road, crossing or structure went wrong in your world.
+labels: [bug]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What did you find?
+      description: Describe what happened as you followed the road. A screenshot facing the problem helps.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Mod and NeoForge versions
+      placeholder: e.g. Four Winds 1.8.3, NeoForge 21.1.267
+    validations:
+      required: true
+  - type: textarea
+    id: location
+    attributes:
+      label: Where can we find it?
+      description: Include the seed, X/Y/Z, world preset (vanilla or TFC) and any other worldgen mods. If the server hides its seed, give whatever you have.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How did this area generate?
+      description: Was it first explored on this version? Mention which direction you approached from, or a relevant line from the log if the game crashed.
