@@ -58,10 +58,11 @@ public final class LegacyRoadsCheck {
         return land;
     }
 
-    private static void checkRavine() {
+    private static void checkRavine(boolean stream) {
         Coast land=new Coast() {
             @Override public int bed(int x,int z) { return x>=66 && x<=70?50:70; }
-            @Override public boolean wet(int x,int z) { return false; }
+            @Override public boolean wet(int x,int z) { return stream && x>=67 && x<=69; }
+            @Override public boolean ocean(int x,int z) { return false; }
             @Override public boolean firm(int x,int y,int z) { return !(x==83 && y==69) && super.firm(x,y,z); }
             @Override public boolean openForStop(int x,int y,int z) { return x==83 && y==69 || super.openForStop(x,y,z); }
         };
@@ -90,7 +91,8 @@ public final class LegacyRoadsCheck {
     }
 
     public static void main(String[] args) {
-        checkRavine();
+        checkRavine(false);
+        checkRavine(true);
         List<Point> tiles = new ArrayList<>();
         for (int offset : new int[]{-256, 192}) {
             for (int x = offset; x < offset+64; x += 16)

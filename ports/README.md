@@ -28,9 +28,9 @@ The Forge and Fabric servers use vanilla seed `38473917`. Minecraft changed the 
 | Versions | What to inspect in the saved world |
 | --- | --- |
 | 1.19.2, 1.20.1, 1.21.1 | A three-by-three patch of clear bridge deck at X 412, Y 67, Z 740. The village sign at X 319, Y 65, Z 686 gives the bearing and distance. |
-| 1.18.2 | Bridge at X 401, Y 67, Z 724. The sign at X 324, Y 65, Z 683 points south, 81 blocks to the village. |
+| 1.18.2 | Bridge at X 405, Y 67, Z 724. The sign at X 324, Y 65, Z 683 points south, 81 blocks to the village. |
 | 1.16.5 | Load the areas around X/Z 0/0, 176/176, 352/352 and 180/−176. Check the paved surface, headroom and sign blocks in the saved chunks. |
-| 1.12.2 | Generate the vanilla spawn area. The crossroads stands at X 181, Z 181. The light on the western-facing pier is at X 930, Y 88, Z −161. In TFC Classic the spawn-area crossroads is at X −179, Y 151, Z 169. |
+| 1.12.2 | The vanilla crossroads stands at X 181, Z 181. Check the timber crossing at X 107, Y 67, Z 362 and both of its banks. The light on the western-facing pier is at X 930, Y 88, Z −161. In TFC Classic the spawn-area crossroads is at X −179, Y 151, Z 169. |
 
 For Forge TFC on 1.18.2 and 1.20.1 use seed `20261121` and load X/Z 0/0, 16/0 and 176/176. On 1.18.2 the first road is shale. On 1.20.1 the stone changes from diorite near the origin to claystone around X/Z 176/176.
 

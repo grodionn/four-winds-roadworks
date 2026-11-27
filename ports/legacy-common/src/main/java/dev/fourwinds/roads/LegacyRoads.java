@@ -197,13 +197,15 @@ final class LegacyRoads {
             while (t-left<=56 && wet(land,path,left)) left--;
             while (right-t<=56 && wet(land,path,right)) right++;
             if (right-left>56 || land.ocean(x,z) || depth<0) return;
-            Point a=on(land,path,left),b=on(land,path,right);
-            int ay=Math.max(land.sea()+1,land.bed(a.x(),a.z())),by=Math.max(land.sea()+1,land.bed(b.x(),b.z()));
-            if (Math.abs(ay-by)>(right-left+3)/4 || deck-bed>22) return;
+            // A dry bank may already carry a raised approach. Tie into its finished walking
+            // height, even if a short wet channel lies between the two outer timber bents.
+            int ay=Math.max(land.sea()+1,height(land,path,left)),by=Math.max(land.sea()+1,height(land,path,right));
+            if (Math.abs(ay-by)>(right-left+1)/2) return;
             deck=RoadSection.interpolate(ay,by,t-left,right-left);
+            if (deck-bed>22) return;
             boolean timber=path.width()<5 && right-left<=20;
             BridgeBay bay=BridgeBay.at(t,left,right,true,timber,0);
-            spanColumn(land,path,x,z,t,offset,depth,bed,deck,bay,timber,right-left>7);
+            spanColumn(land,path,x,z,t,offset,depth,bed,deck,bay,timber,right-left>7 || gap(land,path,left) || gap(land,path,right));
             return;
         }
         if (deck<3 || deck>245) return;
