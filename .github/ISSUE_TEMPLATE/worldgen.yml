@@ -27,4 +27,4 @@ body:
     id: reproduce
     attributes:
       label: How did this area generate?
-      description: Was it first explored on this version? Mention which direction you approached from, or a relevant line from the log if the game crashed.
+      description: Was this chunk first explored with this version of Four Winds? Which direction did you approach from?

@@ -1,0 +1,23 @@
+name: Report a crash or compatibility problem
+description: The game fails to start, a server disconnects, or the mod behaves differently with another mod installed.
+labels: [bug]
+body:
+  - type: input
+    id: versions
+    attributes:
+      label: Minecraft, Four Winds and loader versions
+      placeholder: e.g. Minecraft 1.20.1, Four Winds 0.1.0, Forge 47.4.28
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Tell us what you were doing and whether this happened in singleplayer, on a server, or while joining one.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Steps, other mods and logs
+      description: If you can reproduce it, list the shortest steps. For a crash, attach the crash report or the relevant part of logs/latest.log. Include the modpack name or other mod versions if they matter.

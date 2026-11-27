@@ -59,6 +59,11 @@ def verify(jar, loader, game, version):
                 "licence notice does not match the repository")
         require(archive.read("four-winds.png") == (ROOT / "src/main/resources/four-winds.png").read_bytes(),
                 "wrong mod icon")
+        lang_dir = f"assets/{MOD}/lang/"
+        suffix = ".lang" if game == "1.12.2" else ".json"
+        translations = {lang_dir + path.stem + suffix for path in (ROOT / "src/main/resources" / lang_dir).glob("*.json")}
+        require({n for n in names if n.startswith(lang_dir) and not n.endswith("/")} == translations,
+                "packaged languages differ from the source translations")
         require(any(name.endswith("/coastal_lighthouse.nbt") for name in names), "missing lighthouse")
         for name in ("crossroads_waypost", "village_waypost"):
             require(f"assets/{MOD}/models/block/{name}.json" in names, f"missing {name} model")

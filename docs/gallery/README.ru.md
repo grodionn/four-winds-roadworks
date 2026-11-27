@@ -32,11 +32,11 @@
 
 *TerraFirmaCraft · Four Winds 1.6.2 · сид `20261121` · XYZ `4117, 67, -1395` · Complementary Reimagined*
 
-[![Отворот к деревне пикси](village-turn.jpg)](village-turn.jpg)
+[![Поворот к деревне у реки](village-turn.jpg)](village-turn.jpg)
 
-**Отворот к деревне пикси.** Указатель на опушке показывает, сколько осталось до поселения пикси из Ice and Fire. В этой сборке деревня стоит прямо в лесу TFC.
+**Поворот к деревне у реки.** Верхняя стрелка указывает на юг, к деревне. На нижней дощечке указано расстояние до домов — примерно 79 блоков.
 
-*TerraFirmaCraft + Ice and Fire · Four Winds 1.6.2 · сид `20261121` · XYZ `4217, 70, -603` · Complementary Reimagined*
+*Ванильная генерация · Four Winds 1.8.2 · сид `38473917` · XYZ `322.9, 66.6, 684.5` · Complementary Reimagined*
 
 ## Мосты и тоннели
 

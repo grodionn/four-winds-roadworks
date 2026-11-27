@@ -1,10 +1,10 @@
 <h1><img src="src/main/resources/four-winds.png" width="64" height="64" align="absmiddle" alt=""> Grodion's Four Winds Roadworks</h1>
 
-[По-русски](README.ru.md) · [Screenshot gallery](docs/gallery/README.md) · [Contributing](CONTRIBUTING.md)
+[Installation](#playing) · [Gallery](docs/gallery/README.md) · [Report an issue](https://github.com/grodionn/four-winds-roadworks/issues/new/choose) · [Contributing](CONTRIBUTING.md) · [Russian edition](README.ru.md)
 
 Four roads meet near the centre of the Overworld. Pick a direction and the paving gives way to gravel, a turning for a village, or a flight of steps cut into the hillside. Where a road reaches a sheltered coast, you might find a working pier and a lighthouse with stairs all the way up to the beacon.
 
-[![The coastal lighthouse and its timber quay, seen from the water](docs/gallery/harbour.jpg)](docs/gallery/README.md)
+[![A jungle road, a stone tunnel and a lighthouse at sunset](art/road-to-coast.jpg)](docs/gallery/README.md)
 
 The main roads run five blocks wide. A four-block gravel lane has room for two wheel tracks. The last few blocks into a village are often just a three-block dirt track. Wooden signs at crossroads carry the compass directions. At a village turning, the sign gives the destination and the distance.
 
