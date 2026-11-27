@@ -4,7 +4,7 @@ Install the JAR for your Minecraft version and loader on both sides of the game.
 
 | Minecraft | Forge | Fabric Loader 0.17.3 | TerraFirmaCraft tested |
 | --- | --- | --- | --- |
-| 1.21.1 | 52.1.20 | Fabric API 0.116.18+1.21.1 | NeoForge 21.1.267 has a separate build for TFC. |
+| 1.21.1 | 52.1.20 | Fabric API 0.116.18+1.21.1 | NeoForge 21.1.267, TFC 4.2.16 and Patchouli 93. |
 | 1.20.1 | 47.4.28 | Fabric API 0.92.12+1.20.1 | Forge, TFC 3.2.30 and Patchouli 85 |
 | 1.19.2 | 43.5.0 | Fabric API 0.77.0+1.19.2 | — |
 | 1.18.2 | 40.3.0 | Fabric API 0.77.0+1.18.2 | Forge, TFC 2.2.33 and Patchouli 71.1 |
@@ -33,6 +33,8 @@ The Forge and Fabric servers use vanilla seed `38473917`. Minecraft changed the 
 | 1.12.2 | Generate the vanilla spawn area. The crossroads stands at X 181, Z 181. The light on the western-facing pier is at X 930, Y 88, Z −161. In TFC Classic the spawn-area crossroads is at X −179, Y 151, Z 169. |
 
 For Forge TFC on 1.18.2 and 1.20.1 use seed `20261121` and load X/Z 0/0, 16/0 and 176/176. On 1.18.2 the first road is shale. On 1.20.1 the stone changes from diorite near the origin to claystone around X/Z 176/176.
+
+The 1.12.2 coast check compares all 997 lighthouse block IDs against the structure drawing in the saved chunks. The crossing and village sign models contain 144 and 84 textured faces respectively. Both models were checked in the 1.21.1 and 1.16.5 Forge and Fabric clients and the 1.12.2 Legacy Fabric client.
 
 Install Python's `nbtlib`, then save and close the world before running the matching check from the repository root.
 
