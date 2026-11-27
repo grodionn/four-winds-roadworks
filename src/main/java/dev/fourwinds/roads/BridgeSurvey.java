@@ -10,9 +10,11 @@ final class BridgeSurvey {
     private static final int DRY=Integer.MIN_VALUE, BANK_LIMIT=24, APPROACH=48, LANDING=10, MAX_RIVER_WIDTH=112;
     private static final int TURN=24;
     record Span(int y,int center,boolean timber,BridgeBay bay,RoadMaterials palette) {}
-    private record Crossing(BridgeAlignment deck,int y,boolean timber,boolean singleArch,RoadMaterials palette) {
+    private record Crossing(BridgeAlignment deck,BridgeBay seats,int y,boolean timber,boolean singleArch,RoadMaterials palette) {
         Span row(int t) {
-            var bay=singleArch?new BridgeBay(deck.left(),deck.right()):BridgeBay.at(t,deck.left(),deck.right(),true,timber,0);
+            BridgeBay bay=null;
+            if (seats!=null && t>=seats.left() && t<=seats.right())
+                bay=singleArch?seats:BridgeBay.at(t,seats.left(),seats.right(),true,timber,0);
             return new Span(y,deck.center(t),timber,bay,palette);
         }
     }
@@ -71,6 +73,12 @@ final class BridgeSurvey {
         }
 
         Span span(int t) {
+            Span guide=guide(t);
+            return guide!=null && guide.bay()!=null?guide:null;
+        }
+
+        // A surveyed line can run out onto dry ground. Keep its alignment through the landing.
+        private Span guide(int t) {
             if (spans.containsKey(t)) return spans.get(t);
             Span result=null;
             if (channel(t)) {
@@ -118,8 +126,12 @@ final class BridgeSurvey {
                 if ((b&1)==0) highBank=Math.max(highBank,b>>1);
             }
             // Floodplain banks need a low crown above the channel, even when a distant grade knot sits on a hill.
-            if (highBank<=waterY+3)
-                return Math.max(waterY+(timber?2:3),Math.min(grade,highBank+1));
+            int lowShore=Math.min(original(left,path.center(left))>>1,original(right,path.center(right))>>1);
+            int clearance=waterY+(timber?2:3);
+            // A hill behind one bank need not lift the whole crossing over the opposite floodplain.
+            if (grade<=waterY+6 && lowShore>=waterY && lowShore<=waterY+2)
+                return Math.max(clearance,Math.min(grade,lowShore+1));
+            if (highBank<=waterY+3) return Math.max(clearance,Math.min(grade,highBank+1));
             return Math.max(grade,waterY+(timber?2:4));
         }
 
@@ -150,7 +162,8 @@ final class BridgeSurvey {
             Point seat=path.point(end,deck.center(end)-path.center(end));
             String stone=terrain.materials.usesLanterns()?"andesite":ShoreTerrain.quarry(terrain.level,seat);
             boolean singleArch=!timber && y-waterY>=8 && deck.right()-deck.left()<=30;
-            return new Crossing(deck,y,timber,singleArch,terrain.materials.construction(stone));
+            BridgeBay seats=timber?deck.timberBanks(path.width(),y,this::original):new BridgeBay(deck.left(),deck.right());
+            return new Crossing(deck,seats,y,timber,singleArch,terrain.materials.construction(stone));
         }
 
         // Two nearby rivers share a dry point on the original road so their approaches always meet.
@@ -280,13 +293,13 @@ final class BridgeSurvey {
         }
 
         private int alignment(int t) {
-            Span here=span(t);
+            Span here=guide(t);
             if (here!=null) return here.center;
             int wanted=path.center(t),lo=Integer.MIN_VALUE,hi=Integer.MAX_VALUE;
             int left=0,right=0,leftDistance=0,rightDistance=0;
             for (int side:new int[]{-1,1}) {
                 for (int d=1;d<TURN;d++) {
-                    Span s=span(t+side*d);
+                    Span s=guide(t+side*d);
                     if (s==null) continue;
                     if (side<0) {left=s.center;leftDistance=d;}
                     else {right=s.center;rightDistance=d;}
@@ -301,15 +314,15 @@ final class BridgeSurvey {
         }
 
         private int approach(int t) {
-            Span here=span(t);
+            Span here=guide(t);
             if (here!=null) return here.y;
             int wanted=landGrade(t);
             int left=1,right=1;
-            while (left<APPROACH && span(t-left)==null) left++;
-            while (right<APPROACH && span(t+right)==null) right++;
+            while (left<APPROACH && guide(t-left)==null) left++;
+            while (right<APPROACH && guide(t+right)==null) right++;
             if (left==APPROACH && right==APPROACH) return wanted;
-            return BridgeAlignment.approachGrade(wanted,left,left==APPROACH?null:span(t-left).y,
-                    right,right==APPROACH?null:span(t+right).y);
+            return BridgeAlignment.approachGrade(wanted,left,left==APPROACH?null:guide(t-left).y,
+                    right,right==APPROACH?null:guide(t+right).y);
         }
 
         private int landGrade(int t) {

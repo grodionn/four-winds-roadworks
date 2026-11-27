@@ -110,6 +110,7 @@ final class ClassicWorld implements LegacyRoads.Land {
         return "andesite";
     }
     private IBlockState block(LegacyRoads.Material mat,int x,int z) {
+        if(mat==LegacyRoads.Material.BANK_SURFACE) return world.getBlockState(new BlockPos(x,bed(x,z),z));
         if(mat==LegacyRoads.Material.AIR) return Blocks.AIR.getDefaultState();
         if(survey.tfc) {
             String name;

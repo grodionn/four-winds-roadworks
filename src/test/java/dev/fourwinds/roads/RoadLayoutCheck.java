@@ -16,6 +16,9 @@ public class RoadLayoutCheck {
             assert bank>=lastBank && bank<=lastBank+1 && bank<=75;
             assert bankHeight(d,75,70,false)==75;
             assert bankHeight(d,70,70,true)==70;
+            for (int fill=1;fill<=4;fill++) assert bankHeight(d,70,70+fill,true)==70+Math.max(0,fill-d);
+            assert bankHeight(d,70,75,true)==70;
+            assert bankHeight(d,70,74,false)==70;
             lastBank=bank;
         }
         checkPiers();
@@ -148,6 +151,10 @@ public class RoadLayoutCheck {
     }
 
     private static void checkBridgeSeats() {
+        var bank=new BridgeAlignment(0,14,new BridgeAlignment.Line(0,0,0));
+        assert bank.timberBanks(4,65,(t,c)->128)==null;
+        assert new BridgeBay(1,7).equals(bank.timberBanks(4,65,(t,c)->t>=2 && t<=6 && c==1?125:130));
+        assert new BridgeBay(1,10).equals(bank.timberBanks(4,65,(t,c)->t==2?125:t==9?120:130));
         Road diagonal=new Road(42,true,0,t->Math.floorDiv(t+1,2));
         var skewed=BridgeAlignment.fit(diagonal,-5,5,83,36,-48,48,(t,c)->{
             if (Math.abs(c-diagonal.center(t))>3) return 108*2;

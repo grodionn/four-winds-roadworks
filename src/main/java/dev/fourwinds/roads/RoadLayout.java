@@ -101,7 +101,7 @@ final class RoadLayout {
             int slope=deck+(2*distance+1)/3;
             return Math.max(natural-Math.min(5,7-distance),Math.min(natural,slope));
         }
-        if (distance<=2 && deck-natural>distance && deck-natural<=4) return natural+1;
+        if (soil && deck-natural<=4) return Math.max(natural,deck-distance);
         return natural;
     }
 

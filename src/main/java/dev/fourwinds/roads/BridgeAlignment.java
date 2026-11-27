@@ -96,6 +96,24 @@ record BridgeAlignment(int left, int right, Line line) {
         return true;
     }
 
+    BridgeBay timberBanks(int width,int y,IntBinaryOperator terrain) {
+        int first=right+1,last=left-1;
+        for (int t=left;t<=right;t++) {
+            int c=center(t);
+            for (int off=-3;off<=3;off++) {
+                if (deckDepth(width,off,center(t-1),c,center(t+1))<0) continue;
+                int bed=terrain.applyAsInt(t,c+off);
+                if (bed==Integer.MIN_VALUE) return new BridgeBay(left,right);
+                if ((bed&1)!=0 || (bed>>1)<y-2) {
+                    first=Math.min(first,t);
+                    last=t;
+                    break;
+                }
+            }
+        }
+        return first>last?null:new BridgeBay(Math.max(left,first-1),Math.min(right,last+1));
+    }
+
     int distance(int t) { return Math.max(0,Math.max(left-t,t-right)); }
 
     private boolean reaches(Path path,int t) {

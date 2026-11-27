@@ -59,6 +59,18 @@ class World:
         entry = palette[index]
         return str(entry['Name']), entry.get('Properties', {})
 
+    def original_surface(self, x, z):
+        chunk = self.chunk(x // 16, z // 16)
+        for container in ('neoforge:attachments', 'fabric:attachments', 'fourwindsroadworks'):
+            data = chunk.get(container, {})
+            survey = data.get('fourwindsroadworks:surveyed_surface', data.get('surveyed_surface', {}))
+            heights = survey.get('heights', ())
+            if len(heights) == 128:
+                column = z % 16 * 16 + x % 16
+                packed = (int(heights[column // 2]) >> (16 * (column % 2))) & 0xffff
+                return (packed if packed < 32768 else packed - 65536) >> 1, bool(packed & 1)
+        raise ValueError(f'Missing original terrain survey at {x}, {z}')
+
     def expect(self, x, y, z, name, **properties):
         block, state = self.block(x, y, z)
         if block != name or any(str(state.get(k)) != v for k, v in properties.items()):
@@ -82,12 +94,8 @@ def check_gorge(world):
                         raise ValueError(f'Obstructed crossing at {x}, {y}, {z}: {block}')
     for x in (-1090, -1068):
         for z in range(-896, -891):
-            tags = world.chunk(x // 16, z // 16)['neoforge:attachments']
-            heights = tags['fourwindsroadworks:surveyed_surface']['heights']
-            column = (z % 16) * 16 + x % 16
-            value = (int(heights[column // 2]) >> (16 * (column % 2))) & 65535
-            ground = (value if value < 32768 else value - 65536) >> 1
-            if value & 1 or ground < 80:
+            ground, wet = world.original_surface(x, z)
+            if wet or ground < 80:
                 raise ValueError(f'Bridge seat above open water or a drop at {x}, {z}: {ground}')
     for z, y, facing in [(-539, 73, 'south'), (-538, 75, 'south'), (-528, 75, 'north'), (-527, 73, 'north')]:
         world.expect(-971, y, z, 'tfc:rock/bricks/basalt_stairs', half='bottom', facing=facing)

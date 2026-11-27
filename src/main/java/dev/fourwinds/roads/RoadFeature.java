@@ -177,24 +177,25 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
                 edgeOffset = edge(path.width(),Integer.signum(offset));
             }
         }
-        if (nearest == null || nearest.width()<5 && distance>2) return null;
+        if (nearest == null || nearest.width()<5 && distance>3) return null;
         int t = p.along(nearest.eastWest());
         Point edge = terrain.bridges.along(nearest).point(t, edgeOffset);
         var ground = terrain.column(p);
         var roadEdge = terrain.column(edge);
-        var spine=terrain.column(nearest.point(t,0));
+        var spine=terrain.column(terrain.bridges.along(nearest).point(t,0));
         if (!ground.valid() || !roadEdge.valid() || ground.water() || roadEdge.water() || ground.sea() || roadEdge.sea()
                 || spine.water() || spine.sea() || !ground.state().is(RoadTerrain.GROUND)) return null;
         int deck = surface(terrain, nearest, edge);
         int surveyed=ShoreTerrain.surface(terrain.level,edge);
         if (surveyed==Integer.MIN_VALUE || (surveyed&1)!=0) return null;
         int edgeCut=(surveyed>>1)-deck;
-        if (edgeCut < -3 || edgeCut>9 || terrain.bridges.along(nearest).built(t)!=null
+        if (edgeCut < -4 || edgeCut>9 || terrain.bridges.along(nearest).built(t)!=null
+                || terrain.bridges.along(nearest).viaduct(t)!=null
                 || terrain.tunnels.at(nearest,t)!=null) return null;
         boolean soil=RoadTerrain.softVerge(ground.state()) || ground.state().is(BlockTags.SAND)
                 || ground.state().is(Blocks.GRAVEL) || RoadMaterials.quarry(ground.state())!=null && !RoadTerrain.rockSurface(ground.state());
         int y=RoadLayout.bankHeight(distance,ground.y(),deck,soil);
-        if (nearest.width()<5) y=RoadLayout.clamp(y,ground.y()-1,ground.y()+1);
+        if (nearest.width()<5 && y<ground.y()) y=distance<=2?Math.max(y,ground.y()-1):ground.y();
         if (y == ground.y() || terrain.protectedAt(p, Math.min(y,ground.y()) - 1, Math.max(y,ground.y()) + 2, false)) return null;
         return new Shoulder(p, ground, y);
     }
@@ -360,6 +361,15 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
                     if (x==landing.y() && z==landing.y()) return y;
                     shared=Math.floorDiv(x+z+1,2);
                 } else shared=one!=null && two!=null?Math.max(one.y(),two.y()):one!=null?one.y():two.y();
+                // A narrow strip of bank between two level decks should not dip and climb again.
+                if (two!=null && one==null && distance>0 && distance<16 && Math.abs(y-shared)<=1) {
+                    for (int d=distance+1;d<=16;d++) {
+                        var next=a.span(junction+Integer.signum(t-junction)*d);
+                        if (next==null) continue;
+                        if (next.y()==shared) return shared;
+                        break;
+                    }
+                }
                 int allowance=Math.max(0,Math.min(distance,18)-(joinedDecks?6:3))/3+Math.max(0,distance-18);
                 int desired=RoadLayout.clamp(y,shared-allowance,shared+allowance);
                 if (desired!=y) y=joinedDecks?desired:a.constrainLanding(t,desired);
@@ -387,7 +397,12 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
         // Keep the plants, roots and original cross-slope on an unworn verge. A shoulder on the
         // downhill side of a rock shelf does not need a column of imported stone under it.
         if (!c.junction && !c.bridge && !c.arcade && clearance==0 && !c.ground.water() && c.edgeTile()
-                && (c.y-c.ground.y()>3 || tread==Tread.TURF && c.ground.y()<=c.y+1)) return false;
+                && (c.y-c.ground.y()>3 || tread==Tread.TURF && c.ground.y()<=c.y+1)) {
+            int fill=c.y-c.ground.y();
+            if (fill>=2 && fill<=4 && RoadTerrain.softVerge(c.ground.state()))
+                terrain.blendShoulder(c.p,c.ground,c.y-1);
+            return false;
+        }
         if (!terrain.clear(c.p,c.y,c.ground.y(),clearance)) return false;
         if (clearance>0) {
             if (!c.bridge && !c.arcade) terrain.tunnels.bed(c.p,c.y,c.t);

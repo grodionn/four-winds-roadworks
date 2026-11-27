@@ -138,6 +138,10 @@ public final class FabricClassicWorld implements LegacyRoads.Land {
                 || b==Blocks.LOG || b==Blocks.LOG2 || b==Blocks.ICE || b==Blocks.SNOW;
     }
     @Override public void put(int x,int y,int z,LegacyRoads.Material mat,int dx,int dz) {
+        if(mat==LegacyRoads.Material.BANK_SURFACE) {
+            world.setBlockState(new BlockPos(x,y,z),world.getBlockState(new BlockPos(x,bed(x,z),z)),18);
+            return;
+        }
         Block block;int meta=0;
         switch(mat) {
             case AIR:block=Blocks.AIR;break;

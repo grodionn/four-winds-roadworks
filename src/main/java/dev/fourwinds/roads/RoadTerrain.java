@@ -352,6 +352,14 @@ final class RoadTerrain {
     }
 
     void blendShoulder(Point p, RoadColumn ground, int target) {
+        // Finish the toe at the waterline when there is no room for another course of soil.
+        if (target>ground.y()+1) {
+            for (Direction side:Direction.Plane.HORIZONTAL) {
+                int adjacent=ShoreTerrain.surface(level,new Point(p.x()+side.getStepX(),p.z()+side.getStepZ()));
+                if ((adjacent&1)!=0) target=Math.min(target,Math.max(ground.y(),(adjacent>>1)+1));
+            }
+            if (target==ground.y()) return;
+        }
         var pos = new BlockPos.MutableBlockPos(p.x(), ground.y(), p.z());
         boolean openLip=false;
         if (target<ground.y()) {
@@ -371,7 +379,7 @@ final class RoadTerrain {
         BlockState subsoil = level.getBlockState(pos.setY(ground.y() - 1));
         if (!subsoil.is(GROUND) || subsoil.hasBlockEntity()) subsoil = materials.state(Blocks.COARSE_DIRT.defaultBlockState());
         BlockState cover = level.getBlockState(pos.setY(ground.y() + 1));
-        if (openLip && cover.is(BlockTags.LOGS) || protectedAt(p,target-(openLip?4:1),ground.y()+1,false)) return;
+        if (openLip && cover.is(BlockTags.LOGS) || protectedAt(p,Math.min(target,ground.y())-(openLip?4:1),Math.max(target,ground.y())+1,false)) return;
         boolean extendTrunk = cover.is(BlockTags.LOGS) && target < ground.y() && target >= ground.y() - 4;
         int bottom = Math.min(ground.y(), target), top = Math.max(ground.y(), target);
         for (int y = bottom; y <= top + 1; y++) {

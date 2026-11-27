@@ -60,7 +60,7 @@ The scripts in `tools/` can also inspect saved chunks. Install `nbtlib` in a Pyt
 | TFC | 7319041 | The gorge at X −1072, Z −894 and the portal at X −971, Z −533. For `--harbour`, also visit the lighthouse at −775, −160 and the landing at −895, −120. |
 | Vanilla | 96320157 | The spring at X −885, Z 270. Keep it loaded for 500 game ticks. For the cave-roof check, also visit X −384, Z 156. |
 | TFC | 38473917 | For `--tfc-floodplain`, generate the limestone shelf from X 355, Z 736 to X 360, Z 755. |
-| Vanilla | 38473917 | The village around X 350, Z 720 and its river crossing. Generate X 310–426, Z 664–764, plus the jungle lanes at 1372, −2360 and 1565, −2456. |
+| Vanilla | 38473917 | The village around X 350, Z 720 and its river crossing. Generate X 310–426, Z 635–764, plus the jungle lanes at 1372, −2360 and 1565, −2456. |
 | TFC with Ice and Fire | 20261121 | The pixie settlement around X 4240, Z −608. For `--waysides` on 1.21.1, also visit the country lane at 4124, −1394, the shelter at 4230, −105 and the mounting steps at 2442, 1495. |
 
 ```sh

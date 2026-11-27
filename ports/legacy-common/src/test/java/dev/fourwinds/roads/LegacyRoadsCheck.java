@@ -90,7 +90,33 @@ public final class LegacyRoadsCheck {
                 "replaced the last natural block of a cave roof with a dirt track");
     }
 
+    private static void checkGravelBar() {
+        Coast land=new Coast() {
+            @Override public int bed(int x,int z) { return x==68?66:70; }
+        };
+        LegacyRoads roads=new LegacyRoads();
+        Road road=new Road(land.seed(),true,1);
+        int x=68, z=roads.on(land,road,x).z();
+        for (int tileZ=(z-8)&~15;tileZ<=z+8;tileZ+=16) {
+            land.tileX=x&~15;land.tileZ=tileZ;
+            roads.generate(land,land.tileX,tileZ);
+        }
+        int deck=roads.height(land,road,x);
+        require(deck-land.bed(x,z)>=3,"fixture needs a raised approach");
+        for (int side:new int[]{-1,1}) {
+            int verge=z+edge(road.width(),side);
+            for (int d=1;d<deck-land.bed(x,z);d++) {
+                int top=deck-d;
+                require(land.blocks.get(land.position(x,top,verge+side*d))==LegacyRoads.Material.BANK_SURFACE,
+                        "missing turf at distance "+d+" from the approach");
+                for (int y=land.bed(x,z)+1;y<top;y++)
+                    require(land.blocks.get(land.position(x,y,verge+side*d))==LegacyRoads.Material.EARTH,"hollow approach");
+            }
+        }
+    }
+
     public static void main(String[] args) {
+        checkGravelBar();
         checkRavine(false);
         checkRavine(true);
         List<Point> tiles = new ArrayList<>();

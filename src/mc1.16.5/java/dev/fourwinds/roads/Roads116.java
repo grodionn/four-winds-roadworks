@@ -159,6 +159,10 @@ public final class Roads116 implements LegacyRoads.Land {
                 || state.is(Blocks.SANDSTONE) || state.is(Blocks.RED_SANDSTONE) || state.is(Blocks.TERRACOTTA);
     }
     @Override public void put(int x, int y, int z, LegacyRoads.Material mat, int dx, int dz) {
+        if (mat==LegacyRoads.Material.BANK_SURFACE) {
+            region.setBlock(new BlockPos(x,y,z),region.getBlockState(new BlockPos(x,bed(x,z),z)),18);
+            return;
+        }
         Block block;
         switch (mat) {
             case AIR: block = Blocks.AIR; break;

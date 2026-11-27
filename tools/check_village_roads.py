@@ -65,6 +65,50 @@ def check_river_deck(world):
         raise ValueError(f'Irregular or blocked arches: supports at {supports}, {openings} open rows')
 
 
+def check_low_banks(world):
+    # Walk from the short timber bridge across the gravel bar to the long stone bridge.
+    earth = {'minecraft:' + b for b in ('dirt_path', 'coarse_dirt', 'gravel', 'cobblestone', 'mud_brick_slab')}
+    stone = {'minecraft:polished_andesite', 'minecraft:stone_bricks'}
+    road = earth | stone
+    timber = {'minecraft:spruce_planks', 'minecraft:stripped_spruce_log'}
+    for z in range(635, 651):
+        boards = [x for x in range(364, 368) if world.block(x, 64, z)[0] in timber]
+        if bool(boards) != (638 <= z <= 647):
+            raise ValueError(f'Timber deck left the channel or stopped short at Z {z}: {boards}')
+        if boards and z not in (638, 647) and not any(world.original_surface(x, z)[1] for x in boards):
+            raise ValueError(f'Timber deck over a dry section of the hillside at Z {z}')
+    reachable = set()
+    for z in range(650, 679):
+        row = {(x, y) for x in range(360, 370) for y in (64, 65)
+               if world.block(x, y, z)[0] in road
+               and all(world.block(x, y + dy, z)[0] == 'minecraft:air' for dy in (1, 2))}
+        pairs = {(x, y) for x, y in row if (x + 1, y) in row}
+        if z >= 670:
+            pairs = {(x, y) for x, y in pairs if y == 65}
+        reachable = pairs if z == 650 else {(x, y) for x, y in pairs
+                                             if any(abs(x - px) <= 1 and abs(y - py) <= 1 for px, py in reachable)}
+        if not reachable:
+            raise ValueError(f'Lost the two-block lane across the gravel bar at Z {z}')
+
+    # The two roads meet at the first stone course of the transverse bridge.
+    for z in range(666, 671):
+        for x in range(366, 372):
+            world.expect(x, 65, z, 'minecraft:polished_andesite' if x == 366 else 'minecraft:stone_bricks')
+
+    # Compare the visible sides of the fill against the original survey so natural cliffs do not count.
+    soil = {'minecraft:' + b for b in ('dirt', 'coarse_dirt', 'grass_block', 'sand', 'gravel', 'dirt_path')}
+    open_side = {'minecraft:' + b for b in ('air', 'cave_air', 'water', 'short_grass', 'tall_grass', 'seagrass')}
+    for z in range(645, 680):
+        for x in range(348, 399):
+            original, _ = world.original_surface(x, z)
+            for y in range(max(63, original + 1), 66):
+                if not all(world.block(x, y + dy, z)[0] in soil for dy in range(3)):
+                    continue
+                for dx, dz in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+                    if all(world.block(x + dx, y + dy, z + dz)[0] in open_side for dy in range(3)):
+                        raise ValueError(f'Three-block exposed earth bank at {x}, {y}, {z}')
+
+
 def check_floodplain(world):
     # These four blocks used to be masonry inside the built-up village.
     for x, y, z in [(351, 67, 714), (353, 67, 714), (354, 66, 714), (359, 66, 752)]:
@@ -94,10 +138,7 @@ def check_floodplain(world):
         previous = row
 
     if world.version == '1.21.1':
-        # A timber side lane joins the other bridge here. Its boards used to replace patches of the masonry deck.
-        for x in range(363, 368):
-            for z in range(666, 671):
-                world.expect(x, 67, z, 'minecraft:polished_andesite' if x == 363 else 'minecraft:stone_bricks')
+        check_low_banks(world)
         for x, y, z in [(414, 65, 748), (414, 64, 750)]:
             world.expect(x, y, z, 'minecraft:dirt_path')
             for dy in (1, 2):

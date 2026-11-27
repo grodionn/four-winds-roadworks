@@ -9,7 +9,7 @@ import static dev.fourwinds.roads.RoadLayout.*;
 
 /** Road construction for the pre-Caves & Cliffs terrain and population pipeline. */
 final class LegacyRoads {
-    enum Material { AIR, STONE, DRESSED, COBBLE, WORN, GRAVEL, PATH, EARTH, SLIM_POST, FILL, PLANK, POST, BEAM, LOW_STONE, LOW_TIMBER, STAIR, TIMBER_STAIR }
+    enum Material { AIR, STONE, DRESSED, BANK_SURFACE, COBBLE, WORN, GRAVEL, PATH, EARTH, SLIM_POST, FILL, PLANK, POST, BEAM, LOW_STONE, LOW_TIMBER, STAIR, TIMBER_STAIR }
     interface Land {
         long seed();
         int sea();
@@ -124,7 +124,7 @@ final class LegacyRoads {
                 int t=path.eastWest()?x:z, across=path.eastWest()?z:x;
                 if (!path.contains(t)) continue;
                 int offset=across-center(land,path,t);
-                if (offset<edge(path.width(),-1)-2 || offset>edge(path.width(),1)+2) continue;
+                if (offset<edge(path.width(),-1)-3 || offset>edge(path.width(),1)+3) continue;
                 boolean inside=depth(path.width(),offset)>=0;
                 if (best==null || inside && depth(best.width(),off)<0 ||
                         inside==(depth(best.width(),off)>=0) && path.width()>best.width()) {
@@ -219,6 +219,7 @@ final class LegacyRoads {
         if (land.wet(x,z)) return;
         boolean bore=bed>=deck+8;
         if (depth<0) {
+            if (!bore && crossing==null) bank(land,path,x,z,bed,deck,-depth);
             if (bore && depth>=-2) {
                 int h=vaultClearance(depth,true);
                 clear(land,x,deck+1,z,h);
@@ -227,7 +228,10 @@ final class LegacyRoads {
             return;
         }
         Tread tread=path.width()<5 && !bore?track(land.seed(),path,t,offset):null;
-        if (depth==0 && !bore && (deck-bed>3 || tread==Tread.TURF && bed<=deck+1)) return;
+        if (depth==0 && !bore && (deck-bed>3 || tread==Tread.TURF && bed<=deck+1)) {
+            bank(land,path,x,z,bed,deck,1);
+            return;
+        }
         if (!bore && deck<=bed && land.firm(x,deck,z) && land.openForStop(x,deck-1,z)) {
             clear(land,x,deck+1,z,Math.max(5,bed-deck+1));
             return;
@@ -244,6 +248,16 @@ final class LegacyRoads {
         int ahead=height(land,path,t+1),back=height(land,path,t-1);
         if (ahead==deck+1 || back==deck+1) put(land,x,deck+1,z,Material.STAIR,path,ahead>deck?1:-1);
     }
+    private static void bank(Land land,Path path,int x,int z,int bed,int deck,int distance) {
+        if (deck-bed<2 || deck-bed>4 || !land.firm(x,bed,z)) return;
+        int top=bankHeight(distance,bed,deck,true);
+        if (top<=bed) return;
+        for (int y=bed+1;y<=top+1;y++)
+            if (!land.openForStop(x,y,z) || land.occupied(x,y,z)) return;
+        for (int y=bed+1;y<top;y++) put(land,x,y,z,Material.EARTH,path,1);
+        put(land,x,top,z,Material.BANK_SURFACE,path,1);
+    }
+
     private static void clear(Land land,int x,int first,int z,int n) {
         for(int y=first;y<first+n;y++) if (land.natural(x,y,z)) land.put(x,y,z,Material.AIR,0,0);
     }
