@@ -1,8 +1,5 @@
-def sourceRoot = file('../..')
-def metadata = new Properties()
-new File(sourceRoot, 'gradle.properties').withInputStream { metadata.load(it) }
-group = metadata.group
-version = metadata.version.split('\\+')[0] + '+mc1.16.5'
+apply from: '../../gradle/release.gradle'
+
 java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 

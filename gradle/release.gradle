@@ -1,0 +1,12 @@
+// Also applied by the standalone Gradle 4.9 build for Forge 1.12.2.
+def repository = buildscript.sourceFile.parentFile.parentFile
+def metadata = new Properties()
+new File(repository, 'gradle.properties').withInputStream { metadata.load(it) }
+
+ext.roadworksMinecraft = projectDir.canonicalFile == repository.canonicalFile ? metadata.getProperty('neoMinecraftVersion') : projectDir.name.tokenize('-').last()
+group = metadata.getProperty('group')
+version = metadata.getProperty('modVersion') + '+mc' + roadworksMinecraft
+
+tasks.withType(Jar) {
+    from(new File(repository, 'LICENSE')) { into 'META-INF' }
+}

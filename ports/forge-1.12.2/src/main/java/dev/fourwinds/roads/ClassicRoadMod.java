@@ -14,7 +14,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-@Mod(modid=ClassicRoadMod.ID, name="Grodion's Four Winds Roadworks", version="1.8.3+mc1.12.2", acceptedMinecraftVersions="[1.12.2]")
+@Mod(modid=ClassicRoadMod.ID, name="Grodion's Four Winds Roadworks", acceptedMinecraftVersions="[1.12.2]")
 public final class ClassicRoadMod implements IWorldGenerator {
     public static final String ID="fourwindsroadworks";
     private final Map<World,ClassicWorld> worlds=new HashMap<>();

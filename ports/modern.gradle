@@ -1,9 +1,7 @@
+apply from: '../../gradle/release.gradle'
+
 def commonRoot = file('../..')
-def metadata = new Properties()
-new File(commonRoot, 'gradle.properties').withInputStream { metadata.load(it) }
-group = metadata.group
-def minecraftVersion = project.projectDir.name.split('-', 2)[1]
-version = metadata.version.split('\\+')[0] + '+mc' + minecraftVersion
+def minecraftVersion = roadworksMinecraft
 java.toolchain.languageVersion = JavaLanguageVersion.of(minecraftVersion == '1.21.1' ? 21 : 17)
 sourceSets.main.java.srcDir(new File(commonRoot, 'src/main/java'))
 if (minecraftVersion != '1.18.2') sourceSets.main.java.srcDir(new File(commonRoot, 'src/mc1.19-plus/java'))

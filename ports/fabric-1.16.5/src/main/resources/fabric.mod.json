@@ -11,7 +11,7 @@
     "sources": "https://github.com/grodionn/four-winds-roadworks",
     "issues": "https://github.com/grodionn/four-winds-roadworks/issues"
   },
-  "license": "All Rights Reserved",
+  "license": "MIT",
   "icon": "four-winds.png",
   "environment": "*",
   "entrypoints": {

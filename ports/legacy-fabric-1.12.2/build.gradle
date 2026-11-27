@@ -4,8 +4,7 @@ plugins {
 }
 
 apply from: '../forge-1.12.2/wayposts.gradle'
-group = 'dev.fourwinds'
-version = '1.8.3+mc1.12.2'
+apply from: '../../gradle/release.gradle'
 base.archivesName = 'four-winds-roadworks-legacy-fabric'
 java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }

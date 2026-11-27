@@ -9,6 +9,7 @@
     "authorList": [
       "Grodion"
     ],
-    "logoFile": "four-winds.png"
+    "logoFile": "four-winds.png",
+    "license": "MIT"
   }
 ]

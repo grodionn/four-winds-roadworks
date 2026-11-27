@@ -9,8 +9,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'java'
 apply from: 'wayposts.gradle'
 
-group = 'dev.fourwinds'
-version = '1.8.3+mc1.12.2'
+apply from: '../../gradle/release.gradle'
 archivesBaseName = 'four-winds-roadworks-forge'
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava.options.encoding = 'UTF-8'
@@ -27,7 +26,8 @@ sourceSets.main.java {
 sourceSets.main.resources.srcDir('../../src/mc1.12.2/resources')
 processResources {
     from('../../src/main/resources') { include 'four-winds.png' }
-    filesMatching('mcmod.info') { expand(modVersion: project.version) }
+    inputs.property('modVersion', project.version)
+    filesMatching(['mcmod.info', 'version.properties']) { expand(modVersion: project.version) }
 }
 jar.finalizedBy 'reobfJar'
 

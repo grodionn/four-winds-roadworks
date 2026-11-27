@@ -1,3 +1,5 @@
+apply from: 'gradle/release.gradle'
+
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 sourceSets.main.java.srcDir 'src/neoforge/java'
 sourceSets.main.java.srcDir 'src/mc1.21.1/java'
