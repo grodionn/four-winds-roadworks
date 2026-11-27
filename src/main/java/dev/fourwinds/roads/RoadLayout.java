@@ -59,6 +59,43 @@ final class RoadLayout {
     static int edge(int width, int side) { return side < 0 ? -(width / 2) : (width - 1) / 2; }
     static int depth(int width, int offset) { return Math.min(offset - edge(width,-1), edge(width,1) - offset); }
 
+    static final int CONTOUR_STEP=16;
+
+    // Leave enough run on either side of a lowered station for the road to climb back to its old grade.
+    static int groundedKnot(int planned,int left,int right,int ground) {
+        int rise=CONTOUR_STEP/2;
+        int spare=Math.max(0,rise-Math.max(0,Math.max(left,right)-planned));
+        return Math.max(planned-spare,Math.min(planned,ground+1));
+    }
+
+    enum Tread { TURF, PATH, EARTH, GRAVEL }
+
+    // A worn track has a connected walking line and an irregular margin. Sample along the route,
+    // so neither the width nor a stretch of exposed gravel restarts at a chunk boundary.
+    static Tread track(long seed,Path path,int t,int offset) {
+        int route=path instanceof Road?((Road)path).index():((Spur)path).across();
+        long salt=seed ^ (route*0x9e3779b97f4a7c15L) ^ (path.eastWest()?4637L:7607L);
+        int lean=field(salt+51,t,0,17,3);
+        int first=path.width()==3 ? (lean<50?-1:0) : (lean<31?-2:lean>69?0:-1);
+        int wear=field(salt,t,offset,9,3);
+        if (offset<first || offset>first+1) {
+            if (depth(path.width(),offset)>0) return Tread.EARTH;
+            if (path.width()==3 && (path.center(t-1)-path.center(t)==offset || path.center(t+1)-path.center(t)==offset)) return Tread.EARTH;
+            if (offset<first-1 || offset>first+2 || wear<64) return Tread.TURF;
+            return Tread.EARTH;
+        }
+        if (wear>74) return Tread.GRAVEL;
+        return wear<35 || offset==first && wear<48 ? Tread.EARTH : Tread.PATH;
+    }
+
+    static int field(long seed,int t,int offset,int length,int width) {
+        int row=Math.floorDiv(t,length),col=Math.floorDiv(offset,width);
+        int a=Math.floorMod(t,length),b=Math.floorMod(offset,width);
+        int left=RoadSection.interpolate(roll(seed,row,col,100),roll(seed,row+1,col,100),a,length);
+        int right=RoadSection.interpolate(roll(seed,row,col+1,100),roll(seed,row+1,col+1,100),a,length);
+        return RoadSection.interpolate(left,right,b,width);
+    }
+
     static int bankHeight(int distance,int natural,int deck,boolean soil) {
         if (natural>deck && soil) {
             int slope=deck+(2*distance+1)/3;

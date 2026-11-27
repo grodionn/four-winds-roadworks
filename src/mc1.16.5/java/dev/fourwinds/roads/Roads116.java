@@ -137,6 +137,16 @@ public final class Roads116 implements LegacyRoads.Land {
         }
         return false;
     }
+    @Override public boolean firm(int x,int y,int z) {
+        BlockPos pos=new BlockPos(x,y,z);
+        BlockState state=region.getBlockState(pos);
+        return natural(x,y,z) && !state.is(BlockTags.LOGS) && state.getMaterial()!=Material.LEAVES
+                && state.isFaceSturdy(region,pos,Direction.UP);
+    }
+    @Override public boolean openForStop(int x,int y,int z) {
+        BlockState state=region.getBlockState(new BlockPos(x,y,z));
+        return state.isAir() || state.getMaterial().isReplaceable() && state.getFluidState().isEmpty() && state.getMaterial()!=Material.LEAVES;
+    }
     @Override public boolean natural(int x, int y, int z) {
         if (x < minX || x >= minX+16 || z < minZ || z >= minZ+16 || y < 1 || y >= 255) return false;
         BlockState state = region.getBlockState(new BlockPos(x,y,z));
@@ -155,6 +165,8 @@ public final class Roads116 implements LegacyRoads.Land {
             case STONE: block = Blocks.STONE_BRICKS; break;
             case WORN: block = Blocks.CRACKED_STONE_BRICKS; break;
             case COBBLE: block = Blocks.COBBLESTONE; break;
+            case SLIM_POST: block = Blocks.SPRUCE_FENCE; break;
+            case EARTH: block = Blocks.COARSE_DIRT; break;
             case GRAVEL: block = Blocks.GRAVEL; break;
             case PATH: block = Blocks.GRASS_PATH; break;
             case FILL: block = Blocks.STONE; break;

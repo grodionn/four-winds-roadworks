@@ -13,9 +13,8 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
+import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
@@ -329,9 +328,18 @@ final class RoadTerrain {
         }
     }
 
-    void foundation(Point p,RoadColumn ground,int deck,Block stone) {
+    void foundation(Point p,RoadColumn ground,int deck,Block stone,boolean countryTrack) {
         var pos=new BlockPos.MutableBlockPos(p.x(),ground.y(),p.z());
         int bottom=ground.y();
+        if (countryTrack && bottom<deck && !ground.water() && deck-bottom<=4 && softVerge(ground.state())) {
+            var earth=level.getBlockState(pos.setY(bottom-1));
+            if (earth.is(GROUND) && !earth.hasBlockEntity() && earth.getFluidState().isEmpty()
+                    && !(earth.getBlock() instanceof FallingBlock) && earth.isFaceSturdy(level,pos,Direction.UP)) {
+                for (int y=bottom;y<deck;y++)
+                    if (!level.getBlockState(pos.setY(y)).hasBlockEntity()) level.setBlock(pos,earth,2);
+                return;
+            }
+        }
         if (ground.water()) {
             while (bottom>level.getMinBuildHeight() && bottom>ground.y()-18) {
                 var state=level.getBlockState(pos.setY(bottom-1));
@@ -400,17 +408,6 @@ final class RoadTerrain {
     }
 
     void put(Point p, int y, Block block) { put(p, y, block.defaultBlockState()); }
-    void placeVergeStone(Point p, int surface, Block stone) {
-        var soil = new BlockPos(p.x(),surface,p.z());
-        var pos = soil.above();
-        BlockState ground = level.getBlockState(soil), cover = level.getBlockState(pos);
-        if (!ground.is(GROUND) || !ground.isFaceSturdy(level,soil,Direction.UP) || cover.hasBlockEntity()
-                || !cover.getFluidState().isEmpty() || !(cover.isAir() || RoadApi.replaceable(cover))) return;
-        BlockState shape = stone.defaultBlockState();
-        if (stone == Blocks.STONE_BUTTON) shape = shape.setValue(FaceAttachedHorizontalDirectionalBlock.FACE,AttachFace.FLOOR);
-        put(p,pos.getY(),shape);
-    }
-
     void put(Point p, int y, BlockState state) {
         put(p,y,state,materials);
     }

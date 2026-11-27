@@ -149,6 +149,9 @@ final class RoadSection {
         this(road,first,last,sea,sample,java.util.Collections.emptyList());
     }
     RoadSection(Road road,Junction first,Junction last,int sea,IntBinaryOperator sample,List<Parcel> plots) {
+        this(road,first,last,sea,sample,plots,(x,z)->0);
+    }
+    RoadSection(Road road,Junction first,Junction last,int sea,IntBinaryOperator sample,List<Parcel> plots,IntBinaryOperator water) {
         boolean ew=road.eastWest();
         int start=first.point.along(ew),end=last.point.along(ew),length=end-start;
         int count=(length+STEP/2)/STEP+1;
@@ -169,25 +172,25 @@ final class RoadSection {
         for (int i=1;i<count;i++) base[i]=RoadLayout.clamp(base[i],base[i-1]-(stations[i]-stations[i-1]),base[i-1]+stations[i]-stations[i-1]);
         base[count-1]=last.point.across(ew);
         for (int i=count-2;i>=0;i--) base[i]=RoadLayout.clamp(base[i],base[i+1]-(stations[i+1]-stations[i]),base[i+1]+stations[i+1]-stations[i]);
-        route(road,first.y,sea,sample,base,spine,null,java.util.Collections.emptyList());
+        route(road,first.y,sea,sample,water,base,spine,null,java.util.Collections.emptyList());
         int[] ground=heights.clone();
         profile(first.y,last.y);
         boolean earthworks=false;
         for (int i=1;i<count-1;i++) if (Math.abs(heights[i]-ground[i])>4) { earthworks=true;break; }
         if (earthworks) {
-            route(road,first.y,sea,sample,base,spine,heights.clone(),java.util.Collections.emptyList());
+            route(road,first.y,sea,sample,water,base,spine,heights.clone(),java.util.Collections.emptyList());
             profile(first.y,last.y);
         }
         if (!plots.isEmpty()) for (int i=0;i<count;i++) {
             int x=ew?stations[i]:centers[i],z=ew?centers[i]:stations[i];
             if (occupation(plots,x,z,heights[i],6)==0) continue;
-            route(road,first.y,sea,sample,base,spine,heights.clone(),plots);
+            route(road,first.y,sea,sample,water,base,spine,heights.clone(),plots);
             profile(first.y,last.y);
             break;
         }
     }
 
-    private void route(Road road,int firstY,int sea,IntBinaryOperator sample,int[] base,int[] spine,int[] profile,List<Parcel> plots) {
+    private void route(Road road,int firstY,int sea,IntBinaryOperator sample,IntBinaryOperator water,int[] base,int[] spine,int[] profile,List<Parcel> plots) {
         int count=stations.length;
         int[] offsets=plots.isEmpty()?OFFSETS:BYPASS_OFFSETS;
         int[][] ground=new int[count][offsets.length],parent=new int[count][offsets.length];
@@ -195,17 +198,22 @@ final class RoadSection {
         Arrays.fill(costs,Integer.MAX_VALUE);costs[0]=0;ground[0][0]=firstY;
         for (int i=1;i<count;i++) {
             int t=stations[i],advance=t-stations[i-1];
-            boolean fixed=i==count-1 || (i==1 || i==count-2 || spine[i]<=sea+4) && plots.isEmpty();
+            // A low, dry meadow still follows its original bends. Let a road beside a lake try the bank.
+            boolean shore=false;
+            for (int k=Math.max(0,i-2);k<=Math.min(count-1,i+2);k++)
+                if (spine[k]<=sea+4 && height(road,stations[k],base[k],water)!=0) { shore=true;break; }
+            boolean fixed=i==count-1 || (i==1 || i==count-2 || spine[i]<=sea+4 && !shore) && plots.isEmpty();
             int[] next=new int[offsets.length];Arrays.fill(next,Integer.MAX_VALUE);
             for (int j=0;j<(fixed?1:offsets.length);j++) {
                 int across=base[i]+offsets[j];
                 if (Math.abs(across-road.index()*SPACING)>64) continue;
                 int y=ground[i][j]=height(road,t,across,sample);
-                if (j!=0 && y<=sea+3 && plots.isEmpty()) continue;
+                if (j!=0 && y<=sea+3 && !shore && plots.isEmpty()) continue;
                 int left=height(road,t,across-4,sample),right=height(road,t,across+4,sample);
                 int bank=Math.max(y,Math.max(left,right))-Math.min(y,Math.min(left,right));
                 int occupied=occupation(plots,road.eastWest()?t:across,road.eastWest()?across:t,profile==null?y:profile[i],6);
                 int earth=7*Math.max(0,bank-2)+Math.abs(offsets[j])/5+occupied;
+                if (shore && height(road,t,across,water)!=0) earth+=road.width()==5?32:64;
                 for (int k=0;k<offsets.length;k++) {
                     if (costs[k]==Integer.MAX_VALUE) continue;
                     int prev=base[i-1]+offsets[k],turn=across-prev;

@@ -31,6 +31,7 @@ final class BridgeSurvey {
         private final Map<Integer,Boolean> gaps=new HashMap<>();
         private final Map<Point,Integer> soundings=new HashMap<>();
         private final Map<Integer,Integer> centers=new HashMap<>();
+        private final Map<Integer,Integer> contourKnots=new HashMap<>();
         private final Map<Integer,Boolean> landings=new HashMap<>();
         Channel(Path path) { this.path=path; }
 
@@ -230,14 +231,16 @@ final class BridgeSurvey {
         int center(int t) { return centers.computeIfAbsent(t,this::alignment); }
 
         int deckDepth(int t,int offset) {
-            return BridgeAlignment.deckDepth(offset,center(t-1),center(t),center(t+1));
+            Span s=built(t);
+            int width=s==null || s.timber()?path.width():5;
+            return BridgeAlignment.deckDepth(width,offset,center(t-1),center(t),center(t+1));
         }
 
         boolean landingTrack(int t,int offset) {
-            if (Math.abs(offset)!=2 || deckDepth(t,offset)<1) return false;
+            if (Math.abs(offset)!=2) return false;
             for (int d=1;d<=2;d++) for (int side:new int[]{-1,1}) {
                 int row=t+side*d;
-                if (built(row)!=null || viaduct(row)!=null) return true;
+                if ((built(row)!=null || viaduct(row)!=null) && deckDepth(row,offset+center(t)-center(row))>=1) return true;
             }
             return false;
         }
@@ -286,21 +289,35 @@ final class BridgeSurvey {
         private int approach(int t) {
             Span here=span(t);
             if (here!=null) return here.y;
+            int wanted=landGrade(t);
             int left=1,right=1;
             while (left<APPROACH && span(t-left)==null) left++;
             while (right<APPROACH && span(t+right)==null) right++;
-            if (left==APPROACH && right==APPROACH) return terrain.grade.along(path,t);
-            if (right==APPROACH) return ramp(t,-left);
-            if (left==APPROACH) return ramp(t,right);
-            int a=(APPROACH-left)*right, b=(APPROACH-right)*left;
-            return RoadSection.interpolate(ramp(t,-left),ramp(t,right),b,a+b);
+            if (left==APPROACH && right==APPROACH) return wanted;
+            return BridgeAlignment.approachGrade(wanted,left,left==APPROACH?null:span(t-left).y,
+                    right,right==APPROACH?null:span(t+right).y);
         }
 
-        private int ramp(int t,int delta) {
-            int bank=t+delta;
-            int side=-Integer.signum(delta),d=Math.abs(delta);
-            int far=terrain.grade.along(path,bank+side*APPROACH);
-            return RoadSection.interpolate(span(bank).y,far,d-1,APPROACH-1);
+        private int landGrade(int t) {
+            int a=Math.floorDiv(t,CONTOUR_STEP)*CONTOUR_STEP,b=a+CONTOUR_STEP;
+            int left=contourKnots.computeIfAbsent(a,this::grounded),right=contourKnots.computeIfAbsent(b,this::grounded);
+            if (left==terrain.grade.along(path,a) && right==terrain.grade.along(path,b)) return terrain.grade.along(path,t);
+            return RoadSection.interpolate(left,right,t-a,CONTOUR_STEP);
+        }
+
+        private int grounded(int t) {
+            int planned=terrain.grade.along(path,t);
+            if (!path.contains(t)) return planned;
+            if (path instanceof Road road) {
+                int span=Math.floorDiv(t+SPACING/2,SPACING);
+                if (Math.abs(t-terrain.grade.junction(road,span).point().along(road.eastWest()))<=CONTOUR_STEP+3) return planned;
+            } else {
+                Spur spur=(Spur)path;
+                if (Math.min(Math.abs(t-spur.turn()),Math.abs(t-spur.end()))<=CONTOUR_STEP) return planned;
+            }
+            int ground=original(t,path.center(t));
+            if (ground==DRY || (ground&1)!=0 || planned<=(ground>>1)+1) return planned;
+            return groundedKnot(planned,terrain.grade.along(path,t-CONTOUR_STEP),terrain.grade.along(path,t+CONTOUR_STEP),ground>>1);
         }
 
         private boolean gap(int t) {
@@ -316,11 +333,12 @@ final class BridgeSurvey {
         BridgeBay viaduct(int t) {
             if (viaducts.containsKey(t)) return viaducts.get(t);
             BridgeBay bay=null;
-            if (gap(t) && RoadLayout.sustainedCover(t,this::gap)) {
+            if (gap(t)) {
                 int l=t,r=t;
                 while (t-l<=BANK_LIMIT && gap(l-1)) l--;
                 while (r-t<=BANK_LIMIT && gap(r+1)) r++;
-                bay=BridgeBay.at(t,l,r,r-l<=BANK_LIMIT,false,0);
+                // A one- to three-block cleft is carried by the two neighbouring banks.
+                bay=r-l<3?new BridgeBay(l-1,r+1):BridgeBay.at(t,l,r,r-l<=BANK_LIMIT,path.width()<5,0);
             }
             viaducts.put(t,bay);
             return bay;

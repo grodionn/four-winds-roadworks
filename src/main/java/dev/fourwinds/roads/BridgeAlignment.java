@@ -95,7 +95,23 @@ record BridgeAlignment(int left, int right, Line line) {
 
     // Across a diagonal voxel row the cart also occupies the adjacent row. Put the rail outside that envelope.
     static int deckDepth(int offset,int previous,int center,int next) {
-        return Math.min(offset-outside(-1,previous,center,next),outside(1,previous,center,next)-offset);
+        return deckDepth(5,offset,previous,center,next);
+    }
+
+    static int deckDepth(int width,int offset,int previous,int center,int next) {
+        int left=RoadLayout.edge(width,-1)+Integer.compare(Math.min(center,Math.min(previous,next)),center);
+        int right=RoadLayout.edge(width,1)+Integer.compare(Math.max(center,Math.max(previous,next)),center);
+        return Math.min(offset-left,right-offset);
+    }
+
+    // Hold the deck level at its seats and release it back to the land as soon as the grade allows.
+    static int approachGrade(int ground,int left,Integer leftY,int right,Integer rightY) {
+        int low=Integer.MIN_VALUE,high=Integer.MAX_VALUE;
+        if (leftY!=null) { low=leftY-availableRise(left);high=leftY+availableRise(left); }
+        if (rightY!=null) {
+            low=Math.max(low,rightY-availableRise(right));high=Math.min(high,rightY+availableRise(right));
+        }
+        return low<=high?RoadLayout.clamp(ground,low,high):RoadSection.interpolate(leftY,rightY,left,left+right);
     }
 
     static int availableRise(int distance) { return Math.max(0,distance-1)/2; }

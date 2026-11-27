@@ -16,8 +16,8 @@ record RoadsideStop(Point front,int y,boolean eastWest,int side,boolean shelter,
     private Point point(int u,int v) {
         return eastWest?new Point(front.x()+u,front.z()+v*side):new Point(front.x()+v*side,front.z()+u);
     }
-    private int half() { return shelter?3:1; }
-    private int back() { return shelter?5:2; }
+    private int half() { return WaysidePlan.half(shelter); }
+    private int back() { return WaysidePlan.back(shelter); }
     static RoadsideStop find(RoadTerrain terrain,List<Path> paths) {
         var chunk=terrain.level.getCenter();
         for (Path path:paths) {
@@ -38,7 +38,7 @@ record RoadsideStop(Point front,int y,boolean eastWest,int side,boolean shelter,
         // All neighbouring chunks select the same clearing from the pre-decoration survey.
         for (int delta:new int[]{0,-2,2}) {
             int t=station+delta;
-            if (channel.built(t)!=null || channel.surveyedWet(t)) continue;
+            if (channel.built(t)!=null || channel.viaduct(t)!=null || channel.surveyedWet(t) || terrain.tunnels.at(road,t)!=null) continue;
             int roadY=RoadFeature.surface(terrain,road,channel.point(t,0));
             for (int side:new int[]{preferred,-preferred}) {
                 Point front=channel.point(t,edge(road.width(),side)+2*side);
@@ -100,10 +100,6 @@ record RoadsideStop(Point front,int y,boolean eastWest,int side,boolean shelter,
                 || id.getNamespace().equals("tfc") && (id.getPath().startsWith("groundcover/") || id.getPath().startsWith("plant/")
                 || id.getPath().startsWith("rock/loose/") || id.getPath().startsWith("rock/mossy_loose/") || id.getPath().startsWith("wood/twig/"));
     }
-    private int clearance(int u,int v) {
-        if (shelter) return v==0?2:v<=2?5:4;
-        return u==0 && v==1?3:2;
-    }
     private int ground(ServerLevel level,ChunkAccess chunk,Point p,int headroom) {
         if ((p.x()>>4)!=chunk.getPos().x || (p.z()>>4)!=chunk.getPos().z || CoastalPier.reserved(chunk,p.x(),p.z())) return Integer.MIN_VALUE;
         var pos=new BlockPos.MutableBlockPos(p.x(),y,p.z());
@@ -124,48 +120,37 @@ record RoadsideStop(Point front,int y,boolean eastWest,int side,boolean shelter,
         int half=half(),back=back();
         // The last neighbouring tree has already grown. Validate before the first write.
         for (int u=-half;u<=half;u++) for (int v=0;v<=back;v++) {
-            int h=ground(level,chunk,point(u,v),clearance(u,v));
+            int h=ground(level,chunk,point(u,v),WaysidePlan.headroom(shelter,v));
             if (h==Integer.MIN_VALUE) return false;
         }
         var stone=RoadMaterials.construction(RoadMaterials.isTfc(level),quarry);
         for (int u=-half;u<=half;u++) for (int v=0;v<=back;v++) {
-            boolean pad=shelter?Math.abs(u)<=2 && v>=1 && v<=4: v>=1 || u==0;
-            if (!pad && !(shelter && v==0 && Math.abs(u)<=1)) continue;
+            if (!WaysidePlan.floor(shelter,u,v)) continue;
             Point p=point(u,v);
-            for (int i=y+1;i<=y+clearance(u,v);i++) {
+            for (int i=y+1;i<=y+WaysidePlan.headroom(shelter,v);i++) {
                 var pos=new BlockPos(p.x(),i,p.z());
                 if (!chunk.getBlockState(pos).isAir()) chunk.setBlockState(pos,Blocks.AIR.defaultBlockState(),false);
             }
-            boolean footing=shelter && Math.abs(u)==2 && (v==2 || v==4);
-            put(chunk,stone,u,v,0,(footing?Blocks.COBBLESTONE:Blocks.GRAVEL).defaultBlockState());
+            boolean base=WaysidePlan.footing(shelter,u,v) || !shelter && v==1;
+            var soil=new BlockPos(p.x(),y,p.z());
+            String local=RoadMaterials.soil(chunk.getBlockState(soil.below()));
+            var surface=stone.state((base?Blocks.COBBLESTONE:Blocks.DIRT_PATH).defaultBlockState());
+            chunk.setBlockState(soil,RoadMaterials.withSoil(surface,local),false);
         }
         Direction away=eastWest?(side>0?Direction.SOUTH:Direction.NORTH):(side>0?Direction.EAST:Direction.WEST);
-        if (shelter) {
-            var length=eastWest?Direction.Axis.X:Direction.Axis.Z;
-            for (int u=-3;u<=3;u++) {
-                for (int v=1;v<=5;v++) {
-                    var roof=v==3?Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,away.getOpposite()):
-                            Blocks.SPRUCE_SLAB.defaultBlockState();
-                    put(chunk,stone,u,v,v<=2?5:4,roof);
-                }
-                if (Math.abs(u)>2) continue;
-                for (int v:new int[]{2,4}) {
-                    int beam=v==2?4:3;
-                    if (Math.abs(u)==2) for (int h=1;h<beam;h++) put(chunk,stone,u,v,h,TunnelWorks.timber(Direction.Axis.Y));
-                    put(chunk,stone,u,v,beam,TunnelWorks.timber(length));
-                }
-                if (Math.abs(u)<2) {
-                    for (int h=1;h<=2;h++) put(chunk,stone,u,4,h,TunnelWorks.timber(length));
-                    put(chunk,stone,u,3,1,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,away));
-                }
-            }
-        } else {
-            put(chunk,stone,0,1,1,Blocks.STONE_BRICKS.defaultBlockState());
-            put(chunk,stone,0,1,2,Blocks.CHISELED_STONE_BRICKS.defaultBlockState());
-            put(chunk,stone,0,1,3,Blocks.STONE_BRICK_SLAB.defaultBlockState());
-            put(chunk,stone,0,2,1,Blocks.COBBLESTONE.defaultBlockState());
-            put(chunk,stone,1,2,1,Blocks.COBBLESTONE_SLAB.defaultBlockState());
-        }
+        WaysidePlan.draw(shelter,(u,v,h,piece)->{
+            BlockState state=switch (piece) {
+                case BASE, STEP -> Blocks.COBBLESTONE.defaultBlockState();
+                case LOW_STEP -> Blocks.COBBLESTONE_SLAB.defaultBlockState();
+                case POST -> Blocks.SPRUCE_FENCE.defaultBlockState();
+                case TIE -> TunnelWorks.timber(eastWest?Direction.Axis.X:Direction.Axis.Z);
+                case CROSS_TIE -> TunnelWorks.timber(eastWest?Direction.Axis.Z:Direction.Axis.X);
+                case SEAT, ROOF_IN, ROOF_OUT -> Blocks.SPRUCE_STAIRS.defaultBlockState()
+                        .setValue(StairBlock.FACING,piece==WaysidePlan.Piece.ROOF_OUT?away.getOpposite():away);
+                case RIDGE -> Blocks.SPRUCE_SLAB.defaultBlockState();
+            };
+            put(chunk,stone,u,v,h,state);
+        });
         return true;
     }
     private void put(ChunkAccess chunk,RoadMaterials stone,int u,int v,int h,BlockState state) {

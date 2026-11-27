@@ -35,8 +35,7 @@ def check_floodplain(world):
             for y in (68, 69):
                 world.expect(x, y, z, 'minecraft:air')
     # A cocoa pod on the trunk or moss on mangrove roots could veto an entire road column.
-    for x, y, z in [(1372, 67, -2360), (1373, 67, -2361), (1373, 67, -2359),
-                    (1374, 66, -2360), (1566, 66, -2455)]:
+    for x, y, z in [(1372, 67, -2360), (1373, 67, -2361), (1373, 67, -2359), (1374, 66, -2360)]:
         if 'leaves' in world.block(x, y, z)[0] or 'roots' in world.block(x, y, z)[0]:
             raise ValueError(f'Forest growth in place of the road at {x}, {y}, {z}')
         for dy in (1, 2):
@@ -44,7 +43,23 @@ def check_floodplain(world):
 
     world.expect(1372, 67, -2360, 'minecraft:coarse_dirt')
     world.expect(1373, 67, -2360, 'minecraft:dirt_path')
-    world.expect(1566, 66, -2455, 'minecraft:dirt_path')
+    # Walk the jungle lane for eleven rows. The exact stripe shifts with the verge.
+    previous = set()
+    for x in range(1560, 1571):
+        row = {(z, y) for z in range(-2462, -2450) for y in range(62, 70)
+               if world.block(x, y, z)[0] in ('minecraft:dirt_path', 'minecraft:coarse_dirt', 'minecraft:gravel')
+               and all(world.block(x, y + h, z)[0] == 'minecraft:air' for h in (1, 2))}
+        if not any((z + 1, y) in row for z, y in row):
+            raise ValueError(f'Jungle lane narrows to less than two walkable blocks at X {x}')
+        if previous and not any(z == pz and abs(y - py) <= 1 for z, y in row for pz, py in previous):
+            raise ValueError(f'Jungle lane is disconnected at X {x}')
+        previous = row
+
+    if world.version == '1.21.1':
+        # A bridge approach used to extend across the dry meadow ten blocks above the grass.
+        world.expect(410, 63, 685, 'minecraft:grass_block')
+        for y in range(65, 75):
+            world.expect(410, y, 685, 'minecraft:air')
 
     # Read the available faces of the waypost on the low bank at the village turn.
     for cx in (19, 20):
@@ -90,6 +105,33 @@ def check_pixie_street(world):
         world.expect(4236, 69, z, 'minecraft:dirt_path')
 
 
+def check_waysides(world):
+    for x in range(4120, 4128):
+        lane = [world.block(x, 65, z)[0] for z in range(-1397, -1391)]
+        if not 2 <= sum(b in ('tfc:grass_path/mollisol', 'tfc:coarse_dirt/mollisol') for b in lane) <= 3:
+            raise ValueError(f'Missing the earthen TFC track or its verge at X {x}')
+    for z in range(-108, -101):
+        for x, height, facing in [(4228, 66, 'east'), (4229, 67, 'east'), (4231, 67, 'west'), (4232, 66, 'west')]:
+            world.expect(x, height, z, 'tfc:wood/planks/spruce_stairs', facing=facing)
+        world.expect(4230, 68, z, 'tfc:wood/planks/spruce_slab', type='bottom')
+    for z in (-107, -103):
+        for x in (4229, 4231):
+            world.expect(x, 63, z, 'tfc:rock/cobble/dacite')
+            world.expect(x, 64, z, 'tfc:rock/cobble/dacite')
+            world.expect(x, 65, z, 'tfc:wood/fence/spruce')
+            world.expect(x, 66, z, 'tfc:wood/stripped_log/spruce', axis='z')
+        world.expect(4230, 66, z, 'tfc:wood/stripped_log/spruce', axis='x')
+    for z in (-106, -105, -104):
+        world.expect(4229, 64, z, 'tfc:wood/planks/spruce_stairs', facing='west')
+    for x in range(4230, 4234):
+        for y in (64, 65):
+            world.expect(x, y, -105, 'minecraft:air')
+    world.expect(2442, 67, 1494, 'tfc:rock/cobble/claystone_slab', type='bottom')
+    for z in (1495, 1496):
+        world.expect(2442, 67, z, 'tfc:rock/cobble/claystone')
+    world.expect(2442, 68, 1496, 'tfc:rock/cobble/claystone_slab', type='bottom')
+
+
 def check_tfc_materials(world):
     if world.version == '1.18.2':
         height, rock = 73, 'shale'
@@ -125,9 +167,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('vanilla_world', type=Path)
     parser.add_argument('tfc_world', type=Path, nargs='?', help='Optional TerraFirmaCraft world on seed 20261121')
+    parser.add_argument('--waysides', action='store_true', help='Also check the TFC meadow, shelter and mounting steps on 1.21.1')
     parser.add_argument('--soil-worlds', nargs=2, type=Path, metavar=('FORWARD', 'REVERSE'),
                         help='TFC seed -583271 generated in opposite chunk orders')
     args = parser.parse_args()
+    if args.waysides and not args.tfc_world:
+        parser.error('--waysides needs the TFC world')
     check_floodplain(World(args.vanilla_world, 38473917))
     if args.tfc_world:
         tfc = World(args.tfc_world, 20261121)
@@ -135,6 +180,8 @@ if __name__ == '__main__':
             check_pixie_street(tfc)
         else:
             check_tfc_materials(tfc)
+        if args.waysides:
+            check_waysides(tfc)
     if args.soil_worlds:
         check_soil_boundaries(*(World(path, -583271) for path in args.soil_worlds))
     print('Saved-world checks passed.')

@@ -5,6 +5,7 @@
 First public release.
 
 - Four main roads cross the Overworld. Follow a village turning or head for the coast, where a road can end at a timber pier. Some piers have a lighthouse. Inland, the routes cross bridges and pass through supported tunnels. Quieter stretches have the occasional roofed bench or mounting stone.
+- Country lanes follow dry ground where they can. Their worn centre shifts between grassy verges, and low bridge approaches come back to the bank. Timber shelters have a pitched roof and a bench. The stone mounting steps rise by half a block at a time.
 - Forge and Fabric builds cover Minecraft 1.16.5, 1.18.2, 1.19.2, 1.20.1 and 1.21.1. Minecraft 1.12.2 has separate builds for Forge and Legacy Fabric. The NeoForge build targets 1.21.1.
 - TerraFirmaCraft support includes Classic on Forge 1.12.2, TFC on Forge 1.18.2 and 1.20.1, and TFC on NeoForge 1.21.1. In Classic, masons use andesite and the side roads use local gravel and soil.
 - The source code and original artwork are available under the MIT licence.

@@ -5,6 +5,9 @@ import static dev.fourwinds.roads.RoadLayout.*;
 public class RoadLayoutCheck {
     public static void main(String[] args) {
         checkTerrainRoutes();
+        checkCountryTracks();
+        checkFloodplainRoute();
+        checkWaysideStops();
         checkVillageBypass();
         checkHillsideJunction();
         int lastBank=70;
@@ -74,6 +77,76 @@ public class RoadLayoutCheck {
             }
         }
     }
+    private static void checkCountryTracks() {
+        for (boolean ew:new boolean[]{false,true}) {
+            Road lane=new Road(117,ew,-2);
+            Spur spur=new Spur(ew,-80,60,11,-7,new Point(60,11),false);
+            for (Path path:new Path[]{lane,spur}) {
+                var seen=java.util.EnumSet.noneOf(Tread.class);
+                java.util.Set<Integer> previous=java.util.Set.of();
+                for (int t=-80;t<=60;t++) {
+                    var walking=new java.util.HashSet<Integer>();
+                    for (int off=edge(path.width(),-1);off<=edge(path.width(),1);off++) {
+                        Tread tread=track(117,path,t,off);
+                        seen.add(tread);
+                        if (tread!=Tread.TURF) walking.add(path.center(t)+off);
+                    }
+                    assert walking.size()>=2 && (t==-80 || !java.util.Collections.disjoint(walking,previous));
+                    previous=walking;
+                }
+                assert seen.equals(java.util.EnumSet.allOf(Tread.class));
+            }
+        }
+        assert groundedKnot(78,78,78,70)==71;
+        assert groundedKnot(78,84,78,55)==76;
+        assert groundedKnot(78,68,78,81)==78;
+        for (int t=1;t<48;t++) {
+            int y=BridgeAlignment.approachGrade(64,t,70,48,null);
+            assert y==(t<13?70-(t-1)/2:64);
+        }
+        assert BridgeAlignment.approachGrade(63,7,68,7,76)==72;
+    }
+
+    private static void checkFloodplainRoute() {
+        for (boolean ew:new boolean[]{true,false}) {
+            Road road=new Road(21,ew,1);
+            java.util.function.IntBinaryOperator pool=(x,z)->{
+                int t=ew?x:z,c=ew?z:x;
+                return t>=36 && t<=132 && Math.abs(c-road.seedCenter(t))<=8?1:0;
+            };
+            var first=new RoadSection.Junction(road.point(0,0),64);
+            var last=new RoadSection.Junction(road.point(SPACING,0),64);
+            var section=new RoadSection(road,first,last,62,(x,z)->64,java.util.List.of(),pool);
+            int wet=0;
+            for (int t=0;t<=SPACING;t++) {
+                int c=section.center(road,t);
+                wet+=pool.applyAsInt(ew?t:c,ew?c:t);
+                if (t>0) assert Math.abs(c-section.center(road,t-1))<=1;
+            }
+            assert wet<10 : "lane stayed in the flooded channel for "+wet+" rows";
+        }
+    }
+
+    private static void checkWaysideStops() {
+        for (boolean shelter:new boolean[]{true,false}) {
+            var blocks=new java.util.HashMap<String,WaysidePlan.Piece>();
+            WaysidePlan.draw(shelter,(u,v,h,p)->{
+                assert Math.abs(u)<=WaysidePlan.half(shelter) && v>=0 && v<=WaysidePlan.back(shelter);
+                assert h>0 && h<=WaysidePlan.headroom(shelter,v);
+                assert blocks.put(u+","+v+","+h,p)==null;
+            });
+            if (shelter) {
+                assert blocks.get("0,1,3")==WaysidePlan.Piece.ROOF_IN && blocks.get("0,5,3")==WaysidePlan.Piece.ROOF_OUT;
+                assert blocks.get("0,3,5")==WaysidePlan.Piece.RIDGE && blocks.get("0,4,1")==WaysidePlan.Piece.SEAT;
+                assert !blocks.containsKey("0,2,2") && !blocks.containsKey("0,1,1");
+                assert blocks.get("-2,2,1")==WaysidePlan.Piece.BASE && blocks.get("-2,2,2")==WaysidePlan.Piece.POST;
+            } else {
+                assert blocks.size()==4 && blocks.get("-1,1,1")==WaysidePlan.Piece.LOW_STEP;
+                assert blocks.get("0,1,1")==WaysidePlan.Piece.STEP && blocks.get("1,1,2")==WaysidePlan.Piece.LOW_STEP;
+            }
+        }
+    }
+
     private static void checkBridgeSeats() {
         Road diagonal=new Road(42,true,0,t->Math.floorDiv(t+1,2));
         var skewed=BridgeAlignment.fit(diagonal,-5,5,83,36,-48,48,(t,c)->{

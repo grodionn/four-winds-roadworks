@@ -17,6 +17,7 @@ final class RoadGrade {
     private static final class Nodes {
         final Cache<Long,java.util.List<RoadSection.Parcel>> parcels=CacheBuilder.newBuilder().maximumSize(2048).build();
         final Cache<Long,Integer> heights=CacheBuilder.newBuilder().maximumSize(65536).build();
+        final Cache<Long,Integer> water=CacheBuilder.newBuilder().maximumSize(32768).build();
         final Cache<Long,RoadSection.Junction> junctions=CacheBuilder.newBuilder().maximumSize(8192).build();
         final Cache<SectionKey,RoadSection> sections=CacheBuilder.newBuilder().maximumSize(2048).build();
     }
@@ -79,7 +80,7 @@ final class RoadGrade {
             if (old!=null) return old;
             int a=k.span*SPACING+SPACING/2,b=k.index*SPACING;
             var plots=VillageLinks.parcels(region,k.eastWest?a:b,k.eastWest?b:a,k.eastWest?160:72,k.eastWest?72:160,nodes.parcels);
-            var made=new RoadSection(road,junction(road,k.span),junction(road,k.span+1),level.getSeaLevel(),this::at,plots);
+            var made=new RoadSection(road,junction(road,k.span),junction(road,k.span+1),level.getSeaLevel(),this::at,plots,this::water);
             nodes.sections.put(k,made);return made;
         });
     }
@@ -101,12 +102,27 @@ final class RoadGrade {
         return RoadSection.interpolate(h,RoadSection.interpolate(raw(a,b+GRID),raw(a+GRID,b+GRID),dx,GRID),dz,GRID);
     }
 
+    private int water(int x,int z) {
+        // Use generator heights rather than decorated neighbour chunks for the shared route cache.
+        x=Math.floorDiv(x,GRID)*GRID; z=Math.floorDiv(z,GRID)*GRID;
+        long key=((long)x<<32)|Integer.toUnsignedLong(z);
+        Integer cached=nodes.water.getIfPresent(key);
+        if (cached!=null) return cached;
+        int surface=terrainTop(x,z);
+        int bed=RoadGame.baseHeight(level,x,z,Heightmap.Types.OCEAN_FLOOR_WG)-1;
+        int wet=bed<surface?1:0;
+        nodes.water.put(key,wet);return wet;
+    }
+
     private int raw(int x,int z) {
+        return RoadLayout.clamp(terrainTop(x,z),floor,level.getMaxBuildHeight()-9);
+    }
+
+    private int terrainTop(int x,int z) {
         long key=((long)x<<32)|Integer.toUnsignedLong(z);
         Integer saved=nodes.heights.getIfPresent(key);
         if (saved!=null) return saved;
         int h=RoadGame.baseHeight(level,x,z,Heightmap.Types.WORLD_SURFACE_WG)-1;
-        h=RoadLayout.clamp(h,floor,level.getMaxBuildHeight()-9);
         nodes.heights.put(key,h);return h;
     }
 }

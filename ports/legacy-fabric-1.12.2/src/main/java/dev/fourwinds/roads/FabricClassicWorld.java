@@ -119,6 +119,15 @@ public final class FabricClassicWorld implements LegacyRoads.Land {
         for(int[] b:pieces) if(x>=b[0] && x<=b[3] && z>=b[2] && z<=b[5] && y+9>=b[1] && y-3<=b[4]) return true;
         return false;
     }
+    @Override public boolean firm(int x,int y,int z) {
+        BlockState state=world.getBlockState(new BlockPos(x,y,z));
+        return natural(x,y,z) && state.getMaterial().blocksMovement() && state.getMaterial()!=Material.FOLIAGE
+                && state.getBlock()!=Blocks.LOG && state.getBlock()!=Blocks.LOG2;
+    }
+    @Override public boolean openForStop(int x,int y,int z) {
+        Material m=world.getBlockState(new BlockPos(x,y,z)).getMaterial();
+        return m==Material.AIR || m==Material.PLANT || m.isReplaceable() && !m.isFluid() && m!=Material.FOLIAGE;
+    }
     @Override public boolean natural(int x,int y,int z) {
         if (x<minX || x>=minX+16 || z<minZ || z>=minZ+16 || y<1 || y>=255) return false;
         BlockState s=world.getBlockState(new BlockPos(x,y,z));Block b=s.getBlock();Material m=s.getMaterial();
@@ -135,6 +144,8 @@ public final class FabricClassicWorld implements LegacyRoads.Land {
             case STONE:block=Blocks.STONE_BRICKS;break;
             case WORN:block=Blocks.STONE_BRICKS;meta=2;break;
             case COBBLE:block=Blocks.COBBLESTONE;break;
+            case SLIM_POST:block=Blocks.SPRUCE_FENCE;break;
+            case EARTH:block=Blocks.DIRT;meta=1;break;
             case GRAVEL:block=Blocks.GRAVEL;break;
             case PATH:block=Blocks.GRASS_PATH;break;
             case FILL:block=Blocks.STONE;break;

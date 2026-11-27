@@ -6,7 +6,7 @@ Four roads meet near the centre of the Overworld. Pick a direction and the pavin
 
 [![A jungle road, a stone tunnel and a lighthouse at sunset](art/road-to-coast.jpg)](docs/gallery/README.md)
 
-The main roads run five blocks wide. A four-block gravel lane has room for two wheel tracks. The last few blocks into a village are often just a three-block dirt track. Wooden signs at crossroads carry the compass directions. At a village turning, the sign gives the destination and the distance.
+The main roads run five blocks wide. On a country lane, the worn earth winds from one side of the four-block track to the other, with grass at the edges and gravel in patches. A three-block track often covers the last stretch into a village. Wooden signs at crossroads carry the compass directions. At a village turning, the sign gives the destination and the distance.
 
 Short river crossings can have a timber deck or a stone arch. In the mountains, the road can pass under a rock gallery or through a supported tunnel. Along quieter stretches there are occasional roofed benches and mounting stones.
 

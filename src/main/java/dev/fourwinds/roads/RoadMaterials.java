@@ -63,7 +63,6 @@ final class RoadMaterials {
         bind(Blocks.COBBLESTONE_SLAB,"rock/cobble/"+rock+"_slab");
         bind(Blocks.MOSSY_COBBLESTONE_SLAB,"rock/mossy_cobble/"+rock+"_slab");
         bind(Blocks.MOSSY_COBBLESTONE_WALL,"rock/mossy_cobble/"+rock+"_wall");
-        bind(Blocks.STONE_BUTTON,"rock/mossy_loose/"+rock);
         bind(Blocks.ANDESITE,"rock/smooth/"+rock);
         bind(Blocks.POLISHED_ANDESITE,"rock/smooth/"+rock);
         bind(Blocks.TUFF,"rock/cracked_bricks/"+rock);
