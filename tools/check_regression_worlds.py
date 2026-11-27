@@ -1,4 +1,4 @@
-"""Check the two real Four Winds 1.8.1 regression sites in saved Minecraft 1.21.1 worlds.
+"""Check bridge, spring and cave-roof sites in saved Minecraft 1.21.1 worlds.
 
 Requires nbtlib. Generate the TFC gorge and bridge portal (seed 7319041) and vanilla taiga (seed 96320157),
 keep the taiga spring loaded for at least 500 normal game ticks, then save and close both worlds.
@@ -108,11 +108,25 @@ def check_taiga(world):
             raise ValueError(f'Suspended tunnel timber at {x}, {y}, {z}')
 
 
+def check_cave_roofs(tfc, taiga):
+    # These blocks bear the road directly over a cavity in the original terrain.
+    for x, y, z in [(355, 67, 736), (360, 65, 755)]:
+        tfc.expect(x, y, z, 'tfc:rock/hardened/limestone')
+        tfc.expect(x, y - 1, z, 'minecraft:cave_air')
+        tfc.expect(x, y + 1, z, 'minecraft:air')
+    taiga.expect(-384, 65, 156, 'minecraft:grass_block')
+    taiga.expect(-384, 64, 156, 'minecraft:air')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('tfc_world', type=Path)
     parser.add_argument('vanilla_world', type=Path)
+    parser.add_argument('--tfc-floodplain', type=Path, help='Also check the cave roofs on TFC seed 38473917 and in the taiga')
     args = parser.parse_args()
     check_gorge(World(args.tfc_world, 7319041))
-    check_taiga(World(args.vanilla_world, 96320157))
+    taiga = World(args.vanilla_world, 96320157)
+    check_taiga(taiga)
+    if args.tfc_floodplain:
+        check_cave_roofs(World(args.tfc_floodplain, 38473917), taiga)
     print('Gorge deck, stone seats, spring, road clearance and overhanging rock verified.')

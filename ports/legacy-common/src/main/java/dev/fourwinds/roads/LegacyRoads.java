@@ -224,6 +224,10 @@ final class LegacyRoads {
         }
         Tread tread=path.width()<5 && !bore?track(land.seed(),path,t,offset):null;
         if (depth==0 && !bore && (deck-bed>3 || tread==Tread.TURF && bed<=deck+1)) return;
+        if (!bore && deck<=bed && land.firm(x,deck,z) && land.openForStop(x,deck-1,z)) {
+            clear(land,x,deck+1,z,Math.max(5,bed-deck+1));
+            return;
+        }
         Material fill=tread!=null && deck-bed<=4?Material.EARTH:Material.FILL;
         for(int y=bed+1;y<deck;y++) put(land,x,y,z,fill,path,1);
         int wear=wear(land.seed(),path,t);

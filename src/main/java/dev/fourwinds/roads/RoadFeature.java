@@ -390,6 +390,15 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             else terrain.sealRoof(c.p,c.y+clearance+1);
         }
         if (c.bridge || c.arcade) { crossing(terrain,c); return true; }
+        var floor=new BlockPos(c.p.x(),c.y,c.p.z());
+        if (clearance==0 && !c.ground.water() && c.y<=c.ground.y()) {
+            var nativeFloor=terrain.level.getBlockState(floor);
+            var underneath=terrain.level.getBlockState(floor.below());
+            // The last course of a natural cave roof carries the road. Leave the limestone or
+            // turf lip in place where cutting it would leave an earthen tread hanging in air.
+            if ((underneath.isAir() || !underneath.getFluidState().isEmpty()) && RoadTerrain.naturalGround(nativeFloor)
+                    && nativeFloor.isFaceSturdy(terrain.level,floor,Direction.UP)) return true;
+        }
         Block footing = c.ground.state().is(BlockTags.SAND) ? Blocks.SANDSTONE : Blocks.COBBLESTONE;
         if (c.y>=c.ground.y()+5 && terrain.crossesAboveStreet(c.p,c.ground.y(),c.y)) {
             // The village street passes under the embankment. Keep its right of way open.
@@ -407,7 +416,6 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
         boolean sandy=c.ground.state().is(BlockTags.SAND);
         boolean grassy=RoadTerrain.softVerge(c.ground.state());
         Block paving;
-        var floor=new BlockPos(c.p.x(),c.y,c.p.z());
         String soil=terrain.materials.localSoil(c.ground.state());
         if (c.rise!=0) {
             int f=c.path.eastWest()?c.rise:0,g=c.path.eastWest()?0:c.rise;

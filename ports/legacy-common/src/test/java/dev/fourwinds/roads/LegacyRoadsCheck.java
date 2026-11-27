@@ -62,6 +62,8 @@ public final class LegacyRoadsCheck {
         Coast land=new Coast() {
             @Override public int bed(int x,int z) { return x>=66 && x<=70?50:70; }
             @Override public boolean wet(int x,int z) { return false; }
+            @Override public boolean firm(int x,int y,int z) { return !(x==83 && y==69) && super.firm(x,y,z); }
+            @Override public boolean openForStop(int x,int y,int z) { return x==83 && y==69 || super.openForStop(x,y,z); }
         };
         LegacyRoads roads=new LegacyRoads();
         Road lane=new Road(land.seed(),true,1);
@@ -82,6 +84,9 @@ public final class LegacyRoadsCheck {
             }
             require(land.blocks.get(land.position(x,y,p.z()+2))==null,"lane widened on crossing");
         }
+        Point lip=roads.on(land,lane,83);
+        require(roads.height(land,lane,83)==70 && !land.blocks.containsKey(land.position(83,70,lip.z())),
+                "replaced the last natural block of a cave roof with a dirt track");
     }
 
     public static void main(String[] args) {
