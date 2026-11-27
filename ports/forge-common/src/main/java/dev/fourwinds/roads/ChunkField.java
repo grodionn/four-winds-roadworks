@@ -45,6 +45,6 @@ final class ChunkField<T> {
     }
 
     private void encode(ChunkAccess chunk, CompoundTag data) {
-        if (has(chunk)) data.put(name, codec.encodeStart(NbtOps.INSTANCE, get(chunk)).getOrThrow());
+        if (has(chunk)) data.put(name, codec.encodeStart(NbtOps.INSTANCE, get(chunk)).result().orElseThrow());
     }
 }

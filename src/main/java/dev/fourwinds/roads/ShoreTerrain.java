@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
 import static dev.fourwinds.roads.RoadLayout.*;
 
@@ -29,7 +28,7 @@ public final class ShoreTerrain {
         for (int i=0;i<columns.length;i++) {
             int x=cp.getBlockX(i&15),z=cp.getBlockZ(i>>4);
             int bed=chunk.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,x,z);
-            int value=Math.clamp(bed-sea+BED_OFFSET,0,31);
+            int value=RoadLayout.clamp(bed-sea+BED_OFFSET,0,31);
             if (wet(chunk,pos.set(x,sea,z))) value|=WET_AT_SEA;
             if (wet(chunk,pos.setY(sea-1))) value|=WET_BELOW_SEA;
             columns[i]=(byte)value;
@@ -66,7 +65,7 @@ public final class ShoreTerrain {
     static int surface(WorldGenRegion region,Point p) {
         var center=region.getCenter();int x=p.x()>>4,z=p.z()>>4;
         if (Math.abs(x-center.x)>SURVEY_RADIUS || Math.abs(z-center.z)>SURVEY_RADIUS) return Integer.MIN_VALUE;
-        var chunk=region.getChunk(x,z,ChunkStatus.CARVERS);
+        var chunk=region.getChunk(x,z,RoadVersion.CARVERS);
         if (!RoadData.SURFACE.has(chunk)) return Integer.MIN_VALUE;
         int[] heights=RoadData.SURFACE.get(chunk).getIntArray("heights");
         int i=(p.x()&15)|((p.z()&15)<<4);
@@ -77,7 +76,7 @@ public final class ShoreTerrain {
         var cp=region.getCenter();
         int x=p.x()>>4,z=p.z()>>4;
         if (Math.abs(x-cp.x)<=SURVEY_RADIUS && Math.abs(z-cp.z)<=SURVEY_RADIUS) {
-            var chunk=region.getChunk(x,z,ChunkStatus.CARVERS);
+            var chunk=region.getChunk(x,z,RoadVersion.CARVERS);
             if (RoadData.SURFACE.has(chunk)) {
                 String found=RoadData.SURFACE.get(chunk).getString("quarry");
                 if (!found.isEmpty()) return found;
@@ -99,7 +98,7 @@ public final class ShoreTerrain {
         }
         // Older partial chunks can already be past CARVERS when the mod is installed.
         int sea=terrain.level.getSeaLevel(),bed=terrain.seabed(p);
-        return Math.clamp(bed-sea+BED_OFFSET,0,31) | (bed<sea ? WET_AT_SEA : 0) | (bed<sea-1 ? WET_BELOW_SEA : 0);
+        return RoadLayout.clamp(bed-sea+BED_OFFSET,0,31) | (bed<sea ? WET_AT_SEA : 0) | (bed<sea-1 ? WET_BELOW_SEA : 0);
     }
 
     static int bed(int column,int sea) { return sea+(column&31)-BED_OFFSET; }

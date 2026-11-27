@@ -1,7 +1,31 @@
 package dev.fourwinds.roads;
 
 /** Two consecutive supports, measured along the road. Banks are supports too. */
-record BridgeBay(int left,int right) {
+final class BridgeBay {
+    private final int left;
+    private final int right;
+
+    BridgeBay(int left, int right) {
+        this.left = left;
+        this.right = right;
+    }
+    public int left() { return left; }
+    public int right() { return right; }
+
+    @Override public boolean equals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof BridgeBay)) return false;
+        BridgeBay rhs = (BridgeBay)other;
+        return left == rhs.left
+                && right == rhs.right;
+    }
+
+    @Override public int hashCode() {
+        int hash = left;
+        hash = 31 * hash + right;
+        return hash;
+    }
+
     static BridgeBay at(int t,int leftBank,int rightBank,boolean whole,boolean timber,int phase) {
         int pitch=timber?7:11;
         if (whole) {
@@ -32,7 +56,7 @@ record BridgeBay(int left,int right) {
     int soffit(int t) {
         int width=right-left;
         if (width<=4) return 1;
-        double x=Math.clamp((2.0*t-left-right-1)/(width-3),-1,1);
+        double x=RoadLayout.clamp((2.0*t-left-right-1)/(width-3),-1,1);
         double crown=Math.sqrt(Math.max(0,1-x*x));
         double rise=width<=16?Math.min(6,(width-2)*.50):Math.min(10,(width-2)*.44);
         return 1+(int)Math.round((1-crown)*rise);

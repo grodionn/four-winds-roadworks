@@ -19,12 +19,16 @@ jobs:
           - {loader: NeoForge, minecraft: 1.21.1, project: '.'}
           - {loader: Forge, minecraft: 1.21.1, project: ports/forge-1.21.1}
           - {loader: Fabric, minecraft: 1.21.1, project: ports/fabric-1.21.1}
+          - {loader: Forge, minecraft: 1.20.1, project: ports/forge-1.20.1}
+          - {loader: Fabric, minecraft: 1.20.1, project: ports/fabric-1.20.1}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: |
+            17
+            21
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
       - run: ./gradlew --no-daemon -p "${{ matrix.project }}" build
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

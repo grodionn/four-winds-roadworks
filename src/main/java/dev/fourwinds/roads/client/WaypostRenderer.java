@@ -99,7 +99,7 @@ public final class WaypostRenderer {
             random.setSeed(seed);
             for (var quad : model.getQuads(sign.getBlockState(), side, random)) {
                 float shade = sign.getLevel().getShade(yaw.rotate(quad.getDirection()), quad.isShade());
-                vertices.putBulkData(pose.last(), quad, shade, shade, shade, 1, light, overlay);
+                WaypostVertex.emit(vertices, pose.last(), quad, shade, light, overlay);
             }
         }
     }

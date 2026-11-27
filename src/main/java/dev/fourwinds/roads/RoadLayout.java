@@ -5,7 +5,31 @@ final class RoadLayout {
     static final int START_RADIUS = 8;
     static final int MAX_BEND = 23;
 
-    record Point(int x, int z) {
+    static final class Point {
+        private final int x;
+        private final int z;
+
+        Point(int x, int z) {
+            this.x = x;
+            this.z = z;
+        }
+        public int x() { return x; }
+        public int z() { return z; }
+
+        @Override public boolean equals(Object other) {
+            if (this == other) return true;
+            if (!(other instanceof Point)) return false;
+            Point rhs = (Point)other;
+            return x == rhs.x
+                && z == rhs.z;
+        }
+
+        @Override public int hashCode() {
+            int hash = x;
+            hash = 31 * hash + z;
+            return hash;
+        }
+
         int along(boolean eastWest) { return eastWest ? x : z; }
         int across(boolean eastWest) { return eastWest ? z : x; }
         int distanceTo(Point p) { return Math.max(Math.abs(x - p.x), Math.abs(z - p.z)); }
@@ -20,6 +44,16 @@ final class RoadLayout {
             int across = center(along) + offset;
             return eastWest() ? new Point(along, across) : new Point(across, along);
         }
+    }
+
+    static int clamp(int value, int min, int max) {
+        if (min > max) throw new IllegalArgumentException("Empty road height range");
+        return Math.max(min, Math.min(max, value));
+    }
+
+    static double clamp(double value, double min, double max) {
+        if (min > max) throw new IllegalArgumentException("Empty road coordinate range");
+        return Math.max(min, Math.min(max, value));
     }
 
     static int edge(int width, int side) { return side < 0 ? -(width / 2) : (width - 1) / 2; }
@@ -50,14 +84,55 @@ final class RoadLayout {
 
     // Depth is measured inward from the edge of the open road. Negative depths are the side walks.
     static int vaultClearance(int depth,boolean betweenRibs) {
-        return 7+Math.clamp(depth,-3,1)+(betweenRibs?1:0);
+        return 7+RoadLayout.clamp(depth,-3,1)+(betweenRibs?1:0);
     }
 
-    private record Knot(int t, int offset) {
+    private static final class Knot {
+        private final int t;
+        private final int offset;
+
+        Knot(int t, int offset) {
+            this.t = t;
+            this.offset = offset;
+        }
+
         double slopeTo(Knot next) { return (next.offset-offset) / (double)(next.t-t); }
     }
 
-    record Road(long seed, boolean eastWest, int index, java.util.function.IntUnaryOperator course) implements Path {
+    static final class Road implements Path {
+        private final long seed;
+        private final boolean eastWest;
+        private final int index;
+        private final java.util.function.IntUnaryOperator course;
+
+        Road(long seed, boolean eastWest, int index, java.util.function.IntUnaryOperator course) {
+            this.seed = seed;
+            this.eastWest = eastWest;
+            this.index = index;
+            this.course = course;
+        }
+        public long seed() { return seed; }
+        public boolean eastWest() { return eastWest; }
+        public int index() { return index; }
+
+        @Override public boolean equals(Object other) {
+            if (this == other) return true;
+            if (!(other instanceof Road)) return false;
+            Road rhs = (Road)other;
+            return seed == rhs.seed
+                && eastWest == rhs.eastWest
+                && index == rhs.index
+                && java.util.Objects.equals(course, rhs.course);
+        }
+
+        @Override public int hashCode() {
+            int hash = Long.hashCode(seed);
+            hash = 31 * hash + Boolean.hashCode(eastWest);
+            hash = 31 * hash + index;
+            hash = 31 * hash + java.util.Objects.hashCode(course);
+            return hash;
+        }
+
         Road(long seed,boolean eastWest,int index) { this(seed,eastWest,index,null); }
         @Override public int width() { return Math.floorMod(index, 3) == 0 ? 5 : 4; }
 
@@ -102,7 +177,56 @@ final class RoadLayout {
     }
 
     // Along the spur, t runs from the turnoff on the trunk road to the village entrance.
-    record Spur(boolean eastWest, int turn, int end, int across, int bend, Point village, boolean pixies) implements Path {
+    static final class Spur implements Path {
+        private final boolean eastWest;
+        private final int turn;
+        private final int end;
+        private final int across;
+        private final int bend;
+        private final Point village;
+        private final boolean pixies;
+
+        Spur(boolean eastWest, int turn, int end, int across, int bend, Point village, boolean pixies) {
+            this.eastWest = eastWest;
+            this.turn = turn;
+            this.end = end;
+            this.across = across;
+            this.bend = bend;
+            this.village = village;
+            this.pixies = pixies;
+        }
+        public boolean eastWest() { return eastWest; }
+        public int turn() { return turn; }
+        public int end() { return end; }
+        public int across() { return across; }
+        public int bend() { return bend; }
+        public Point village() { return village; }
+        public boolean pixies() { return pixies; }
+
+        @Override public boolean equals(Object other) {
+            if (this == other) return true;
+            if (!(other instanceof Spur)) return false;
+            Spur rhs = (Spur)other;
+            return eastWest == rhs.eastWest
+                && turn == rhs.turn
+                && end == rhs.end
+                && across == rhs.across
+                && bend == rhs.bend
+                && java.util.Objects.equals(village, rhs.village)
+                && pixies == rhs.pixies;
+        }
+
+        @Override public int hashCode() {
+            int hash = Boolean.hashCode(eastWest);
+            hash = 31 * hash + turn;
+            hash = 31 * hash + end;
+            hash = 31 * hash + across;
+            hash = 31 * hash + bend;
+            hash = 31 * hash + java.util.Objects.hashCode(village);
+            hash = 31 * hash + Boolean.hashCode(pixies);
+            return hash;
+        }
+
         boolean inPixieVillage(Point p) {
             return pixies && Math.abs((p.x>>4)-(village.x>>4))<=1 && Math.abs((p.z>>4)-(village.z>>4))<=1;
         }
@@ -110,7 +234,7 @@ final class RoadLayout {
         @Override public boolean contains(int t) { return t >= Math.min(turn, end) && t <= Math.max(turn, end); }
         @Override public int center(int t) {
             if (turn == end) return across;
-            double f = Math.clamp((t - turn) / (double)(end - turn), 0, 1);
+            double f = RoadLayout.clamp((t - turn) / (double)(end - turn), 0, 1);
             double arch = 4 * f * (1 - f);
             return across + (int)Math.round(bend * arch * arch);
         }
@@ -137,7 +261,7 @@ final class RoadLayout {
     // Interpolate maintenance along the route, so a worn stretch survives bends and chunk boundaries.
     static int wear(long seed, Path path, int along) {
         int span = path instanceof Spur ? 22 : path.width() == 5 ? 56 : 38;
-        int route = path instanceof Road r ? r.index() : ((Spur)path).across();
+        int route = path instanceof Road ? ((Road)path).index() : ((Spur)path).across();
         long salt = seed ^ (path.eastWest() ? 88279L : 99709L);
         int i = Math.floorDiv(along,span), f = Math.floorMod(along,span);
         int a = roll(salt,route,i,100), b = roll(salt,route,i+1,100);

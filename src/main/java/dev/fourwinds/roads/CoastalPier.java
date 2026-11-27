@@ -19,11 +19,9 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
-import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import static dev.fourwinds.roads.RoadLayout.*;
@@ -157,7 +155,7 @@ final class CoastalPier {
     private static boolean freeOfStructures(RoadTerrain terrain,BoundingBox box) {
         var manager=terrain.level.getLevel().structureManager().forWorldGenRegion(terrain.level);
         for (int x=box.minX()>>4;x<=box.maxX()>>4;x++) for (int z=box.minZ()>>4;z<=box.maxZ()>>4;z++) {
-            if (terrain.level.getChunk(x,z,ChunkStatus.CARVERS).getPersistedStatus()==ChunkStatus.FULL) return false;
+            if (RoadVersion.full(terrain.level.getChunk(x,z,RoadVersion.CARVERS))) return false;
             for (var start:manager.startsForStructure(new ChunkPos(x,z),any->true)) {
                 for (var piece:start.getPieces()) if (piece.getBoundingBox().intersects(box)) return false;
             }
@@ -234,7 +232,7 @@ final class CoastalPier {
             BlockState surface=floor>prev?stair(out.getOpposite()):floor>next?stair(out):Blocks.SPRUCE_PLANKS.defaultBlockState();
             for (int u=-1;u<=1;u++) {
                 Point q=road.point(t-i*pier.outward(),u);
-                var chunk=terrain.level.getChunk(q.x()>>4,q.z()>>4,ChunkStatus.CARVERS);
+                var chunk=terrain.level.getChunk(q.x()>>4,q.z()>>4,RoadVersion.CARVERS);
                 if (reserved(chunk,q.x(),q.z())) return null;
                 footprint.encapsulate(pos(q,floor));
                 for (int y=floor;y<=floor+2;y++) {
@@ -260,7 +258,7 @@ final class CoastalPier {
         if (!freeOfStructures(terrain,box)) return null;
         for (int s=0;s<=10;s++) for (int u=-1;u<=(s>=7?3:1);u++) {
             Point q=pier.point(s,u);
-            var chunk=terrain.level.getChunk(q.x()>>4,q.z()>>4,ChunkStatus.CARVERS);
+            var chunk=terrain.level.getChunk(q.x()>>4,q.z()>>4,RoadVersion.CARVERS);
             if (reserved(chunk,q.x(),q.z()) || s>=3 && waterTop(terrain,q)!=pier.water()) return null;
             boolean step=s>=7 && u==3;
             int y=step?pier.deck()-1:pier.floor(s);
@@ -388,8 +386,8 @@ final class CoastalPier {
             default -> Rotation.COUNTERCLOCKWISE_90;
         };
         Mirror mirror=rotation.rotate(Direction.SOUTH)==direction(p,0,1) ? Mirror.NONE : Mirror.LEFT_RIGHT;
-        var settings=new StructurePlaceSettings().setMirror(mirror).setRotation(rotation)
-                .setKnownShape(true).setIgnoreEntities(true).setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING);
+        var settings=RoadVersion.dry(new StructurePlaceSettings().setMirror(mirror).setRotation(rotation)
+                .setKnownShape(true).setIgnoreEntities(true));
         var origin=pos(p.point(0,MIN_SIDE),p.deck()+1);
         if (drawing.placeInWorld(terrain.level,origin,origin,settings,RandomSource.create(origin.asLong()),2)) {
             terrain.materials.fuelSignal(terrain.level,pos(p.point(TOWER,TOWER_SIDE),p.deck()+FIRE_HEIGHT));

@@ -45,7 +45,7 @@ final class RoadGrade {
         int turn=trunk.center(spur.across());
         if (turn==spur.turn()) return spur;
         int maxBend=Math.abs(turn-spur.end())/4;
-        return new Spur(spur.eastWest(),turn,spur.end(),spur.across(),Math.clamp(spur.bend(),-maxBend,maxBend),spur.village(),spur.pixies());
+        return new Spur(spur.eastWest(),turn,spur.end(),spur.across(),RoadLayout.clamp(spur.bend(),-maxBend,maxBend),spur.village(),spur.pixies());
     }
 
     int along(Path path,int t) {
@@ -107,7 +107,7 @@ final class RoadGrade {
         if (saved!=null) return saved;
         var source=level.getChunkSource();
         int h=source.getGenerator().getBaseHeight(x,z,Heightmap.Types.WORLD_SURFACE_WG,level,source.randomState())-1;
-        h=Math.clamp(h,floor,level.getMaxBuildHeight()-9);
+        h=RoadLayout.clamp(h,floor,level.getMaxBuildHeight()-9);
         nodes.heights.put(key,h);return h;
     }
 }

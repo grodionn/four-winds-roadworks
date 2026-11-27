@@ -19,7 +19,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 @Mod(FourWinds.ID)
 public final class FourWinds {
     public static final String ID = "fourwindsroadworks";
-    public static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath(ID, path); }
+    public static ResourceLocation id(String path) { return ResourceLocation.tryBuild(ID, path); }
 
     public FourWinds(IEventBus bus) {
         ChunkField.register(bus);

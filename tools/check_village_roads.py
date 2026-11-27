@@ -14,6 +14,15 @@ from pathlib import Path
 from check_regression_worlds import World
 
 
+def canonical_component(component):
+    if isinstance(component, dict):
+        if set(component) == {'text'}:
+            return component['text']
+        if 'extra' in component:
+            return {**component, 'extra': [canonical_component(child) for child in component['extra']]}
+    return component
+
+
 def check_floodplain(world):
     # These four blocks used to be masonry inside the built-up village.
     for x, y, z in [(351, 67, 714), (353, 67, 714), (354, 66, 714), (359, 66, 752)]:
@@ -46,7 +55,7 @@ def check_floodplain(world):
                     lines = [json.loads(str(line)) for line in post[face]['messages']]
                     expected = round(math.hypot(332 - x, 764 - z))
                     if (lines[0].get('translate') != 'sign.fourwindsroadworks.village'
-                            or lines[1] != direction
+                            or canonical_component(lines[1]) != direction
                             or lines[2].get('translate') != 'sign.fourwindsroadworks.distance'):
                         raise ValueError(f'Incorrect village directions at {x}, {y}, {z}: {lines}')
                     distance = lines[2]['with'][0]

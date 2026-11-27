@@ -13,7 +13,7 @@ import net.minecraft.world.level.levelgen.GenerationStep;
 
 public final class FourWinds implements ModInitializer {
     public static final String ID = "fourwindsroadworks";
-    public static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath(ID, path); }
+    public static ResourceLocation id(String path) { return ResourceLocation.tryBuild(ID, path); }
 
     @Override public void onInitialize() {
         RoadData.ALL.forEach(ChunkField::register);

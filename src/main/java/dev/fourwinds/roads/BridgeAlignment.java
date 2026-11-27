@@ -84,13 +84,13 @@ record BridgeAlignment(int left, int right, Line line) {
 
     private boolean reaches(Path path,int t) {
         int distance=distance(t);
-        return distance>24 || Math.abs(path.center(t)-center(Math.clamp(t,left,right)))<=Math.max(0,distance-2);
+        return distance>24 || Math.abs(path.center(t)-center(RoadLayout.clamp(t,left,right)))<=Math.max(0,distance-2);
     }
 
     /** Leave a straight landing. The road can move at most one block sideways per row after it. */
     static int approach(int course,int axis,int distance) {
         int reach=Math.max(0,distance-2);
-        return Math.clamp(course,axis-reach,axis+reach);
+        return RoadLayout.clamp(course,axis-reach,axis+reach);
     }
 
     // Across a diagonal voxel row the cart also occupies the adjacent row. Put the rail outside that envelope.

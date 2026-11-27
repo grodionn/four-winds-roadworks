@@ -12,8 +12,10 @@ dependencies {
 }
 
 apply from: '../modern.gradle'
+sourceSets.main.java.srcDir('../fabric-common/src/main/java')
+sourceSets.main.resources.srcDir('../fabric-common/src/main/resources')
 
 processResources {
     exclude 'META-INF/neoforge.mods.toml', 'data/fourwindsroadworks/neoforge/**'
-    filesMatching('fabric.mod.json') { expand(modVersion: project.version) }
+    filesMatching('fabric.mod.json') { expand(modVersion: project.version, gameVersion: '1.21.1', javaVersion: '21', apiVersion: '0.116.18') }
 }

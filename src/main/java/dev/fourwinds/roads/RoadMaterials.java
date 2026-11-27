@@ -32,7 +32,7 @@ final class RoadMaterials {
         return construction(this!=VANILLA,rock);
     }
     static RoadMaterials construction(boolean tfc,String rock) {
-        return tfc?TFC.computeIfAbsent(rock+"/entisol/yellow",k->new RoadMaterials(rock,"entisol","yellow")):VANILLA;
+        return tfc?TFC.computeIfAbsent(rock+"/"+RoadVersion.DEFAULT_SOIL+"/yellow",k->new RoadMaterials(rock,RoadVersion.DEFAULT_SOIL,"yellow")):VANILLA;
     }
 
     static RoadMaterials forChunk(WorldGenRegion region) {
@@ -40,7 +40,7 @@ final class RoadMaterials {
         var c = region.getCenter();
         int x = c.getMiddleBlockX(), z = c.getMiddleBlockZ();
         int top = region.getHeight(Heightmap.Types.WORLD_SURFACE_WG,x,z);
-        String rock = "granite", soil = "entisol", sand = "yellow";
+        String rock = "granite", soil = RoadVersion.DEFAULT_SOIL, sand = "yellow";
         var p = new BlockPos.MutableBlockPos(x,top,z);
         for (int y=top; y>=Math.max(region.getMinBuildHeight(),top-95); y--) {
             var id = BuiltInRegistries.BLOCK.getKey(region.getBlockState(p.setY(y)).getBlock());
@@ -124,7 +124,7 @@ final class RoadMaterials {
         String path=id.getPath();
         if (!id.getNamespace().equals("tfc") || soil(state)==null && !path.startsWith("mud_bricks/")) return state;
         String suffix=path.endsWith("_slab")?"_slab":path.endsWith("_stairs")?"_stairs":"";
-        return BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath("tfc",
+        return BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryBuild("tfc",
                 path.substring(0,path.indexOf('/')+1)+soil+suffix)).map(b->b.withPropertiesOf(state)).orElse(state);
     }
 
@@ -133,11 +133,11 @@ final class RoadMaterials {
         if (this==VANILLA || !signal.is(blocks.get(Blocks.CAMPFIRE))) return;
         // TFC consumes this log through its normal fuel data on the first ticking load.
         var data=entityTag(pos,signal,world);
-        var oak=BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("tfc","wood/log/oak"));
+        var oak=BuiltInRegistries.BLOCK.get(ResourceLocation.tryBuild("tfc","wood/log/oak"));
         var inventory=data.getCompound("inventory");
         var items=inventory.getList("Items",net.minecraft.nbt.Tag.TAG_COMPOUND);
         items.removeIf(entry -> ((CompoundTag)entry).getInt("Slot")==0);
-        var log=(CompoundTag)new net.minecraft.world.item.ItemStack(oak).save(world.registryAccess());
+        var log=RoadVersion.saveStack(new net.minecraft.world.item.ItemStack(oak),world);
         log.putInt("Slot",0);
         items.add(log);
         inventory.put("Items",items);
@@ -146,7 +146,7 @@ final class RoadMaterials {
     }
 
     private void bind(Block template,String path) {
-        blocks.put(template,BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath("tfc",path)).orElseThrow());
+        blocks.put(template,BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryBuild("tfc",RoadVersion.tfcMaterial(path))).orElseThrow());
     }
     BlockState state(BlockState template) {
         if (this==VANILLA) return template;
@@ -156,7 +156,7 @@ final class RoadMaterials {
     }
 
     static CompoundTag entityTag(BlockPos pos, BlockState state, WorldGenRegion level) {
-        return ((EntityBlock)state.getBlock()).newBlockEntity(pos,state).saveWithFullMetadata(level.registryAccess());
+        return RoadVersion.saveEntity(((EntityBlock)state.getBlock()).newBlockEntity(pos,state),level);
     }
 
 }

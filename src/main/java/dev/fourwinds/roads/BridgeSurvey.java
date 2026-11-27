@@ -254,7 +254,7 @@ final class BridgeSurvey {
                 else if (low>high) return RoadSection.interpolate(left,deck.y,leftDistance,leftDistance+d);
                 break;
             }
-            return Math.clamp(wanted,low,high);
+            return RoadLayout.clamp(wanted,low,high);
         }
 
         Point point(int t,int offset) {
@@ -279,7 +279,7 @@ final class BridgeSurvey {
                     break;
                 }
             }
-            return lo<=hi?Math.clamp(wanted,lo,hi)
+            return lo<=hi?RoadLayout.clamp(wanted,lo,hi)
                     :RoadSection.interpolate(left,right,leftDistance,leftDistance+rightDistance);
         }
 

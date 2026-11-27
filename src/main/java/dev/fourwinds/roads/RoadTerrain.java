@@ -33,7 +33,7 @@ final class RoadTerrain {
     static final TagKey<Biome> SEA = TagKey.create(Registries.BIOME, FourWinds.id("open_sea"));
     private static final TagKey<Biome> SHORE = TagKey.create(Registries.BIOME, FourWinds.id("tidal_shore"));
     private static final TagKey<Fluid> SALT = TagKey.create(Registries.FLUID,
-            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("tfc","salt_water"));
+            net.minecraft.resources.ResourceLocation.tryBuild("tfc","salt_water"));
     private static final RoadColumn VOID = new RoadColumn(-1000, Blocks.AIR.defaultBlockState(), false, false);
     static final int TUNNEL_HEIGHT=6;
     record RoadColumn(int y, BlockState state, boolean water, boolean sea) {
@@ -54,7 +54,7 @@ final class RoadTerrain {
     private final java.util.Map<Long,Boolean> coast = new java.util.HashMap<>();
     private final java.util.Map<Long,Boolean> tidePools = new java.util.HashMap<>();
     private static final net.minecraft.resources.ResourceKey<Biome> TIDAL_FLATS = net.minecraft.resources.ResourceKey.create(
-            Registries.BIOME,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("tfc","tidal_flats"));
+            Registries.BIOME,net.minecraft.resources.ResourceLocation.tryBuild("tfc","tidal_flats"));
     private record ProtectedPiece(BoundingBox box, boolean street, boolean pixies) {}
     private final java.util.Map<Long,List<ProtectedPiece>> structuresByChunk=new java.util.HashMap<>();
 
@@ -394,7 +394,7 @@ final class RoadTerrain {
         }
         var coverId = BuiltInRegistries.BLOCK.getKey(cover.getBlock());
         if ((coverId.getNamespace().equals("tfc") && coverId.getPath().startsWith("groundcover/")
-                || cover.is(Blocks.SHORT_GRASS) || cover.is(Blocks.FERN) || cover.is(BlockTags.SMALL_FLOWERS))
+                || cover.is(RoadVersion.SHORT_GRASS) || cover.is(Blocks.FERN) || cover.is(BlockTags.SMALL_FLOWERS))
                 && level.isEmptyBlock(pos.setY(target+1)) && cover.canSurvive(level,pos)) {
             level.setBlock(pos,cover,2);
         }

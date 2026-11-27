@@ -12,7 +12,6 @@ import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -23,7 +22,7 @@ import static dev.fourwinds.roads.RoadLayout.*;
 
 final class VillageLinks {
     static final TagKey<Structure> DESTINATIONS = TagKey.create(Registries.STRUCTURE, FourWinds.id("destinations"));
-    static final ResourceLocation PIXIES = ResourceLocation.fromNamespaceAndPath("iceandfire", "pixie_village");
+    static final ResourceLocation PIXIES = ResourceLocation.tryBuild("iceandfire", "pixie_village");
     private static final Map<StructureStart, Spur> LINKS = Collections.synchronizedMap(new WeakHashMap<>());
 
     static List<Spur> nearby(WorldGenRegion level,RoadGrade grade) {
@@ -37,7 +36,7 @@ final class VillageLinks {
         var candidates = candidates(center, START_RADIUS, state, targets.get(), level.getSeed());
         for (ChunkPos pos : candidates) {
             // FEATURES guarantees structure starts in this radius. Never load a chunk from the live server.
-            var chunk = level.getChunk(pos.x, pos.z, ChunkStatus.STRUCTURE_STARTS);
+            var chunk = level.getChunk(pos.x, pos.z, RoadVersion.STRUCTURE_STARTS);
             for (var target : targets.get()) {
                 var start = chunk.getStartForStructure(target.value());
                 if (start == null || !start.isValid()) continue;
@@ -90,7 +89,7 @@ final class VillageLinks {
             if (parcels==null) {
                 net.minecraft.world.level.chunk.ChunkAccess start;
                 if (pos.getChessboardDistance(region.getCenter())<=ShoreTerrain.SURVEY_RADIUS) {
-                    start=region.getChunk(pos.x,pos.z,ChunkStatus.STRUCTURE_STARTS);
+                    start=region.getChunk(pos.x,pos.z,RoadVersion.STRUCTURE_STARTS);
                 } else {
                     // A section can be surveyed from its far bank. Recreate the seed's starts in memory
                     // without loading a live chunk or publishing a plan that depends on decoration order.
@@ -139,7 +138,7 @@ final class VillageLinks {
     }
 
     private static Spur route(long seed, StructureStart start, boolean pixies,RoadGrade grade) {
-        var first = start.getPieces().getFirst().getBoundingBox().getCenter();
+        var first = start.getPieces().get(0).getBoundingBox().getCenter();
         // Ice and Fire expands its single piece's box after placement. Its original street always starts at (7,7).
         var village = pixies ? new Point(start.getChunkPos().getBlockX(7), start.getChunkPos().getBlockZ(7))
                 : new Point(first.getX(), first.getZ());

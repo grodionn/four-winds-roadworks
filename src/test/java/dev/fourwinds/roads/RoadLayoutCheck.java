@@ -93,7 +93,7 @@ public class RoadLayoutCheck {
                 assert BridgeAlignment.deckDepth(3*sign,c-sign,c,c+sign)==0;
                 for (int o=-2;o<=2;o++) assert BridgeAlignment.deckDepth(o,c-sign,c,c+sign)>=1;
             }
-            Road path=new Road(17,ew,0,t->sign*Math.clamp(t/3,-8,8));
+            Road path=new Road(17,ew,0,t->sign*RoadLayout.clamp(t/3,-8,8));
             // Five dry rows on either bank are still far below the road. The outer corner seats last.
             var terrain=(java.util.function.IntBinaryOperator)(t,c)->{
                 if (Math.abs(t)<=4) return 62*2+1;

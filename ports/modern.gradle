@@ -2,10 +2,13 @@ def commonRoot = file('../..')
 def metadata = new Properties()
 new File(commonRoot, 'gradle.properties').withInputStream { metadata.load(it) }
 group = metadata.group
-version = metadata.version
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+def minecraftVersion = project.projectDir.name.split('-', 2)[1]
+version = metadata.version.split('\\+')[0] + '+mc' + minecraftVersion
+java.toolchain.languageVersion = JavaLanguageVersion.of(minecraftVersion == '1.21.1' ? 21 : 17)
 sourceSets.main.java.srcDir(new File(commonRoot, 'src/main/java'))
+sourceSets.main.java.srcDir(new File(commonRoot, "src/mc${minecraftVersion}/java"))
 sourceSets.main.resources.srcDir(new File(commonRoot, 'src/main/resources'))
+sourceSets.main.resources.srcDir(new File(commonRoot, "src/mc${minecraftVersion}/resources"))
 sourceSets.test.java.srcDir(new File(commonRoot, 'src/test/java'))
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 tasks.named('processResources') { inputs.property('modVersion', project.version) }
@@ -16,3 +19,19 @@ tasks.register('checkRoads', JavaExec) {
     enableAssertions = true
 }
 check.dependsOn checkRoads
+
+if (minecraftVersion == '1.20.1') {
+    tasks.named('processResources') {
+        exclude 'data/fourwindsroadworks/structure/**'
+        eachFile { entry ->
+            entry.path = entry.path.replace('/tags/block/', '/tags/blocks/').replace('/tags/fluid/', '/tags/fluids/')
+        }
+        filesMatching('pack.mcmeta') { filter { it.replace('"pack_format":48', '"pack_format":15') } }
+        filesMatching('*.mixins.json') {
+            filter { line ->
+                def updated = line.replace('JAVA_21', 'JAVA_17')
+                project.name.endsWith('forge') ? updated.replace('"minVersion":', '"refmap":"fourwindsroadworks.refmap.json","minVersion":') : updated
+            }
+        }
+    }
+}

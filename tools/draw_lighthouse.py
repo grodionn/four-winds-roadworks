@@ -290,12 +290,20 @@ def working_quay():
     put(15,-8,1,"barrel",facing="up")
 
 
-def save(tfc):
+def save(tfc, version):
     palette, indexes, entries = [], {}, []
     for (s,u,h),(mat,props) in sorted(blocks.items(),key=lambda entry:(entry[0][2], entry[0][0], entry[0][1])):
         name = ("tfc:" if tfc else "minecraft:")+materials[mat][int(tfc)]
         if mat=="line":props={"facing":"south"} if tfc else {"axis":"y"}
         if mat=="belay":props={"facing":"north"} if tfc else {"type":"bottom"}
+        if tfc and version == "1.20.1":
+            if name.startswith(("tfc:wood/fence/", "tfc:wood/trapdoor/")):
+                _, kind, timber = name.split("/")
+                name = f"tfc:wood/planks/{timber}_{kind}"
+            elif mat == "line":
+                name, props = "tfc:wood/planks/pine_fence", {}
+            elif mat == "belay":
+                name, props = "tfc:rock/bricks/andesite_slab", {"type": "bottom"}
         key = (name,tuple(sorted(props.items())))
         if key not in indexes:
             indexes[key]=len(palette)
@@ -304,10 +312,11 @@ def save(tfc):
                 state["Properties"]=nbt.Compound({k:nbt.String(v) for k,v in props.items()})
             palette.append(state)
         entries.append(nbt.Compound({"pos":nbt.List[nbt.Int]([s,h-1,u-MIN_U]),"state":nbt.Int(indexes[key])}))
-    structure=nbt.File({"DataVersion":nbt.Int(3955),"size":nbt.List[nbt.Int]([17,HEIGHT,MAX_U-MIN_U+1]),
+    structure=nbt.File({"DataVersion":nbt.Int(3465 if version == "1.20.1" else 3955),"size":nbt.List[nbt.Int]([17,HEIGHT,MAX_U-MIN_U+1]),
                         "palette":nbt.List[nbt.Compound](palette),"blocks":nbt.List[nbt.Compound](entries),
                         "entities":nbt.List[nbt.Compound]()})
-    dest=OUTPUT/("tfc/coastal_lighthouse.nbt" if tfc else "coastal_lighthouse.nbt")
+    folder = OUTPUT if version == "1.21.1" else Path(__file__).resolve().parents[1] / "src/mc1.20.1/resources/data/fourwindsroadworks/structures"
+    dest=folder/("tfc/coastal_lighthouse.nbt" if tfc else "coastal_lighthouse.nbt")
     dest.parent.mkdir(parents=True,exist_ok=True)
     raw=io.BytesIO()
     structure.write(raw)
@@ -332,6 +341,7 @@ if __name__=="__main__":
                 anchored.add(neighbor)
                 queue.append(neighbor)
     assert anchored==blocks.keys(),set(blocks)-anchored
-    for tfc in (False,True):
-        save(tfc)
+    for version in ("1.21.1", "1.20.1"):
+        for tfc in (False,True):
+            save(tfc, version)
     print(len(blocks),"placed blocks in each structure")

@@ -14,7 +14,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
 import net.minecraft.world.level.chunk.ProtoChunk;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 /** Reconcile neighbouring decorators while the chunk is still exclusively owned by world generation. */
 public final class RoadClearance {
@@ -77,7 +76,7 @@ public final class RoadClearance {
     }
 
     public static void beforeLighting(ServerLevel level,ChunkAccess chunk) {
-        if (!(chunk instanceof ProtoChunk) || chunk instanceof ImposterProtoChunk || chunk.getPersistedStatus().isOrAfter(ChunkStatus.LIGHT)) return;
+        if (!(chunk instanceof ProtoChunk) || chunk instanceof ImposterProtoChunk || RoadVersion.lit(chunk)) return;
         if (RoadData.COLUMNS.has(chunk)) {
             CoastalPier.finishFeet(level,chunk,RoadData.COLUMNS.get(chunk));
             RoadData.COLUMNS.remove(chunk);
@@ -116,7 +115,7 @@ public final class RoadClearance {
             int sampleY=finishes[i+1];
             String soil=sampleY<chunk.getMinBuildHeight()?null:RoadMaterials.soil(chunk.getBlockState(floor.atY(sampleY)));
             boolean dark="mollisol".equals(soil) || "andisol".equals(soil);
-            var finish=RoadMaterials.withSoil(dark?palette.get(finishes[i+3]):placed,soil==null?"entisol":soil);
+            var finish=RoadMaterials.withSoil(dark?palette.get(finishes[i+3]):placed,soil==null?RoadVersion.DEFAULT_SOIL:soil);
             if (now!=finish) chunk.setBlockState(floor,finish,false);
         }
         int[] trails=data.getIntArray("trails");

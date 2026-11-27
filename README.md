@@ -12,7 +12,7 @@ Short river crossings can have a timber deck or a stone arch. In the mountains, 
 
 ### Playing
 
-Choose the JAR for your [Minecraft version and mod loader](ports/README.md). Put the same build in `mods/` on the client and on the server. Explore new chunks in the Overworld to find the roads. In an existing save, start beyond the area you have already explored.
+For Minecraft 1.21.1, choose NeoForge, Forge or Fabric. For 1.20.1, choose Forge or Fabric. Get the JAR for your [Minecraft version and mod loader](ports/README.md). Put the same build in `mods/` on the client and on the server. Explore new chunks in the Overworld to find the roads. In an existing save, start beyond the area you have already explored.
 
 TerraFirmaCraft is optional. In its Overworld preset, the roads pick up the local soil and stone, the quays use TFC timber and the beacon burns fuel in a TFC firepit. Village turnings depend on which settlements your world can generate.
 

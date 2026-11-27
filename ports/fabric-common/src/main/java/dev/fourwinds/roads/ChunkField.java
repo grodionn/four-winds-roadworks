@@ -20,10 +20,10 @@ final class ChunkField<T> {
     }
 
     void register() {
-        type = AttachmentRegistry.create(FourWinds.id(name), builder -> builder.initializer(factory).persistent(codec));
+        type = AttachmentRegistry.createPersistent(FourWinds.id(name), codec);
     }
 
-    T get(ChunkAccess chunk) { return ((AttachmentTarget)chunk).getAttachedOrCreate(type); }
+    T get(ChunkAccess chunk) { return ((AttachmentTarget)chunk).getAttachedOrCreate(type, factory); }
     boolean has(ChunkAccess chunk) { return ((AttachmentTarget)chunk).hasAttached(type); }
     void set(ChunkAccess chunk, T value) { ((AttachmentTarget)chunk).setAttached(type, value); }
     void remove(ChunkAccess chunk) { ((AttachmentTarget)chunk).removeAttached(type); }

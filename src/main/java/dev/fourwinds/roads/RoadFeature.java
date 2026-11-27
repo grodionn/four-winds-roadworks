@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.BlockTags;
@@ -387,7 +386,7 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
                     shared=Math.floorDiv(x+z+1,2);
                 } else shared=one!=null && two!=null?Math.max(one.y(),two.y()):one!=null?one.y():two.y();
                 int allowance=Math.max(0,Math.min(distance,18)-(joinedDecks?6:3))/3+Math.max(0,distance-18);
-                int desired=Math.clamp(y,shared-allowance,shared+allowance);
+                int desired=RoadLayout.clamp(y,shared-allowance,shared+allowance);
                 if (desired!=y) y=joinedDecks?desired:a.constrainLanding(t,desired);
             }
         }
@@ -396,11 +395,11 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             Road trunk=terrain.grade.follow(nearest(terrain.level.getSeed(),!spur.eastWest(),turn));
             int landing=surface(terrain,trunk,turn);
             int allowance=Math.max(0,Math.abs(t-spur.turn())-trunk.width()/2);
-            y=Math.clamp(y,landing-allowance,landing+allowance);
+            y=RoadLayout.clamp(y,landing-allowance,landing+allowance);
             int distance=Math.abs(t-spur.end());
             if (distance<=12) {
                 var entry=terrain.column(spur.point(spur.end(),0));
-                if (entry.valid()) return Math.clamp(y,entry.deck()-distance,entry.deck()+distance);
+                if (entry.valid()) return RoadLayout.clamp(y,entry.deck()-distance,entry.deck()+distance);
             }
         }
         return y;
@@ -609,10 +608,9 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             back = crossing("south", "north", "east_west");
         }
         // A protochunk's sign has no Level yet. Store its vanilla NBT for promotion to a live block entity.
-        var ops = terrain.level.registryAccess().createSerializationContext(NbtOps.INSTANCE);
         var tag = RoadMaterials.entityTag(pos,terrain.level.getBlockState(pos),terrain.level);
-        tag.put("front_text", SignText.DIRECT_CODEC.encodeStart(ops, front).getOrThrow());
-        tag.put("back_text", SignText.DIRECT_CODEC.encodeStart(ops, back).getOrThrow());
+        tag.put("front_text", RoadVersion.signText(terrain.level,front));
+        tag.put("back_text", RoadVersion.signText(terrain.level,back));
         terrain.level.getChunk(pos).setBlockEntityNbt(tag);
     }
 
