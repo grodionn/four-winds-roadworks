@@ -68,9 +68,13 @@ class World:
 def check_gorge(world):
     for x in range(-1090, -1067):
         for z in range(-896, -891):
-            world.expect(x, 83, z, 'tfc:rock/bricks/andesite')
+            bearing = x in (-1090, -1068)
+            world.expect(x, 83, z, 'tfc:rock/smooth/andesite' if bearing else 'tfc:rock/bricks/andesite')
             if abs(z + 894) == 2:
-                world.expect(x, 84, z, 'tfc:rock/bricks/andesite_slab', type='bottom')
+                if bearing:
+                    world.expect(x, 84, z, 'tfc:rock/chiseled/andesite')
+                else:
+                    world.expect(x, 84, z, 'tfc:rock/bricks/andesite_slab', type='bottom')
             else:
                 for y in (84, 85):
                     block, _ = world.block(x, y, z)
@@ -85,11 +89,36 @@ def check_gorge(world):
             ground = (value if value < 32768 else value - 65536) >> 1
             if value & 1 or ground < 80:
                 raise ValueError(f'Bridge seat above open water or a drop at {x}, {z}: {ground}')
+    for z, y, facing in [(-539, 73, 'south'), (-538, 75, 'south'), (-528, 75, 'north'), (-527, 73, 'north')]:
+        world.expect(-971, y, z, 'tfc:rock/bricks/basalt_stairs', half='bottom', facing=facing)
+        world.expect(-971, y - 1, z, 'tfc:rock/smooth/basalt')
     for z in (-537, -529):
         world.expect(-971, 73, z, 'tfc:rock/bricks/basalt_wall', up='true')
     for z in range(-536, -529):
         world.expect(-971, 70, z, 'tfc:rock/bricks/basalt')
         world.expect(-971, 71, z, 'minecraft:air')
+
+
+def check_harbour(world):
+    # Walk each stair and its quarter-turn landing, from the keeper's room up to the gallery.
+    flights = [((-774, -160), (-774, -161)), ((-775, -161), (-776, -161)),
+               ((-776, -160), (-776, -159)), ((-775, -159), (-774, -159))]
+    for y in range(65, 85):
+        stair, landing = flights[(y - 65) % 4]
+        for (x, z), block in [(stair, 'pine_stairs'), (landing, 'pine')]:
+            world.expect(x, y, z, 'tfc:wood/planks/' + block)
+            for dy in (1, 2):
+                world.expect(x, y + dy, z, 'minecraft:air')
+    world.expect(-775, 88, -160, 'tfc:firepit', lit='true')
+    # The quay and the smaller landing each have exposed pile heads flush with the planks.
+    for x, z in [(-781, -158), (-770, -153), (-895, -120), (-897, -124)]:
+        world.expect(x, 65, z, 'minecraft:air')
+        y = 64
+        while y > 45 and world.block(x, y, z)[0] == 'tfc:wood/stripped_log/spruce':
+            world.expect(x, y, z, 'tfc:wood/stripped_log/spruce', axis='y')
+            y -= 1
+        if y >= 63 or not world.block(x, y, z)[0].startswith('tfc:rock/'):
+            raise ValueError(f'Incomplete pile at {x}, {y}, {z}')
 
 
 def check_taiga(world):
@@ -125,8 +154,12 @@ if __name__ == '__main__':
     parser.add_argument('tfc_world', type=Path)
     parser.add_argument('vanilla_world', type=Path)
     parser.add_argument('--tfc-floodplain', type=Path, help='Also check the cave roofs on TFC seed 38473917 and in the taiga')
+    parser.add_argument('--harbour', action='store_true', help='Also generate the TFC coast near (-775, -160) and (-895, -120)')
     args = parser.parse_args()
-    check_gorge(World(args.tfc_world, 7319041))
+    gorge = World(args.tfc_world, 7319041)
+    check_gorge(gorge)
+    if args.harbour:
+        check_harbour(gorge)
     taiga = World(args.vanilla_world, 96320157)
     check_taiga(taiga)
     if args.tfc_floodplain:

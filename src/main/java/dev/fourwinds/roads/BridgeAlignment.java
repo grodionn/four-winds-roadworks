@@ -26,23 +26,27 @@ record BridgeAlignment(int left, int right, Line line) {
             int middleAcross=path.center(middle);
             for (int across=middleAcross-MAX_SHIFT;across<=middleAcross+MAX_SHIFT;across++) {
                 var direction=new Line(middle,across,skew);
-                int left=seat(path,terrain,firstBank,-1,direction,deck);
-                int right=seat(path,terrain,lastBank,1,direction,deck);
+                int inset=lastBank-firstBank>=48?BANK_SEARCH:0;
+                int left=seat(path,terrain,firstBank,-1,direction,deck,inset);
+                int right=seat(path,terrain,lastBank,1,direction,deck,inset);
                 if (left==Integer.MIN_VALUE || right==Integer.MIN_VALUE || left<leftTie || right>rightTie) continue;
                 var candidate=new BridgeAlignment(left,right,direction);
                 if (!candidate.reaches(path,junction) || !candidate.reaches(path,Math.max(leftTie,left-24))
                         || !candidate.reaches(path,Math.min(rightTie,right+24))) continue;
-                int cost=candidate.cost(path,deck,terrain);
+                int cost=candidate.cost(path,deck,terrain,inset>0);
                 if (cost<bestCost) { bestCost=cost;best=candidate; }
             }
             // Prefer square masonry on the block grid wherever both cliff seats fit.
-            if (skew==0 && best!=null) break;
+            if (skew==0 && best!=null && lastBank-firstBank<48) break;
         }
         return best;
     }
 
-    private int cost(Path path,int deck,IntBinaryOperator terrain) {
-        int cost=right-left+3*Math.abs(line.skew);
+    private int cost(Path path,int deck,IntBinaryOperator terrain,boolean wide) {
+        // Count the length of masonry along the actual bearing, including diagonal steps.
+        int length=right-left;
+        int cost=length+3*Math.abs(line.skew);
+        if (wide) cost+=length*3+length*line.skew*line.skew/38;
         for (int side:new int[]{-1,1}) {
             int end=side<0?left:right,c=center(end);
             cost+=5*Math.abs(path.center(end)-c)+2*Math.abs(path.center(end+side*8)-c);
@@ -63,21 +67,33 @@ record BridgeAlignment(int left, int right, Line line) {
         return wet?cost:Integer.MAX_VALUE;
     }
 
-    private static int seat(Path path,IntBinaryOperator terrain,int bank,int side,Line line,int deck) {
+    private static int seat(Path path,IntBinaryOperator terrain,int bank,int side,Line line,int deck,int inset) {
         boolean previous=false;
-        for (int d=0;d<=BANK_SEARCH;d++) {
+        for (int d=-inset;d<=BANK_SEARCH;d++) {
             int t=bank+side*d;
             int c=line.at(t);
-            if (!path.contains(t) || Math.abs(path.center(t)-c)>MAX_SHIFT) break;
+            if (!path.contains(t) || Math.abs(path.center(t)-c)>MAX_SHIFT) {previous=false;continue;}
             boolean solid=true;
             for (int offset=line.edge(t,-1);offset<=line.edge(t,1);offset++) {
                 int ground=terrain.applyAsInt(t,c+offset);
                 if (ground==Integer.MIN_VALUE || (ground&1)!=0 || (ground>>1)<deck-3) { solid=false;break; }
             }
-            if (solid && previous) return t-side;
+            if (solid && previous && (d>=1 || dryLanding(path,terrain,t-side,bank,side,line))) return t-side;
             previous=solid;
         }
         return Integer.MIN_VALUE;
+    }
+
+    // The road may leave a surveyed river early only if the returning carriageway stays on land.
+    private static boolean dryLanding(Path path,IntBinaryOperator terrain,int end,int bank,int side,Line line) {
+        for (int t=end+side;(t-bank)*side<=1;t+=side) {
+            int distance=Math.abs(t-end),c=approach(path.center(t),line.at(end),distance);
+            for (int off=RoadLayout.edge(path.width(),-1);off<=RoadLayout.edge(path.width(),1);off++) {
+                int sample=terrain.applyAsInt(t,c+off);
+                if (sample==Integer.MIN_VALUE || (sample&1)!=0) return false;
+            }
+        }
+        return true;
     }
 
     int distance(int t) { return Math.max(0,Math.max(left-t,t-right)); }

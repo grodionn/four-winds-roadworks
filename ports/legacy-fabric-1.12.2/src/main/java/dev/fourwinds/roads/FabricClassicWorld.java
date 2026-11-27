@@ -142,6 +142,7 @@ public final class FabricClassicWorld implements LegacyRoads.Land {
         switch(mat) {
             case AIR:block=Blocks.AIR;break;
             case STONE:block=Blocks.STONE_BRICKS;break;
+            case DRESSED:block=Blocks.STONE;meta=6;break;
             case WORN:block=Blocks.STONE_BRICKS;meta=2;break;
             case COBBLE:block=Blocks.COBBLESTONE;break;
             case SLIM_POST:block=Blocks.SPRUCE_FENCE;break;

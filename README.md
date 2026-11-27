@@ -8,7 +8,7 @@ Four roads meet near the centre of the Overworld. Pick a direction and the pavin
 
 The main roads run five blocks wide. On a country lane, the worn earth winds from one side of the four-block track to the other, with grass at the edges and gravel in patches. A three-block track often covers the last stretch into a village. Wooden signs at crossroads carry the compass directions. At a village turning, the sign gives the destination and the distance.
 
-Short river crossings can have a timber deck or a stone arch. In the mountains, the road can pass under a rock gallery or through a supported tunnel. Along quieter stretches there are occasional roofed benches and mounting stones.
+Short crossings can have timber decks. On wider rivers, a row of stone arches carries the road between the banks. A dressed stone course runs across the deck above each pier. In the mountains, the road can pass under a rock gallery or through a supported tunnel. Along quieter stretches there are occasional roofed benches and mounting stones.
 
 ### Playing
 

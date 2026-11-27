@@ -115,6 +115,7 @@ final class ClassicWorld implements LegacyRoads.Land {
             String name;
             switch(mat) {
                 case STONE:name="bricks/andesite";break;
+                case DRESSED:name="smooth/andesite";break;
                 case COBBLE:case WORN:name="cobble/andesite";break;
                 case SLIM_POST:name="wood/fence/spruce";break;
                 case EARTH:name="dirt/"+localRock(x,z);break;
@@ -135,6 +136,7 @@ final class ClassicWorld implements LegacyRoads.Land {
         }
         switch(mat) {
             case STONE:return Blocks.STONEBRICK.getDefaultState();
+            case DRESSED:return Blocks.STONE.getStateFromMeta(6);
             case WORN:return Blocks.STONEBRICK.getStateFromMeta(2);
             case COBBLE:return Blocks.COBBLESTONE.getDefaultState();
             case SLIM_POST:return Blocks.SPRUCE_FENCE.getDefaultState();

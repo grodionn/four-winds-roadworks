@@ -8,7 +8,7 @@ import static dev.fourwinds.roads.RoadLayout.*;
 /** Reads the pre-decoration riverbed. Every tile of a crossing sees the same two banks. */
 final class BridgeSurvey {
     private static final int DRY=Integer.MIN_VALUE, BANK_LIMIT=24, APPROACH=48, LANDING=10, MAX_RIVER_WIDTH=112;
-    private static final int FIT_LIMIT=48, TURN=24;
+    private static final int TURN=24;
     record Span(int y,int center,boolean timber,BridgeBay bay,RoadMaterials palette) {}
     private record Crossing(BridgeAlignment deck,int y,boolean timber,boolean singleArch,RoadMaterials palette) {
         Span row(int t) {
@@ -75,7 +75,8 @@ final class BridgeSurvey {
             Span result=null;
             if (channel(t)) {
                 var fit=crossing(t);
-                result=fit!=null?fit.row(t):measure(t);
+                if (fit==null) result=measure(t);
+                else if (fit.deck.distance(t)==0) result=fit.row(t);
             } else if (path.contains(t)) {
                 // Follow the same drawing past the waterline, up to the actual rock seat.
                 for (int side:new int[]{-1,1}) {
@@ -101,12 +102,25 @@ final class BridgeSurvey {
         private Crossing crossing(int wet) {
             if (crossings.containsKey(wet)) return crossings.get(wet);
             int left=wet-1,right=wet+1;
-            while (wet-left<=FIT_LIMIT && shelf(left)!=DRY) left--;
-            while (right-wet<=FIT_LIMIT && shelf(right)!=DRY) right++;
+            while (wet-left<=MAX_RIVER_WIDTH && shelf(left)!=DRY) left--;
+            while (right-wet<=MAX_RIVER_WIDTH && shelf(right)!=DRY) right++;
             Crossing result=null;
-            if (right-left<=FIT_LIMIT && bank(wet,-1)!=DRY && bank(wet,1)!=DRY) result=fit(left,right,shelf(wet));
+            if (right-left<=MAX_RIVER_WIDTH && bank(wet,-1)!=DRY && bank(wet,1)!=DRY) result=fit(left,right,shelf(wet));
             for (int t=left+1;t<right;t++) crossings.put(t,result);
             return result;
+        }
+
+        private int deckHeight(int left,int right,int grade,int waterY,boolean timber) {
+            int highBank=waterY;
+            for (int d:new int[]{0,4,8}) {
+                int a=original(left-d,path.center(left-d)),b=original(right+d,path.center(right+d));
+                if ((a&1)==0) highBank=Math.max(highBank,a>>1);
+                if ((b&1)==0) highBank=Math.max(highBank,b>>1);
+            }
+            // Floodplain banks need a low crown above the channel, even when a distant grade knot sits on a hill.
+            if (highBank<=waterY+3)
+                return Math.max(waterY+(timber?2:3),Math.min(grade,highBank+1));
+            return Math.max(grade,waterY+(timber?2:4));
         }
 
         private Crossing fit(int left,int right,int waterY) {
@@ -118,13 +132,13 @@ final class BridgeSurvey {
             int bankGrade=(terrain.grade.along(path,left)+terrain.grade.along(path,right)+1)/2;
             boolean timber=path.width()<5 && right-left<=16 && bankGrade<=waterY+5
                     && (junction<left-LANDING || junction>right+LANDING);
-            int y=Math.max(bankGrade,waterY+(timber?2:4));
+            int y=deckHeight(left,right,bankGrade,waterY,timber);
             int leftTie=dryTie(left,-1),rightTie=dryTie(right,1);
             var deck=BridgeAlignment.fit(path,left,right,y,junction,leftTie,rightTie,this::original);
             if (deck==null) return null;
             if (timber && deck.right()-deck.left()>20) {
                 timber=false;
-                y=Math.max(bankGrade,waterY+4);
+                y=deckHeight(left,right,bankGrade,waterY,false);
                 deck=BridgeAlignment.fit(path,left,right,y,junction,leftTie,rightTie,this::original);
                 if (deck==null) return null;
             }
@@ -194,13 +208,13 @@ final class BridgeSurvey {
 
         private Span measure(int t) {
             int l=t-1,r=t+1;
-            while (t-l<=BANK_LIMIT && shelf(l)!=DRY) l--;
-            while (r-t<=BANK_LIMIT && shelf(r)!=DRY) r++;
-            boolean whole=r-l<=BANK_LIMIT+1;
+            while (t-l<=MAX_RIVER_WIDTH && shelf(l)!=DRY) l--;
+            while (r-t<=MAX_RIVER_WIDTH && shelf(r)!=DRY) r++;
+            boolean whole=r-l<=MAX_RIVER_WIDTH && shelf(l)==DRY && shelf(r)==DRY;
             boolean junction=!whole || path instanceof Spur spur && spur.turn()>=l-LANDING && spur.turn()<=r+LANDING;
             if (whole && path instanceof Road road) {
                 int number=Math.floorDiv(t+SPACING/2,SPACING);
-                if (Math.abs(t-number*SPACING)<=RoadSection.JUNCTION_SHIFT+BANK_LIMIT+LANDING) {
+                if (Math.abs(t-number*SPACING)<=RoadSection.JUNCTION_SHIFT+MAX_RIVER_WIDTH+LANDING) {
                     int cross=terrain.grade.junction(road,number).point().along(road.eastWest());
                     junction|=cross>=l-LANDING && cross<=r+LANDING;
                 }
@@ -211,11 +225,11 @@ final class BridgeSurvey {
             int design=(left+right+1)/2;
             // A highway above a gorge crosses at the bank grade. Only low, short crossings use timber piles.
             boolean timber=whole && !junction && path.width()<5 && r-l<=16 && design<=waterY+5;
-            if (whole) y=Math.max(waterY+(timber?2:4),design);
+            if (whole) y=deckHeight(l,r,design,waterY,timber);
             String stone="andesite";
             if (whole && !junction) {
                 int lc=path.center(l),rc=path.center(r);
-                center=RoadSection.interpolate(lc,rc,t-l,r-l);
+                center=RoadLayout.clamp(RoadSection.interpolate(lc,rc,t-l,r-l),center-BridgeAlignment.MAX_SHIFT,center+BridgeAlignment.MAX_SHIFT);
                 int lowBank=Math.min(ShoreTerrain.surface(terrain.level,path.point(l,0))>>1,
                         ShoreTerrain.surface(terrain.level,path.point(r,0))>>1);
                 if (!timber && y-lowBank<5 && !terrain.materials.usesLanterns())

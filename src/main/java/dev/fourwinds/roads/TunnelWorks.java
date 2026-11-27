@@ -241,8 +241,13 @@ final class TunnelWorks {
         if (!footing(p,row)) return;
         int height=row.kind==Kind.WING?4-row.distance:f.depth==4?3:5;
         for (int h=1;h<=height;h++) {
-            Block b=h==height?Blocks.STONE_BRICK_SLAB:h==1?Blocks.COBBLESTONE:Blocks.STONE_BRICKS;
-            set(p,y+h,b.defaultBlockState(),row);
+            BlockState stone;
+            if (h==height && row.kind==Kind.PORTAL)
+                stone=Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,across(f.path,-Integer.signum(f.offset)));
+            else if (h==height) stone=Blocks.STONE_BRICK_SLAB.defaultBlockState();
+            else if (row.kind==Kind.PORTAL && h==height-1) stone=Blocks.POLISHED_ANDESITE.defaultBlockState();
+            else stone=(h==1?Blocks.COBBLESTONE:Blocks.STONE_BRICKS).defaultBlockState();
+            set(p,y+h,stone,row);
         }
     }
 

@@ -204,6 +204,7 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
         BridgeSurvey.Span span=null;
         int bestDepth = Integer.MIN_VALUE, hits = 0, selectedOffset = 0;
         boolean arcade=false;
+        int bestStructure=-1;
         for (Path path : paths) {
             int t = p.along(path.eastWest());
             if (!path.contains(t)) continue;
@@ -226,7 +227,11 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
             if (remaining<0 && path.width()<5 && survey.landingTrack(t,off)) remaining=0;
             if (remaining < 0) continue;
             hits++;
-            if (remaining > bestDepth) { bestDepth = remaining; selected = path; selectedOffset = off; span=crossing; arcade=elevated; }
+            // A side lane can open the parapet, but the main deck continues through the turning.
+            int structure=crossing!=null?(crossing.timber()?2:3):elevated?1:0;
+            if (structure>bestStructure || structure==bestStructure && remaining>bestDepth) {
+                bestStructure=structure; bestDepth=remaining; selected=path; selectedOffset=off; span=crossing; arcade=elevated;
+            }
         }
         if (selected == null) return null;
         int t = p.along(selected.eastWest());
@@ -509,9 +514,16 @@ final class RoadFeature extends Feature<NoneFeatureConfiguration> {
         boolean bent=timber?bay.support(c.t):bay.masonryPier(c.t);
         Block tread=timber?(c.rise==0?Blocks.SPRUCE_PLANKS:Blocks.SPRUCE_STAIRS)
                 :(c.rise==0?Blocks.STONE_BRICKS:Blocks.STONE_BRICK_STAIRS);
-        terrain.put(c.p,c.y,floorState(c,tread),palette);
+        boolean bearing=bay.support(c.t) && bay.right()-bay.left()>=5;
+        BlockState surface=floorState(c,tread);
+        if (bearing && c.rise==0) {
+            // A transverse sill marks each pile bent. Masonry has a dressed course over each pier.
+            surface=timber?TunnelWorks.timber(c.path.eastWest()?Direction.Axis.Z:Direction.Axis.X)
+                    :Blocks.POLISHED_ANDESITE.defaultBlockState();
+        }
+        terrain.put(c.p,c.y,surface,palette);
         if (c.parapet()) {
-            Block cap=timber?Blocks.SPRUCE_SLAB:Blocks.STONE_BRICK_SLAB;
+            Block cap=timber?Blocks.SPRUCE_SLAB:bearing?Blocks.CHISELED_STONE_BRICKS:Blocks.STONE_BRICK_SLAB;
             terrain.put(c.p,c.y+1,cap.defaultBlockState(),palette);
         }
         int depth=timber?(bent && c.edgeTile()?c.y-terrain.level.getMinBuildHeight():bent || c.edgeTile()?1:0)

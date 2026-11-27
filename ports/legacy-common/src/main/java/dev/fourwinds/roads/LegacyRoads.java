@@ -9,7 +9,7 @@ import static dev.fourwinds.roads.RoadLayout.*;
 
 /** Road construction for the pre-Caves & Cliffs terrain and population pipeline. */
 final class LegacyRoads {
-    enum Material { AIR, STONE, COBBLE, WORN, GRAVEL, PATH, EARTH, SLIM_POST, FILL, PLANK, POST, BEAM, LOW_STONE, LOW_TIMBER, STAIR, TIMBER_STAIR }
+    enum Material { AIR, STONE, DRESSED, COBBLE, WORN, GRAVEL, PATH, EARTH, SLIM_POST, FILL, PLANK, POST, BEAM, LOW_STONE, LOW_TIMBER, STAIR, TIMBER_STAIR }
     interface Land {
         long seed();
         int sea();
@@ -182,10 +182,12 @@ final class LegacyRoads {
                             BridgeBay bay,boolean timber,boolean rail) {
         int bottom=timber ? (bay.support(t)&&depth==0?bed:deck-1) : bay.masonryPier(t)?bed:Math.max(bed,deck-bay.soffit(t));
         for(int y=Math.max(1,bottom);y<deck;y++) put(land,x,y,z,timber?(y<deck-1?Material.POST:Material.BEAM):Material.STONE,path,1);
-        put(land,x,deck,z,timber?Material.PLANK:Material.STONE,path,1);
+        boolean bearing=bay.support(t) && bay.right()-bay.left()>=5;
+        put(land,x,deck,z,timber?Material.PLANK:bearing?Material.DRESSED:Material.STONE,path,1);
         clear(land,x,deck+1,z,4);
         if (rail && depth==0 && (path.width()>=4 || offset<0))
-            put(land,x,deck+1,z,timber?Material.LOW_TIMBER:Material.LOW_STONE,path,1);
+            put(land,x,deck+1,z,timber?Material.LOW_TIMBER:
+                    bearing?Material.STONE:Material.LOW_STONE,path,1);
     }
 
     private void buildColumn(Land land,Path path,int t,int x,int z,int offset) {

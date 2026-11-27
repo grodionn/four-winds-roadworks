@@ -24,22 +24,52 @@ def canonical_component(component):
     return component
 
 
+def check_river_deck(world):
+    # Follow the whole central stretch of the oblique crossing, including its chunk seams.
+    slab = 'minecraft:stone_brick_slab'
+    newel = 'minecraft:chiseled_stone_bricks'
+    rows = []
+    supports = []
+    openings = 0
+    first, last = (678, 747) if world.version == '1.21.1' else (688, 735)
+    for z in range(first, last + 1):
+        edges = [x for x in range(354, 427) if world.block(x, 66, z)[0] in (slab, newel)]
+        if len(edges) != 2 or edges[1] - edges[0] not in (4, 5, 6):
+            raise ValueError(f'Incomplete parapets or unexpected deck width at Z {z}: {edges}')
+        left, right = edges
+        bearing = world.block(left, 66, z)[0] == newel
+        for x in edges:
+            if bearing:
+                world.expect(x, 66, z, newel)
+            else:
+                world.expect(x, 66, z, slab, type='bottom')
+        for x in range(left, right + 1):
+            world.expect(x, 65, z, 'minecraft:polished_andesite' if bearing else 'minecraft:stone_bricks')
+            if left < x < right:
+                for y in (66, 67, 68):
+                    world.expect(x, y, z, 'minecraft:air')
+        middle = (left + right) // 2
+        if bearing:
+            supports.append(z)
+            world.expect(middle, 64, z, 'minecraft:stone_bricks')
+        elif world.block(middle, 63, z)[0] == 'minecraft:air' and world.block(middle, 62, z)[0] == 'minecraft:water':
+            openings += 1
+        rows.append((left + right) / 2)
+    for i, centre in enumerate(rows):
+        line = rows[0] + (rows[-1] - rows[0]) * i / (len(rows) - 1)
+        if abs(centre - line) > 1:
+            raise ValueError(f'Bend in the middle of the span at Z {first+i}')
+    if world.version == '1.21.1' and (not supports or supports[0] != first or supports[-1] != last):
+        raise ValueError(f'The crossing does not end on its two abutments: {supports}')
+    if len(supports) < 3 or openings < 6 or any(not 8 <= b - a <= 14 for a, b in zip(supports, supports[1:])):
+        raise ValueError(f'Irregular or blocked arches: supports at {supports}, {openings} open rows')
+
+
 def check_floodplain(world):
     # These four blocks used to be masonry inside the built-up village.
     for x, y, z in [(351, 67, 714), (353, 67, 714), (354, 66, 714), (359, 66, 752)]:
         world.expect(x, y, z, 'minecraft:air')
-    # The 1.18.2 generator places the village on a different bend in the river.
-    bridge_x, bridge_z = (405, 724) if world.version == '1.18.2' else (412, 740)
-    for z in range(bridge_z, bridge_z + 3):
-        for x in range(bridge_x, bridge_x + 3):
-            world.expect(x, 67, z, 'minecraft:stone_bricks')
-            for y in (68, 69):
-                world.expect(x, y, z, 'minecraft:air')
-    if world.version == '1.18.2':
-        world.expect(405, 62, 722, 'minecraft:water')
-        world.expect(405, 64, 722, 'minecraft:air')
-        for x in (403, 408):
-            world.expect(x, 68, 722, 'minecraft:stone_brick_slab', type='bottom')
+    check_river_deck(world)
     # A cocoa pod on the trunk or moss on mangrove roots could veto an entire road column.
     for x, y, z in [(1372, 67, -2360), (1373, 67, -2361), (1373, 67, -2359), (1374, 66, -2360)]:
         if 'leaves' in world.block(x, y, z)[0] or 'roots' in world.block(x, y, z)[0]:
@@ -49,11 +79,13 @@ def check_floodplain(world):
 
     world.expect(1372, 67, -2360, 'minecraft:coarse_dirt')
     world.expect(1373, 67, -2360, 'minecraft:dirt_path')
-    # Walk the jungle lane for eleven rows. The exact stripe shifts with the verge.
+    # Walk the jungle lane across a change of grade. The exact stripe shifts with the verge.
+    earth_slab = 'minecraft:brick_slab' if world.version == '1.18.2' else 'minecraft:mud_brick_slab'
     previous = set()
-    for x in range(1560, 1571):
+    for x in range(1559, 1571):
         row = {(z, y) for z in range(-2462, -2450) for y in range(62, 70)
-               if world.block(x, y, z)[0] in ('minecraft:dirt_path', 'minecraft:coarse_dirt', 'minecraft:gravel')
+               if (world.block(x, y, z)[0] in ('minecraft:dirt_path', 'minecraft:coarse_dirt', 'minecraft:gravel')
+                   or world.block(x, y, z)[0] == earth_slab and str(world.block(x, y, z)[1].get('type')) == 'bottom')
                and all(world.block(x, y + h, z)[0] == 'minecraft:air' for h in (1, 2))}
         if not any((z + 1, y) in row for z, y in row):
             raise ValueError(f'Jungle lane narrows to less than two walkable blocks at X {x}')
@@ -62,6 +94,15 @@ def check_floodplain(world):
         previous = row
 
     if world.version == '1.21.1':
+        # A timber side lane joins the other bridge here. Its boards used to replace patches of the masonry deck.
+        for x in range(363, 368):
+            for z in range(666, 671):
+                world.expect(x, 67, z, 'minecraft:polished_andesite' if x == 363 else 'minecraft:stone_bricks')
+        for x, y, z in [(414, 65, 748), (414, 64, 750)]:
+            world.expect(x, y, z, 'minecraft:dirt_path')
+            for dy in (1, 2):
+                world.expect(x, y + dy, z, 'minecraft:air')
+        world.expect(414, 65, 749, earth_slab, type='bottom')
         # A bridge approach used to extend across the dry meadow ten blocks above the grass.
         world.expect(410, 63, 685, 'minecraft:grass_block')
         for y in range(65, 75):

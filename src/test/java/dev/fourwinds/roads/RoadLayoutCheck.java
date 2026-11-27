@@ -154,6 +154,11 @@ public class RoadLayoutCheck {
             return Math.abs(t)<=4?62*2+1:Math.min(84,62+2*(Math.abs(t)-4))*2;
         });
         assert skewed!=null && skewed.center(skewed.left())<skewed.center(skewed.right());
+        // A high, dry gravel bar in the middle of an otherwise wet approach is no bridge seat.
+        Road floodplain=new Road(17,true,0,t->0);
+        var wide=BridgeAlignment.fit(floodplain,-37,37,65,100,-80,80,(t,c)->
+                Math.abs(t)<36 && !(t>=24 && t<=27)?125:126);
+        assert wide!=null && wide.left()==-36 && wide.right()==36;
         for (int t=0;t<=20;t++) {
             int rise=BridgeAlignment.availableRise(t);
             assert t>2 || rise==0;

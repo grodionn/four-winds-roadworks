@@ -163,6 +163,7 @@ public final class Roads116 implements LegacyRoads.Land {
         switch (mat) {
             case AIR: block = Blocks.AIR; break;
             case STONE: block = Blocks.STONE_BRICKS; break;
+            case DRESSED: block = Blocks.POLISHED_ANDESITE; break;
             case WORN: block = Blocks.CRACKED_STONE_BRICKS; break;
             case COBBLE: block = Blocks.COBBLESTONE; break;
             case SLIM_POST: block = Blocks.SPRUCE_FENCE; break;
